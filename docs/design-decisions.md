@@ -95,3 +95,31 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   incident's values, rather than as footnotes under a table.
 - **Unknown incident types and undecodable unit codes surface here** as raw
   strings, so nothing is silently relabelled.
+
+## Attribution and data terms
+
+- **The City of Toronto is credited in the app**, using the City's own attribution
+  statement:
+
+  > Contains information licensed under the Open Government Licence – Toronto.
+
+  This is the statement the Open Government Licence – Toronto specifies as the
+  default where the Information Provider gives no specific one. Link to the
+  licence wherever the platform allows.
+
+- **It is unresolved whether the licence formally covers this feed.**
+  `livecad.xml` is not on the City's Open Data portal — searching that portal for
+  "livecad" and for "active incidents" both return nothing — and the page hosting
+  the feed carries no licence notice of any kind. We use the City's statement
+  regardless: it is the City's information, and the statement costs nothing.
+
+- **Nothing may imply official status or City endorsement.** The licence grants no
+  right to suggest the City endorses this app, and explicitly excludes the City's
+  names, crests, logos and other official symbols. No City marks, no "official"
+  framing.
+
+- **The data is provided "as is", with no warranty**, so the app must not present it
+  as authoritative. This is a second reason — alongside politeness toward an
+  undocumented endpoint, and the feed's own five-minute cycle — for showing
+  `update_from_db_time` at all times: the user needs to see how old the data is
+  rather than trust it blindly.
