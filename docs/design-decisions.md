@@ -53,6 +53,13 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **One consequence, deliberately taken.** The status line was always visible; as a section
   header in a grouped list it scrolls away with the content. It is context for what you are
   reading rather than a control, so scrolling is the right behaviour — but it is a change.
+- **The boundary under the bar is the soft scroll edge effect, everywhere.** Apple's styles
+  are `hard` — a linear, nearly opaque boundary — `soft`, a subtle blur, and `automatic`,
+  which lets the context decide. The current design uses soft, and asks for it rather than
+  taking whatever a given context picks. It was on the detail view and nowhere else, so the
+  same app behaved two ways: a hard bottom edge on the incident list and none on the detail
+  view. That was an omission rather than a decision, and it is one modifier now, applied to
+  every scroll view under a bar.
 - **The states with no incidents are said by the views that replace the list.** A section
   header exists only when there is a section, so "Fetching…" and "Nothing fetched yet" — the
   two states that used to be written into the status line — are now the `ProgressView` and

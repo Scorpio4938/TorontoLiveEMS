@@ -50,6 +50,7 @@ struct CompactTableList: View {
             }
         }
         .listStyle(.plain)
+        .softScrollEdge()
     }
 }
 
@@ -101,5 +102,6 @@ struct CardsList: View {
                 FeedStatusLine(status: status)
             }
         }
+        .softScrollEdge()
     }
 }
