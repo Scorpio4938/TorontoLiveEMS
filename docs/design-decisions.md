@@ -114,6 +114,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   footnote. It is a mark rather than a word such as "at" because the column has no characters
   to spare, and because the app shows what the City published rather than a rendering of it.
   It carries an accessibility label, so the mark is not information only sighted readers get.
+- **A mark can never sit on nothing.** With both streets absent — which happens, when the
+  counter is the only place a location was published — the cell is empty and carries no
+  mark. That is settled in `CompactCell`'s initialiser rather than at the call site, so a
+  blank value and a mark are mutually exclusive by construction: an empty cell showing the
+  intersection sign reads as a fault rather than as information, and no caller should have
+  to remember not to ask for one.
 - **The City's column *proportions* are not mirrored.** They are desktop-tuned: at
   their widths every text column wraps on a phone. We mirror their *fields* and
   allocate widths ourselves.

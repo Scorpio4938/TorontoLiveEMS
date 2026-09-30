@@ -1,3 +1,5 @@
+import Foundation
+
 /// One cell of the compact table: what to show, and whether it should stand out.
 ///
 /// Almost every cell is neutral. Colour marks state rather than taxonomy — a fire, a
@@ -21,14 +23,24 @@ public struct CompactCell: Equatable, Sendable {
     /// published and the view decides how to say the rest.
     public let isFallback: Bool
 
+    /// A blank value is not a value, and a mark with nothing to mark is a contradiction.
+    /// Both are settled here rather than at each call site, so the state cannot be built even
+    /// by a caller that tries — a cell that showed the intersection mark over an empty
+    /// address is exactly what this prevents, and it is not a thing any caller should have to
+    /// remember not to do.
+    ///
+    /// The blank check mirrors the parser's, which already turns the feed's three
+    /// "not published" shapes into `nil`. This is the second line of defence rather than the
+    /// first, and it is here because the first one is in another module.
     public init(
         _ text: String?,
         warrantsAttention: Bool = false,
         isFallback: Bool = false
     ) {
-        self.text = text
+        let isBlank = (text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        self.text = isBlank ? nil : text
         self.warrantsAttention = warrantsAttention
-        self.isFallback = isFallback
+        self.isFallback = isFallback && !isBlank
     }
 }
 
@@ -115,7 +127,13 @@ public enum CompactColumn: CaseIterable, Sendable {
             // Cross Street stays out of the table otherwise: it is a refinement of Prime
             // Street rather than a peer of it, and it is blank on most incidents. See
             // `docs/design-decisions.md`.
-            guard let intersection = incident.crossStreets else {
+            // Neither street, which happens: the counter is the only place a location was
+            // published, or nothing was. An empty cell, and no mark on it. Asking
+            // `CompactCell` for a marked blank would be asking for a contradiction, and it
+            // answers with a plain blank.
+            guard let intersection = incident.crossStreets,
+                  !intersection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else {
                 return CompactCell(nil)
             }
             return CompactCell(intersection, isFallback: true)
