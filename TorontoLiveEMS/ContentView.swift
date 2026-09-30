@@ -19,9 +19,6 @@ struct ContentView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 statusLine
-                if snapshot != nil {
-                    columnHeader
-                }
                 Divider()
                 content
             }
@@ -68,11 +65,21 @@ struct ContentView: View {
     @ViewBuilder
     private var content: some View {
         if let snapshot {
-            List(snapshot.incidents) { incident in
-                NavigationLink {
-                    IncidentDetailView(incident: incident)
-                } label: {
-                    IncidentRow(incident: incident)
+            // The column header is a section header rather than a view sitting outside
+            // the List. Outside, its insets were my own guess and the rows' were the
+            // system's, so the two never quite lined up. In here the system insets both
+            // identically, and a plain list keeps the header pinned while its rows scroll.
+            List {
+                Section {
+                    ForEach(snapshot.incidents) { incident in
+                        NavigationLink {
+                            IncidentDetailView(incident: incident)
+                        } label: {
+                            IncidentRow(incident: incident)
+                        }
+                    }
+                } header: {
+                    columnHeader
                 }
             }
             .listStyle(.plain)
@@ -100,7 +107,9 @@ struct ContentView: View {
         }
     }
 
-    /// The column labels, held still above the list so a long list stays readable.
+    /// The column labels, held still above the rows they label.
+    ///
+    /// No horizontal padding of its own: the List supplies it, which is the point.
     private var columnHeader: some View {
         HStack(alignment: .top, spacing: IncidentRow.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
@@ -109,9 +118,14 @@ struct ContentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // Every row is a NavigationLink, and its disclosure chevron takes a slice of
+            // the row's trailing edge — so the rows lay their five columns out in less
+            // width than the header would otherwise claim. Reserving the same slice keeps
+            // the labels above the values instead of a little to the right of them.
+            // Left at the default font so its width matches the system's chevron.
+            Image(systemName: "chevron.right")
+                .opacity(0)
         }
-        .padding(.horizontal)
-        .padding(.bottom, 4)
     }
 
     /// The feed's own timestamp, on screen at all times — including before the first
