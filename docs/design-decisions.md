@@ -226,6 +226,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
   no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
   treatment — rule 17 of `docs/design-grammar.md` applied to the icon.
+- **Except the licence link, which is blue.** Links take the accent, which is correct — it is
+  what an accent is for, and Apple Music does exactly the same with its red one. But red also
+  means error and destructive, so a licence notice drawn in it reads as a warning rather than
+  as a reference. Blue is what a link looks like. It is the only markdown link in the app, and
+  `AttributionText` is the one place the accent is overridden; the controls stay red.
 - **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
   the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
   to the orange that marks an exception, and those two have to stay tellable apart. If they

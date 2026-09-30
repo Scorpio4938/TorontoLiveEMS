@@ -82,7 +82,7 @@ struct IncidentDetailView: View {
                 // own repeating the name. Non-affiliation is stated rather than implied:
                 // the feed is the one the City's own page uses, taken from there, and
                 // this app has nothing to do with the City.
-                Text(Attribution.attributed)
+                AttributionText()
             }
         }
         .navigationTitle(incident.incidentNumber)
