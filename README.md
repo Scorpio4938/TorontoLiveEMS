@@ -91,7 +91,11 @@ fallback, not a good state.
 | `CONTEXT.md` | the vocabulary — Incident, Prime Street, Alarm Level, FSA, and the rest |
 | `docs/adr/` | five decisions that are hard to reverse and would otherwise be re-litigated |
 | `docs/design-decisions.md` | behaviour, layout, colour, and the smaller calls |
+| `docs/design-grammar.md` | the Apple-design critique, and the two rules adopted out of it |
 | `docs/agents/` | where issues live, the triage labels, and how to read the above |
+
+Open work is tracked as GitHub issues on `Scorpio4938/TorontoLiveEMS`. `docs/agents/issue-tracker.md`
+says how they are written and read.
 
 Written to be read before changing anything. `docs/design-decisions.md` in particular
 records several decisions that were *reversed* during design, with what they replaced and
