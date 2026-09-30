@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import TorontoLiveEMSKit
 
 /// The app's attribution and licence line.
 ///
@@ -8,7 +9,25 @@ import SwiftUI
 /// separate control beside it.
 enum Attribution {
 
-    private static let source = "Not affiliated with the City of Toronto. Data shown from their public Toronto Fire Active Incidents page. Contains information licensed under the [Open Government Licence – Toronto](https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/)."
+    /// The sentence, with both of its links written as markdown.
+    ///
+    /// Composed rather than written out, because the page's name and address are the feed's and
+    /// live beside it. A page the City renames should be renamed in one place, and a link the
+    /// app shows should be an address the app has actually checked.
+    private static var source: String {
+        """
+        Not affiliated with the City of Toronto. Data shown from their public \
+        [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page. Contains information \
+        licensed under the [Open Government Licence – Toronto](\(licenceURL)).
+        """
+    }
+
+    /// The City's Open Data licence, which the feed's page links to.
+    ///
+    /// Here rather than in the package: nothing in the package is about licensing, and this
+    /// sentence is the only thing that cites it.
+    private static let licenceURL =
+        "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/"
 
     /// The sentence with its link parsed.
     ///

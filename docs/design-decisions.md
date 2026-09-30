@@ -275,7 +275,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   emergency vehicles* beside a roster of five tokens and concludes the app has miscounted. The
   City's own footnote — that support vehicles are not in that count — is the answer, and until
   now nothing in the app said it.
-- **The City's page is linked, and the feed is not.** They are two different addresses for two
+- **The City's page is linked wherever the attribution is, and the feed is not.** Put in the
+  attribution sentence rather than added beside it on two screens: that sentence already named
+  the page, and it already goes to Settings, the detail view and the About screen — so one
+  change reaches all three, and they cannot come to disagree about the source of their own data.
+  The page's name and address are interpolated from the package, so a page the City renames
+  changes in one place. They are two different addresses for two
   different readers: `pageURLString` is a page a person can open, `urlString` is the XML the app
   reads. The feed is undocumented and was never offered to people, so linking to it would be
   inviting someone to read a document that was never meant for them — and would advertise an
