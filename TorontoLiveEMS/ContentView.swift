@@ -20,6 +20,10 @@ struct ContentView: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
+    /// Read so the column header can stand down at accessibility text sizes, where the
+    /// rows carry their own labels. See `IncidentRow`.
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -131,7 +135,12 @@ struct ContentView: View {
                         }
                     }
                 } header: {
-                    columnHeader
+                    // Above the accessibility text sizes the rows already show each field
+                    // beside its own label, so a grid of column labels above them would
+                    // be a second, contradictory copy of the same thing.
+                    if !dynamicTypeSize.isAccessibilitySize {
+                        columnHeader
+                    }
                 }
             }
             .listStyle(.plain)
@@ -152,7 +161,7 @@ struct ContentView: View {
     private var columnHeader: some View {
         HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                Text(column.label)
+                Text(column.headerLabel)
                     .font(CompactTable.headerFont)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)

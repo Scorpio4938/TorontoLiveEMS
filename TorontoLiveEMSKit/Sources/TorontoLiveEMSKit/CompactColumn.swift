@@ -38,7 +38,10 @@ public enum CompactColumn: CaseIterable, Sendable {
     case alarmLevel
     case dispatchedUnits
 
-    /// The City's own label for the field.
+    /// The City's own label for the field, with no line break in it.
+    ///
+    /// This is the label the stacked layout shows beside each value, where a forced break
+    /// would be a stray blank line rather than a column that wraps.
     public var label: String {
         switch self {
         case .primeStreet:
@@ -48,14 +51,27 @@ public enum CompactColumn: CaseIterable, Sendable {
         case .incidentType:
             return "Incident Type"
         case .alarmLevel:
-            // Broken by hand so this header wraps like the other four. "Alarm Level" is a
-            // character shorter than the next shortest label, so it was the only one that
-            // fitted on a single line — which reads as a column of a different shape
-            // rather than as a shorter label. A line break costs nothing here, whereas
-            // narrowing the column would move the widths and the alignment with them.
-            return "Alarm\nLevel"
+            return "Alarm Level"
         case .dispatchedUnits:
             return "Dispatched Units"
+        }
+    }
+
+    /// The label as the column header shows it.
+    ///
+    /// Only `Alarm Level` differs. It is a character shorter than the next shortest
+    /// label, so it was the only header that fitted on one line while the other four
+    /// wrapped to two — which reads as a column of a different shape rather than as a
+    /// shorter label. The break is forced so all five match.
+    ///
+    /// Forcing it is the cheap fix. Narrowing that one column was tried and reverted: it
+    /// moved the widths, and the alignment with them.
+    public var headerLabel: String {
+        switch self {
+        case .alarmLevel:
+            return "Alarm\nLevel"
+        default:
+            return label
         }
     }
 

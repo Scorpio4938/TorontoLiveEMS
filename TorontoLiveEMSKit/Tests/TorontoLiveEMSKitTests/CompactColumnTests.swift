@@ -52,10 +52,45 @@ struct CompactColumnTests {
         #expect(!labels.contains { $0.contains("cross") })
     }
 
-    @Test("every column names itself")
+    @Test("names every field the way the City does")
     func everyColumnHasALabel() {
+        #expect(CompactColumn.allCases.map { $0.label } == [
+            "Prime Street",
+            "Dispatch Time",
+            "Incident Type",
+            "Alarm Level",
+            "Dispatched Units",
+        ])
+    }
+
+    @Test("a field's own label carries no line break")
+    func fieldLabelsCarryNoBreak() {
+        // This is the label the stacked layout shows beside each value, where a forced
+        // break would be a stray blank line rather than a column that wraps.
         for column in CompactColumn.allCases {
-            #expect(!column.label.isEmpty)
+            #expect(!column.label.contains("\n"))
+        }
+    }
+
+    @Test("breaks the header onto two lines for Alarm Level, and for nothing else")
+    func headerBreaksOnlyAlarmLevel() {
+        // All five headers are meant to be the same height. Alarm Level is a character
+        // shorter than the next shortest label, so without a forced break it is the only
+        // one that fits on a single line — which reads as a column of a different shape
+        // rather than as a shorter label.
+        //
+        // Forcing the break is the cheap fix. Narrowing that one column was tried and
+        // reverted: it moved the widths, and the alignment with them.
+        for column in CompactColumn.allCases {
+            #expect(column.headerLabel.contains("\n") == (column == .alarmLevel))
+        }
+    }
+
+    @Test("the header label is the field label wherever there is no break to force")
+    func headerLabelDefaultsToTheFieldLabel() {
+        // Only Alarm Level has a reason to differ, so only Alarm Level may.
+        for column in CompactColumn.allCases where column != .alarmLevel {
+            #expect(column.headerLabel == column.label)
         }
     }
 

@@ -31,4 +31,11 @@ enum CompactTable {
     /// wraps takes width from its neighbours, so the header has to wrap exactly where
     /// the rows do, and both grids have to be told the same number.
     static let columnSpacing: CGFloat = 6
+
+    /// The gap between one field and the next in the stacked layout.
+    ///
+    /// Small on purpose. A `LabeledContent` already separates a label from its value;
+    /// this only has to group each pair, and at accessibility sizes a large gap would
+    /// put one field per screen.
+    static let stackedSpacing: CGFloat = 2
 }
