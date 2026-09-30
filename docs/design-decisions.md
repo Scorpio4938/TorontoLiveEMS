@@ -33,10 +33,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   button's appearance is untouched. The feed only changes every five minutes, so a
   refresh returning exactly what we already had is the normal case — it has to be
   distinguishable from a tap that did nothing.
-- **The title is a principal toolbar item, not the system navigation title.** That lets
-  it be larger and bolder than the inline title while still sitting still instead of
-  collapsing on scroll, which a large title would do. The column header is a pinned
-  section header and the status line sits above the list.
+- **The title is the system's navigation title**, large and bold by default, collapsing to
+  inline as the list scrolls. Stock iOS, taken over a pinned hand-styled title. It does
+  mean the title moves while the column header below it stays put — that is how iOS
+  section headers behave, and it is the price of having a table at all.
+- **The column header is a pinned section header** and the status line sits above the list.
 - **The feed's own timestamp is always shown.** `update_from_db_time` renders as
   the City's page renders it ("Last Updated"), except with the space after the
   colon they omit. Using the *source's* timestamp rather than our fetch time keeps
