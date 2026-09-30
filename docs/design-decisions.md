@@ -128,9 +128,15 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   fits the most incidents on a screen, which is what the product is for. Cards give each
   incident a block of its own. Same five fields, same words, same data in both — only the
   shape differs.
-- **Cards let the platform draw the block.** One `Section` per incident in a grouped
-  `List`, and nothing else: the background, corner radius, insets and gaps are the
-  system's. The reference is the detail view, which forms its blocks the same way.
+- **Cards are rows in the platform's own list**, and the platform draws everything: the
+  container, the corner radius, and the hairlines between rows inset from the leading edge.
+  The references are the Notes app and this app's own detail view, which both get this by
+  using a `List` of `Section`s and setting no style of their own.
+- **One `Section` for the list, not one per incident.** A `Section` groups *related rows
+  into one block* — the detail view has three, and each holds several rows. Giving every
+  incident its own section made a block holding a single row, which is not a group; it is a
+  border, and a screen of them reads as a wall of boxes rather than as a list. Tried, looked
+  at, corrected.
 - **A hand-rolled card was built and rejected.** It drew `.regularMaterial` inside a
   `RoundedRectangle(cornerRadius: 10)` with padding picked by hand — rules 1 and 17 of
   `docs/design-grammar.md` both forbid it, and the version that ships is the one where the

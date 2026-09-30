@@ -45,19 +45,24 @@ struct CompactTableList: View {
     }
 }
 
-/// One block per incident, formed by the platform.
+/// The incidents as rows, in the platform's own list — the arrangement the Notes app and
+/// this app's detail view both use.
 ///
-/// A `Section` each, inside a grouped `List`, and nothing else. The block — background,
-/// corner radius, insets, gaps — is the platform's, not ours, which is the whole point of
-/// this arrangement. A hand-rolled version of it was built and rejected for exactly that
-/// reason; see `IncidentCardRow`.
+/// **One `Section` for all of them, not one each.** That is the correction. A `Section` is
+/// how the platform groups *related rows into one block*: the detail view has three of them
+/// for three kinds of field, and each holds several rows. Giving every incident its own
+/// section made a block holding a single row, which is not a group — it is a border, and a
+/// screen of them reads as a wall of boxes rather than as a list. The block belongs around
+/// the whole list, and the platform draws it: background, corner radius, insets, and the
+/// hairlines between rows, inset from the leading edge exactly as Notes insets them.
+///
+/// A hand-rolled version of this — `.regularMaterial` in a `RoundedRectangle` with padding
+/// picked by hand — was built and rejected for the same reason; see `IncidentCardRow`.
 ///
 /// **No `listStyle` is set, and that is deliberate.** The platform's default for a list of
-/// sections is already the grouped look — it is what the detail view gets, which is where
-/// this arrangement was asked to take its blocks from. Naming `.insetGrouped` explicitly
-/// would look identical on iOS and fail to build for macOS, where that style is marked
-/// unavailable. Letting the platform choose is both the more Apple-native answer and the
-/// portable one.
+/// sections is already this look, and it is what the detail view gets, where this
+/// arrangement was asked to take its design from. Naming `.insetGrouped` would look
+/// identical on iOS and fail to build for macOS, where that style is marked unavailable.
 ///
 /// No column header. There are no columns.
 struct CardsList: View {
@@ -67,8 +72,8 @@ struct CardsList: View {
 
     var body: some View {
         List {
-            ForEach(incidents) { incident in
-                Section {
+            Section {
+                ForEach(incidents) { incident in
                     NavigationLink {
                         IncidentDetailView(incident: incident)
                     } label: {
