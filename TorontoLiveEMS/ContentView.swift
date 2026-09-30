@@ -28,7 +28,11 @@ struct ContentView: View {
                 header
                 Divider()
                 List(snapshot.incidents) { incident in
-                    IncidentRow(incident: incident)
+                    NavigationLink {
+                        IncidentDetailView(incident: incident)
+                    } label: {
+                        IncidentRow(incident: incident)
+                    }
                 }
                 .listStyle(.plain)
             }

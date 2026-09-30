@@ -66,3 +66,24 @@ public struct Incident: Identifiable, Equatable, Sendable {
         self.dispatchedUnits = dispatchedUnits
     }
 }
+
+public extension Incident {
+
+    /// Whether Prime Street is a forward sortation area rather than a street name.
+    ///
+    /// The City publishes a medical incident's location that way — `M6G` instead of an
+    /// address — to preserve privacy, and it is the reason such an incident has no
+    /// mappable point. See `docs/adr/0004-medical-locations-not-narrowed.md`.
+    var isLocationPostalArea: Bool {
+        guard let primeStreet else {
+            return false
+        }
+        let characters = Array(primeStreet)
+        guard characters.count == 3 else {
+            return false
+        }
+        return characters[0].isLetter
+            && characters[1].isWholeNumber
+            && characters[2].isLetter
+    }
+}
