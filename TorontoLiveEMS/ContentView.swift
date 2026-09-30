@@ -31,6 +31,13 @@ struct ContentView: View {
             #endif
             .toolbar {
                 #if os(iOS)
+                // A principal item rather than the plain navigation title, so the text
+                // can be larger and bolder than the system's inline title while still
+                // sitting still instead of collapsing on scroll.
+                ToolbarItem(placement: .principal) {
+                    Text("Active Incidents")
+                        .font(.title3.weight(.bold))
+                }
                 // The same plain toolbar item as before, in the system's bottom bar
                 // rather than the top one, and pushed to the trailing edge — a lone
                 // bottom-bar item sits centred without the Spacer.
