@@ -32,10 +32,16 @@ struct ContentView: View {
             // drifting away from the columns it belongs to.
             .navigationBarTitleDisplayMode(.inline)
             #endif
-            // A refresh control at the bottom, within thumb reach on a phone. Applied as
-            // a safe-area inset so it sits below the list rather than over the last row,
-            // and so the list keeps its own scrolling without being clipped.
-            .safeAreaInset(edge: .bottom) { refreshBar }
+            .toolbar {
+                #if os(iOS)
+                // The same toolbar item as before, in the system's bottom bar rather
+                // than the top one. Left as a plain toolbar item so it keeps the
+                // platform's own styling.
+                ToolbarItem(placement: .bottomBar) { refreshButton }
+                #else
+                ToolbarItem(placement: .primaryAction) { refreshButton }
+                #endif
+            }
         }
         // Runs when the view appears. It deliberately does not run again when the app
         // comes back from the background: the previous result is still in memory, and the
@@ -46,6 +52,16 @@ struct ContentView: View {
             if snapshot == nil {
                 await load()
             }
+        }
+    }
+
+    /// Unchanged from the original: a plain labelled button inside a toolbar item, with
+    /// no button style, background or padding of its own, so the platform draws it.
+    private var refreshButton: some View {
+        Button {
+            Task { await load() }
+        } label: {
+            Label("Refresh", systemImage: "arrow.clockwise")
         }
     }
 
@@ -98,32 +114,17 @@ struct ContentView: View {
         .padding(.bottom, 4)
     }
 
-    private var refreshBar: some View {
-        HStack(spacing: 8) {
-            if isRefreshing {
-                ProgressView()
-                    .controlSize(.small)
-            }
-            Spacer()
-            Button {
-                Task { await load() }
-            } label: {
-                Label("Refresh", systemImage: "arrow.clockwise")
-            }
-            .buttonStyle(.bordered)
-            .disabled(isRefreshing)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .background(.bar)
-    }
-
     /// The feed's own timestamp, on screen at all times — including before the first
     /// fetch has returned, when it says so rather than disappearing.
     ///
     /// It is the age of the *data*, not of our request, which is what a reader needs in
     /// order to judge whether what they are looking at is current. The City shows the
     /// same value; we add the space after the colon that their page omits.
+    ///
+    /// A refresh in flight says so here rather than in the toolbar, so the button keeps
+    /// its untouched appearance. The feed only changes every five minutes, so a refresh
+    /// that returns exactly what we already had is the normal case and needs to be
+    /// distinguishable from a tap that did nothing.
     private var statusLine: some View {
         HStack(spacing: 4) {
             if isShowingStaleResult {
@@ -147,6 +148,9 @@ struct ContentView: View {
         let base = "Last updated \(updated)"
         if isShowingStaleResult {
             return "\(base) · showing the last result"
+        }
+        if isRefreshing {
+            return "\(base) · checking…"
         }
         return base
     }

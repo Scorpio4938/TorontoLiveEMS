@@ -22,11 +22,16 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   reopen it, and you see three-hour-old incidents. That is what the always-visible
   `update_from_db_time` timestamp is for — staleness stays legible instead of
   hidden.
-- **The refresh control sits at the bottom**, within thumb reach, with a progress
-  indicator and a disabled button while a fetch is in flight — so a tap is visibly
-  acknowledged even when the feed returns the same incidents it did a moment ago. The
-  column header and the status line are pinned above the list, and the title is inline
-  so it does not collapse away from the columns it labels.
+- **The refresh control sits at the bottom on iOS**, within thumb reach, as the same
+  plain toolbar item it always was — no custom bar, no button style, no padding of its
+  own, so the platform draws it and it keeps the system's current button treatment.
+  macOS keeps it in the top bar, where a bottom bar does not exist.
+- **A refresh in flight is announced in the status line**, not in the button, so the
+  button's appearance is untouched. The feed only changes every five minutes, so a
+  refresh returning exactly what we already had is the normal case — it has to be
+  distinguishable from a tap that did nothing.
+- **The column header and the status line are pinned** above the list, and the title is
+  inline so it does not collapse away from the columns it labels.
 - **The feed's own timestamp is always shown.** `update_from_db_time` renders as
   the City's page renders it ("Last Updated"), except with the space after the
   colon they omit. Using the *source's* timestamp rather than our fetch time keeps
