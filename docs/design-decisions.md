@@ -154,8 +154,19 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   Incident to what a cell shows — content rather than layout, importing nothing from
   SwiftUI — so it sits in `TorontoLiveEMSKit`, where it can be tested. `CompactTable`
   holds SwiftUI values and stays in the app target.
-- **Empty cells are left empty.** No `N/A`, no dash. The one substitution is the address
-  above, and it is a fallback to another published field rather than a placeholder.
+- **Empty cells are left empty — except the one that starts the row.** No `N/A`, no dash,
+  and no slash: a column of slashes is noise, and an absent apparatus roster costs the reader
+  nothing. The address is the exception, because it begins the row in both compact
+  arrangements, and a row that starts with nothing leaves the eye without anywhere to land.
+  It shows the same `/` the detail view uses — one mark, one definition, both views.
+- **The address has two ways of being absent, and they are different.** A blank Prime Street
+  with an intersection published beside it shows that intersection, marked. Both blank shows
+  the slash, unmarked. `⇄ /` would say that a location was found elsewhere and that the
+  location is nothing.
+- **The slash is a placeholder, and the parser drops placeholders.** They are not in
+  contradiction: the parser removes punctuation the *feed* sent in place of a value, and the
+  column adds punctuation *we* show in place of one. Nothing the City publishes in these
+  fields is only punctuation, which is why the first rule is safe.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.
 - **A value that does not fit wraps inside its own cell.** It is never truncated and

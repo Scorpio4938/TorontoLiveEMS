@@ -125,13 +125,13 @@ struct CompactColumnTests {
         #expect(!cell.isFallback)
     }
 
-    @Test("does not invent a location when neither street is published")
-    func noFallbackWithoutEither() {
+    @Test("shows the mark, unmarked, when neither street is published")
+    func noLocationAtAll() {
         let cell = CompactColumn.primeStreet.cell(
             for: incident(primeStreet: nil, crossStreets: nil),
             timeFormat: .twelveHour
         )
-        #expect(cell.text == nil)
+        #expect(cell.text == NotProvided.mark)
         #expect(!cell.isFallback)
     }
 
@@ -150,16 +150,19 @@ struct CompactColumnTests {
         }
     }
 
-    @Test("leaves a cell empty when the feed published nothing")
-    func unpublishedPrimeStreetIsEmpty() {
-        // The feed sends an XML-escaped space for a location it will not publish, and
-        // the parser turns all three "not published" shapes into nil. The cell renders
-        // nil as empty — no placeholder, no substitute.
+    @Test("marks an absent address rather than leaving the row without a start")
+    func unpublishedPrimeStreetIsMarked() {
+        // The address begins the row in both compact arrangements, so nothing at all there
+        // leaves the eye with nothing to land on. It shows the same slash the detail view
+        // uses — and no substitution mark, because a slash is the absence of a location
+        // rather than a location found elsewhere.
         let cell = CompactColumn.primeStreet.cell(
             for: incident(primeStreet: nil),
             timeFormat: .twelveHour
         )
-        #expect(cell.text == nil)
+        #expect(cell.text == NotProvided.mark)
+        #expect(cell.text == "/")
+        #expect(!cell.isFallback)
     }
 
     @Test("renders the dispatch time in the reader's chosen clock")
@@ -241,6 +244,15 @@ struct CompactColumnTests {
         )
         #expect(cell.text == "P231, P234")
         #expect(!cell.warrantsAttention)
+    }
+
+    @Test("leaves every other column empty when the feed published nothing")
+    func onlyTheAddressIsMarked() {
+        // The slash is for the cell that starts the row. A column of slashes is noise, and
+        // an absent roster costs the reader nothing — so this is a deliberate exception
+        // rather than the rule spreading.
+        let barren = incident(dispatchedUnits: nil)
+        #expect(CompactColumn.dispatchedUnits.cell(for: barren, timeFormat: .twelveHour).text == nil)
     }
 
     @Test("leaves the roster empty when the feed omits the element")

@@ -127,14 +127,21 @@ public enum CompactColumn: CaseIterable, Sendable {
             // Cross Street stays out of the table otherwise: it is a refinement of Prime
             // Street rather than a peer of it, and it is blank on most incidents. See
             // `docs/design-decisions.md`.
-            // Neither street, which happens: the counter is the only place a location was
-            // published, or nothing was. An empty cell, and no mark on it. Asking
-            // `CompactCell` for a marked blank would be asking for a contradiction, and it
-            // answers with a plain blank.
+            // Neither street, which happens. The address starts the row in both compact
+            // arrangements, so an empty cell there leaves the eye without anything to land
+            // on — the one place in the list where nothing at all looks like a fault rather
+            // than like restraint. It shows the same mark the detail view uses.
+            //
+            // No substitution mark on it. `⇄ /` would say that a location was found
+            // elsewhere and that the location is nothing.
+            //
+            // This is the only column that does this. The rest stay empty when the feed
+            // published nothing, because a column of slashes is noise and their absence costs
+            // the reader nothing.
             guard let intersection = incident.crossStreets,
                   !intersection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             else {
-                return CompactCell(nil)
+                return CompactCell(NotProvided.mark)
             }
             return CompactCell(intersection, isFallback: true)
 

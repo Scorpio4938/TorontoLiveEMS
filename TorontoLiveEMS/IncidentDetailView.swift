@@ -16,8 +16,6 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
-    private static let notProvided = "/"
-
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
     }
@@ -43,11 +41,11 @@ struct IncidentDetailView: View {
             Section {
                 LabeledContent(
                     "Prime Street",
-                    value: incident.primeStreet ?? Self.notProvided
+                    value: incident.primeStreet ?? NotProvided.mark
                 )
                 LabeledContent(
                     "Cross Street",
-                    value: incident.crossStreets ?? Self.notProvided
+                    value: incident.crossStreets ?? NotProvided.mark
                 )
             } header: {
                 Text("Location")
@@ -59,7 +57,7 @@ struct IncidentDetailView: View {
 
             Section {
                 if units.isEmpty {
-                    LabeledContent("Dispatched Units", value: Self.notProvided)
+                    LabeledContent("Dispatched Units", value: NotProvided.mark)
                 } else {
                     // Each unit already carries its published code as the label, so the
                     // raw roster needs no section of its own.
