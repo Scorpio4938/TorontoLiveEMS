@@ -37,22 +37,29 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                // Declared before the settings button so settings keeps the rightmost slot it
-                // has always had. The two sit beside each other either way, and moving the one
-                // a reader already knows would be a change nobody asked for.
-                ToolbarItem(placement: .primaryAction) { infoButton }
-                ToolbarItem(placement: .primaryAction) { settingsButton }
+                // One group, not several items sharing a placement. `ToolbarItemGroup` is the
+                // API for more than one control in the same spot, and the order below is then
+                // the order on screen — which is what keeps settings in the rightmost slot it
+                // has always had. Two separate `ToolbarItem`s would also put them side by side,
+                // but their left-to-right order would be something this code asserted rather
+                // than something it decided, and nothing here can check which it is.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    #if !os(iOS)
+                    // On iOS this is in the bottom bar, where a thumb reaches it.
+                    refreshButton
+                    #endif
+                    infoButton
+                    settingsButton
+                }
 
                 #if os(iOS)
-                // The same plain toolbar item as the settings button, in the system's
-                // bottom bar rather than the top one, and pushed to the trailing edge —
-                // a lone bottom-bar item sits centred without the Spacer.
+                // The same plain toolbar item, in the system's bottom bar rather than the top
+                // one, and pushed to the trailing edge — a lone bottom-bar item sits centred
+                // without the Spacer.
                 ToolbarItemGroup(placement: .bottomBar) {
                     Spacer()
                     refreshButton
                 }
-                #else
-                ToolbarItem(placement: .primaryAction) { refreshButton }
                 #endif
             }
             .sheet(isPresented: $isShowingSettings) {
