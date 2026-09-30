@@ -230,6 +230,21 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
   to the orange that marks an exception, and those two have to stay tellable apart. If they
   read as one warm blur, the exception colour moves rather than the accent.
+- **The installed icon is flat, and that is a limit of the format, not of the artwork.** A PNG
+  is one layer, so there is nothing for a glass treatment to refract between. A glassy icon is
+  not a PNG we can draw: it is an assembly, and Apple's tool for it is **Icon Composer**, which
+  ships with Xcode, takes the artwork as *separate layers*, applies the glass, and generates the
+  appearance variants from them.
+- **The layers are in `design/icon-layers/`**, written by `scripts/make_app_icon.py --layers`
+  as SVG, bottom to top: ground, housing, dome, rays. The dome and the rays are the ones to
+  give a glass material. The ground and the housing stay flat, and the contrast between a flat
+  ground and a raised light is the whole effect — which is what Apple's own icons do with a map
+  and a pin. The dome is drawn translucent and pale for that reason: opaque red is paint, and
+  paint gives a glass material nothing to do.
+- **The flat PNGs stay in the asset catalogue regardless.** They are what the app ships with
+  today, they get the platform's own treatment, and the app is never without an icon while the
+  Icon Composer assembly is somebody's afternoon rather than a build step.
+
 - **The shape is verified by measuring it.** Nothing in this repository can look at it, so the
   numbers are the check: partly-counted shapes, contrast between each part and the thing it
   sits on, and the size of every part at the sizes iOS draws. Two of the three revisions here

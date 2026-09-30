@@ -207,13 +207,3 @@ private struct IconPreview: View {
 #Preview("Icon — tinted") {
     IconPreview(asset: "IconAppearanceTinted", label: "tinted")
 }
-
-/// The other candidate: a beacon on its housing, throwing light.
-///
-/// Kept so the two can be compared in one place. The light bar is installed because its parts
-/// are three large lenses, where the beacon's are a dome and three rays — and at 29pt, where
-/// the whole mark is twenty points tall, those rays come out under a point thick. That is a
-/// measurement, not an opinion: nothing in this repository can see either icon.
-#Preview("Icon — beacon") {
-    IconPreview(asset: "IconCandidateBeacon", label: "beacon")
-}
