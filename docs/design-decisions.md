@@ -38,10 +38,14 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   mean the title moves while the column header below it stays put — that is how iOS
   section headers behave, and it is the price of having a table at all.
 - **The column header is a pinned section header** and the status line sits above the list.
-- **The feed's own timestamp is always shown.** `update_from_db_time` renders as
-  the City's page renders it ("Last Updated"), except with the space after the
-  colon they omit. Using the *source's* timestamp rather than our fetch time keeps
-  the age honest even when our request succeeded against stale upstream data.
+- **The feed's own timestamp is always shown**, as a hand-built caption line above the
+  column header. There is no platform component for "the age of this data", and
+  ADR-0005 calls for Apple's component *where one exists* — so a plain caption is the
+  answer rather than an invention. Putting it at the bottom would detach it from the
+  table it qualifies, and the bottom bar now holds the refresh button. It renders as the
+  City's page renders it ("Last Updated"), except with the space after the colon they
+  omit. Using the *source's* timestamp rather than our fetch time keeps the age honest
+  even when our request succeeded against stale upstream data.
 - **Offline or feed-down shows the last successful snapshot, clearly marked
   stale** — never a blank screen. Staleness is only ever within one session, since
   nothing persists.
@@ -135,9 +139,9 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   Type, the raw timestamp, the raw apparatus roster. They are provenance rather than
   information, so they get their own group instead of sitting in the readable screen
   carrying its noise.
-- **It is where the legend lives.** Alarm Level meanings, unit-letter expansions
-  and the rest of the City's explanatory text belong here, explaining *this*
-  incident's values, rather than as footnotes under a table.
+- **It is where the legend lives.** Alarm Level meanings, unit-letter expansions and
+  the rest of the City's explanatory text belong here, explaining *this* incident's
+  values from the section footers rather than as footnotes under a table.
 - **Unknown incident types and undecodable unit codes surface here** as raw
   strings, so nothing is silently relabelled.
 
