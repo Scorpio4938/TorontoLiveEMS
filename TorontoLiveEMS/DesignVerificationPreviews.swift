@@ -160,3 +160,46 @@ private let previewStatus = FeedStatus(
 // Both remain on issue #11's list, and both need the Simulator rather than the canvas:
 // Settings → Accessibility → Display & Text Size → Increase Contrast, and
 // Settings → Accessibility → Motion → Reduce Transparency.
+
+// MARK: - The app icon
+
+/// The icon candidates, at the sizes iOS actually draws them.
+///
+/// Here rather than in a chat message because there is no other way to show them: they have
+/// to be rendered to be seen, and this is the only renderer on hand. 60pt is the Home Screen,
+/// 40pt is a notification, 29pt is Settings and Spotlight — the size that decides whether a
+/// mark is a mark or a smudge.
+///
+/// Both are installed as assets. The one in `AppIcon.appiconset` is Three. Delete this
+/// section and the two `IconCandidate*` asset folders once one is chosen.
+private struct IconCandidate: View {
+    let name: String
+    let label: String
+
+    /// iOS rounds icons with a continuous corner arc at about 22.4% of the edge. Shown so the
+    /// candidates are judged as they will appear, not as raw squares.
+    private func icon(_ size: CGFloat) -> some View {
+        Image(name)
+            .resizable()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.2237, style: .continuous))
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ForEach([CGFloat(60), 40, 29], id: \.self) { size in
+                icon(size)
+            }
+            Text(label).font(.footnote).foregroundStyle(Color.secondary)
+        }
+        .padding()
+    }
+}
+
+#Preview("Icon — five columns") {
+    IconCandidate(name: "IconCandidateFive", label: "five")
+}
+
+#Preview("Icon — three columns") {
+    IconCandidate(name: "IconCandidateThree", label: "three")
+}

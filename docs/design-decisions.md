@@ -204,6 +204,33 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   the accessibility layout turns the table into, so at those sizes cards simply get
   bigger. The layout in #9 governs the table only.
 
+## The app icon
+
+- **Generated, not drawn.** `scripts/make_app_icon.py` writes the three appearance files.
+  There is no image editor here and the mark is geometric, so it is reproducible and a
+  change to it is a change to a number rather than a re-export from a tool nobody else has.
+- **The mark is a small table with one cell marked.** Five columns of incidents, and colour
+  for the exception — the product and its one visual rule, in one shape. Not a flame, because
+  most of what the feed carries is not a fire; not a map pin, because every incident app has
+  one. The exception sits on the second row, not in a corner, because a mark in a corner
+  reads as a badge rather than as one row among many.
+- **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
+  no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
+  treatment. Drawing any of them ourselves fights the system and looks wrong the moment the
+  system changes its approach — which is rule 17 of `docs/design-grammar.md` applied to the
+  icon.
+- **Three appearances, because the manifest declares three.** Light, dark, and tinted. The
+  tinted one is greyscale and its exception is the brightest thing in the frame, because the
+  system maps luminance onto the reader's chosen tint — supply it orange and the tint eats it.
+- **The exception is brighter as well as more orange.** Against systemOrange, the first
+  unmarked-cell grey measured 1.4:1, which carries the difference by hue alone and carries
+  nothing at all for a reader who cannot separate those hues. It is about 2.6:1 now, and still
+  3.4:1 against the background. Measured from the pixels rather than assumed.
+- **Three rows is the limit, and a fourth was drawn and dropped.** At 29pt — Settings,
+  Spotlight — four rows puts the cells under 3pt tall, which is not a cell. Five columns with
+  three rows is the alternative in the asset catalogue, which echoes the table's five columns
+  at the cost of legibility.
+
 ## Values
 
 - **Human-rendered, not raw pass-through.** The City's table cells apply zero
