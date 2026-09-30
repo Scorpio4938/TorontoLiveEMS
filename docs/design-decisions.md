@@ -40,13 +40,20 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   puts the title on the same bar as the settings button rather than on a band above it.
 - **The column header is a pinned section header** and the status line sits above the list.
 - **The feed's own timestamp is always shown**, as a hand-built caption line above the
-  column header. There is no platform component for "the age of this data", and
-  ADR-0005 calls for Apple's component *where one exists* — so a plain caption is the
-  answer rather than an invention. Putting it at the bottom would detach it from the
-  table it qualifies, and the bottom bar now holds the refresh button. It renders as the
-  City's page renders it ("Last Updated"), except with the space after the colon they
-  omit. Using the *source's* timestamp rather than our fetch time keeps the age honest
-  even when our request succeeded against stale upstream data.
+  column header, labelled **"City data as of …"**. That value is `update_from_db_time` —
+  the City's own refresh tick, which lands on a five-minute boundary — and not the moment
+  we fetched it. "Last updated" left that open to the wrong reading, and was changed after
+  it was mistaken for our own fetch time.
+
+  There is no platform component for "the age of this data", and ADR-0005 calls for
+  Apple's component *where one exists* — so a plain caption is the answer rather than an
+  invention. Putting it at the bottom would detach it from the table it qualifies, and the
+  bottom bar now holds the refresh button.
+
+  It is also worth knowing that this timestamp is Toronto **local** wall-clock, not UTC:
+  the City's `23:55` and a UTC machine's `03:56` are four hours apart in September. That is
+  why `DispatchTimestamp` reads components out of the string rather than handing it to a
+  date formatter, which would have shifted it.
 - **Offline or feed-down shows the last successful snapshot, clearly marked
   stale** — never a blank screen. Staleness is only ever within one session, since
   nothing persists.

@@ -168,8 +168,12 @@ struct ContentView: View {
         guard let snapshot else {
             return failureMessage == nil ? "Fetching…" : "Nothing fetched yet"
         }
+        // "City data as of", not "Last updated". The value is the City's own refresh tick
+        // — update_from_db_time, which lands on a five-minute boundary — and not the
+        // moment we fetched it. "Last updated" left that open to exactly the wrong
+        // reading.
         let updated = snapshot.updatedFromDatabaseAt ?? "unknown"
-        let base = "Last updated \(updated)"
+        let base = "City data as of \(updated)"
         if isShowingStaleResult {
             return "\(base) · showing the last result"
         }
