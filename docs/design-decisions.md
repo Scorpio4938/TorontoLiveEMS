@@ -155,14 +155,17 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## Attribution and data terms
 
-- **The City of Toronto is credited in the app**, using the City's own attribution
-  statement:
+- **The City is credited, non-affiliation is stated, and the licence is linked inline.**
+  The detail view carries a single line: that the app is not affiliated with the City of
+  Toronto, that the data is shown from the City's public Toronto Fire Active Incidents
+  page, and that it contains information licensed under the Open Government Licence –
+  Toronto. The licence name is an inline link inside that sentence — a separate row
+  repeating "Open Government Licence – Toronto" said nothing the sentence had not.
 
-  > Contains information licensed under the Open Government Licence – Toronto.
-
-  This is the statement the Open Government Licence – Toronto specifies as the
-  default where the Information Provider gives no specific one. Link to the
-  licence wherever the platform allows.
+  "Not affiliated" is stated rather than left to inference. The feed is the one the
+  City's own page loads; it is not offered to anyone, we took it from there, and a line
+  reading "Data provided by the City of Toronto" implied a relationship that does not
+  exist.
 
 - **It is unresolved whether the licence formally covers this feed.**
   `livecad.xml` is not on the City's Open Data portal — searching that portal for

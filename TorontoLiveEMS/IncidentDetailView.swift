@@ -80,17 +80,13 @@ struct IncidentDetailView: View {
             }
 
             Section {
-                Text("Data provided by the City of Toronto.")
-                Text("Contains information licensed under the Open Government Licence – Toronto.")
-                if let licenceURL {
-                    Link("Open Government Licence – Toronto", destination: licenceURL)
-                }
+                // One line, with the licence as an inline link rather than a row of its
+                // own repeating the name. Non-affiliation is stated rather than implied:
+                // the feed is the one the City's own page uses, taken from there, and
+                // this app has nothing to do with the City.
+                Text("Not affiliated with the City of Toronto. Data shown from their public Toronto Fire Active Incidents page. Contains information licensed under the [Open Government Licence – Toronto](https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/).")
             }
         }
         .navigationTitle(incident.incidentNumber)
-    }
-
-    private var licenceURL: URL? {
-        URL(string: "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/")
     }
 }
