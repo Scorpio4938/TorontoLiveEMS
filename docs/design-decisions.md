@@ -77,11 +77,21 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Codes we cannot decode are shown raw.** The legend appears not to be
   exhaustive — `L325` was observed once and is undefined. An undecodable code
   falls back to its raw token rather than a guess.
-- **The street suffix is kept verbatim.** Real-street values carry a variable
-  two-letter suffix — `SPADINA RD, TT`, `SILVER DART DR, ET` — never present on
-  FSAs. It is displayed as published. **Its meaning is unknown**, so it cannot yet
-  be explained in the app, which is a documentation debt this creates rather than
-  closes.
+- **The street suffix is kept verbatim.** Real-street values carry a two-letter
+  municipality code, never present on FSAs, and it is displayed as published. Every
+  observation so far matches the street's geography:
+
+  | Code | Municipality |
+  |---|---|
+  | `TT` | Toronto (the pre-amalgamation city) |
+  | `ET` | Etobicoke |
+  | `NY` | North York |
+  | `SC` | Scarborough |
+
+  Toronto's other pre-1998 municipalities are York and East York, so `YK` and `EY`
+  are expected to appear. Decoding to `LAWRENCE AVE · Scarborough` is now known to be
+  possible and would be a one-line change; we keep the published form, because
+  mirroring the City's own values is the standing preference.
 
 ## Detail
 
