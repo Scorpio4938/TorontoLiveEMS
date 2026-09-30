@@ -88,5 +88,12 @@ struct IncidentDetailView: View {
             }
         }
         .navigationTitle(incident.incidentNumber)
+        #if os(iOS)
+        // The boundary between the bar and the content sliding under it. Apple's styles
+        // are `hard` — "a linear, nearly opaque boundary" — `soft`, a subtle blur, and
+        // `automatic`, which lets the context decide. The current design uses the soft
+        // one, so ask for it rather than taking whatever this context happens to pick.
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        #endif
     }
 }
