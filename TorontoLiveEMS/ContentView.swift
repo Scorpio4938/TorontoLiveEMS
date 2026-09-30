@@ -54,10 +54,14 @@ struct ContentView: View {
 
                 #if os(iOS)
                 // The same plain toolbar item, in the system's bottom bar rather than the top
-                // one, and pushed to the trailing edge — a lone bottom-bar item sits centred
-                // without the Spacer.
+                // one, and pushed to the trailing edge.
+                //
+                // `ToolbarSpacer` rather than a bare `Spacer()`. Both push the button over, but
+                // the first is the API for it — `@available(iOS 26.0, macOS 26.0, *)`, checked
+                // in the SDK's own interface, where a `Spacer` in a toolbar is a view that
+                // happens to have that effect.
                 ToolbarItemGroup(placement: .bottomBar) {
-                    Spacer()
+                    ToolbarSpacer()
                     refreshButton
                 }
                 #endif

@@ -21,6 +21,17 @@ struct SettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    /// `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`, as the bundle carries them.
+    ///
+    /// Read, never written. The project in Xcode is the source of the number and this only
+    /// reports it, which is also why nothing here tries to keep a tag and a version in step:
+    /// that is one field in Xcode, and the project file is Xcode's to own.
+    private static var version: String {
+        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        return "\(short ?? "unknown") (\(build ?? "unknown"))"
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -53,6 +64,12 @@ struct SettingsView: View {
                     LinkedText(Attribution.attributed)
                 } header: {
                     Text("About")
+                }
+
+                Section {
+                    LabeledContent("Version", value: Self.version)
+                } footer: {
+                    Text("The app's own version, read from the app rather than written down here — a version typed into a screen is one that will one day disagree with the project it was built from.")
                 }
             }
             .navigationTitle("Settings")
