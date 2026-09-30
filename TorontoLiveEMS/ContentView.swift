@@ -20,9 +20,8 @@ struct ContentView: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
-    /// Read so the column header can stand down at accessibility text sizes, where the
-    /// rows carry their own labels. See `IncidentRow`.
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @AppStorage(SettingsKey.presentation)
+    private var presentation: IncidentPresentation = .standard
 
     var body: some View {
         NavigationStack {
@@ -121,29 +120,12 @@ struct ContentView: View {
     @ViewBuilder
     private var content: some View {
         if let snapshot {
-            // The column header is a section header rather than a view sitting outside
-            // the List. Outside, its insets were my own guess and the rows' were the
-            // system's, so the two never quite lined up. In here the system insets both
-            // identically, and a plain list keeps the header pinned while its rows scroll.
-            List {
-                Section {
-                    ForEach(snapshot.incidents) { incident in
-                        NavigationLink {
-                            IncidentDetailView(incident: incident)
-                        } label: {
-                            IncidentRow(incident: incident, timeFormat: dispatchTimeFormat)
-                        }
-                    }
-                } header: {
-                    // Above the accessibility text sizes the rows already show each field
-                    // beside its own label, so a grid of column labels above them would
-                    // be a second, contradictory copy of the same thing.
-                    if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
-                        CompactColumnHeader()
-                    }
-                }
+            switch presentation {
+            case .compactTable:
+                CompactTableList(incidents: snapshot.incidents, timeFormat: dispatchTimeFormat)
+            case .cards:
+                CardsList(incidents: snapshot.incidents, timeFormat: dispatchTimeFormat)
             }
-            .listStyle(.plain)
         } else if let failureMessage {
             ContentUnavailableView(
                 "Live feed unavailable",

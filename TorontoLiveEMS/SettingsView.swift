@@ -8,6 +8,7 @@ import TorontoLiveEMSKit
 /// There is no settings model and no synchronisation, because there is one preference.
 enum SettingsKey {
     static let dispatchTimeFormat = "dispatchTimeFormat"
+    static let presentation = "incidentPresentation"
 }
 
 struct SettingsView: View {
@@ -15,11 +16,25 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
+    @AppStorage(SettingsKey.presentation)
+    private var presentation: IncidentPresentation = .standard
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Picker("Layout", selection: $presentation) {
+                        Text("Table").tag(IncidentPresentation.compactTable)
+                        Text("Cards").tag(IncidentPresentation.cards)
+                    }
+                } header: {
+                    Text("Active Incidents")
+                } footer: {
+                    Text("The table fits more incidents on a screen. Cards give each one a block of its own.")
+                }
+
                 Section {
                     Picker("Format", selection: $dispatchTimeFormat) {
                         Text("12-Hour").tag(DispatchTimeFormat.twelveHour)
@@ -28,7 +43,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Dispatch Time")
                 } footer: {
-                    Text("How the time of day is shown in the table.")
+                    Text("How the time of day is shown.")
                 }
 
                 Section {

@@ -122,6 +122,27 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Incident Number and Area are not columns.** They live in the model and in the
   detail view.
 
+## The two arrangements
+
+- **The reader picks between a table and cards, in Settings.** Table is the default: it
+  fits the most incidents on a screen, which is what the product is for. Cards give each
+  incident a block of its own. Same five fields, same words, same data in both — only the
+  shape differs.
+- **Cards let the platform draw the block.** One `Section` per incident in a grouped
+  `List`, and nothing else: the background, corner radius, insets and gaps are the
+  system's. The reference is the detail view, which forms its blocks the same way.
+- **A hand-rolled card was built and rejected.** It drew `.regularMaterial` inside a
+  `RoundedRectangle(cornerRadius: 10)` with padding picked by hand — rules 1 and 17 of
+  `docs/design-grammar.md` both forbid it, and the version that ships is the one where the
+  system draws everything. The rejected version is on `prototype/table-treatments`.
+- **Two typographic variants were tried and dropped.** Heavier weights on the identity
+  fields, and a monospaced *instrument* reading. Neither could be told apart from the
+  table at a glance, which is an answer in itself: the table is not short of typographic
+  options, it is short of a different shape.
+- **Cards need no accessibility layout of their own.** Two stacked lines are already what
+  the accessibility layout turns the table into, so at those sizes cards simply get
+  bigger. The layout in #9 governs the table only.
+
 ## Values
 
 - **Human-rendered, not raw pass-through.** The City's table cells apply zero

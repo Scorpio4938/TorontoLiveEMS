@@ -5,7 +5,7 @@ import TorontoLiveEMSKit
 /// these are here so a screen can be looked at without a network.
 ///
 /// Internal rather than file-private so that previews elsewhere can render the same
-/// incidents, which is what makes two treatments comparable: same data, same conditions.
+/// incidents, which is what makes two arrangements comparable: same data, same conditions.
 ///
 /// Between them they cover every shape the feed publishes: a medical incident whose
 /// location is an FSA, an ordinary addressable one, an escalated alarm with a long
@@ -38,7 +38,7 @@ enum PreviewIncidents {
     static let locationWithheld = Incident(
         incidentNumber: "F26154880",
         primeStreet: nil,
-        crossStreets: "ARDAGH ST / JANE RD",
+        crossStreets: "ARDAGH ST / JANE ST",
         dispatchTime: "2026-09-29T19:54:42",
         incidentType: "Vehicle - Personal Injury",
         alarmLevel: "0",
@@ -49,70 +49,59 @@ enum PreviewIncidents {
     static let all = [medicalFSA, fire, locationWithheld]
 }
 
-// MARK: - The table
-
-/// A `List` of rows rather than `ContentView`, which fetches on appear and would show a
-/// loading state in the canvas.
-///
-/// It mirrors the screen deliberately, in the two places a preview would otherwise lie:
-/// the rows are wrapped in a `NavigationLink` because that is what gives them the
-/// disclosure chevron the column header reserves width for, and the header is shown only
-/// at sizes the app would show it at. A preview that draws either differently is showing
-/// an alignment the app does not have.
-private struct PreviewTable: View {
-
-    var incidents: [Incident] = PreviewIncidents.all
-    var timeFormat: DispatchTimeFormat = .twelveHour
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        List {
-            Section {
-                ForEach(incidents) { incident in
-                    NavigationLink {
-                        IncidentDetailView(incident: incident)
-                    } label: {
-                        IncidentRow(incident: incident, timeFormat: timeFormat)
-                    }
-                }
-            } header: {
-                if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
-                    CompactColumnHeader()
-                }
-            }
-        }
-        .listStyle(.plain)
-    }
-}
+// MARK: - The two arrangements
+//
+// These render the real list views, not copies. A preview that drew its own version could
+// disagree with the app about the thing it exists to show — which the first draft of this
+// file did, in both layouts at once.
 
 #Preview("Table — light") {
-    PreviewTable()
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
 }
 
 #Preview("Table — dark") {
-    PreviewTable().preferredColorScheme(.dark)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+        .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    PreviewTable(timeFormat: .twentyFourHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour)
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    PreviewTable().environment(\.dynamicTypeSize, .accessibility3)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+        .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    PreviewTable().environment(\.dynamicTypeSize, .accessibility5)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+        .environment(\.dynamicTypeSize, .accessibility5)
+}
+
+#Preview("Cards — light") {
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+}
+
+#Preview("Cards — dark") {
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+        .preferredColorScheme(.dark)
+}
+
+/// Cards are already a stack of two lines, so there is no separate accessibility layout
+/// for them — this is what they do at those sizes, which should simply be bigger.
+#Preview("Cards — largest accessibility text") {
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+        .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 // MARK: - The detail view, where the system's chrome is
 
 /// The detail view carries the toolbar and the scroll edge effect, so it is the screen
-/// where a change of appearance actually changes something.
+/// where a change of appearance actually changes something. It is also where the cards
+/// layout got its block from, so it is the reference for that.
 #Preview("Detail — light") {
     NavigationStack {
         IncidentDetailView(incident: PreviewIncidents.fire)

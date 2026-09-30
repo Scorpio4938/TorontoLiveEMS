@@ -86,7 +86,7 @@ Seventeen rules, against this app, at the time of writing.
 | 5 | Use generous negative space | **Tension** — dense by design; see below |
 | 6 | Use soft, coherent curvature | **Moot** — we draw no rounded containers |
 | 7 | Keep borders extremely restrained | **Already** — plain-list hairlines only |
-| 8 | Typography carries hierarchy, not boxes or colour | **Not yet** — the table is flat, and see the contradiction above |
+| 8 | Typography carries hierarchy, not boxes or colour | **Partly** — the cards arrangement does it with type size; the table is deliberately flat, and see the contradiction above |
 | 9 | Keep colour primarily semantic | **Already** — orange means escalated, and nothing else |
 | 10 | Light and dark are the same environment | **Unverified** — never run in dark mode |
 | 11 | Make interactions fluid and continuous | **Already** — `NavigationLink` pushes are the system's |
@@ -94,10 +94,10 @@ Seventeen rules, against this app, at the time of writing.
 | 13 | Minimal visuals, comfortable interaction areas | **Already** — system toolbar, full-width rows |
 | 14 | Let content reach toward the edges | **Already** |
 | 15 | Relationships rather than hard-coded dimensions | **Partly** — now mostly `CompactTable`; see below |
-| 16 | Accessibility is part of the visual system | **Gap** — see #9 and #11 |
+| 16 | Accessibility is part of the visual system | **Partly** — the accessibility layout landed in #9; the appearance settings are still unverified in #11 |
 | 17 | Don't hand-roll what the system provides | **Already** — and adopted as policy below |
 
-**Ten already. One moot. Five open or unresolved. One real gap.**
+**Ten already. One moot. Three partly. Three open or unverified.**
 
 That is the honest result: the document validates far more than it instructs, and the
 single actionable thing it surfaced was an accessibility defect.
