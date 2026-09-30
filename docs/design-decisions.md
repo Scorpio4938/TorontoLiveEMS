@@ -85,6 +85,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **The City's column *proportions* are not mirrored.** They are desktop-tuned: at
   their widths every text column wraps on a phone. We mirror their *fields* and
   allocate widths ourselves.
+- **Every column header takes two lines.** "Alarm Level" is a character shorter than the
+  next shortest label, so it was the only one that fitted on a single line — which reads as
+  a column of a different shape rather than as a shorter label. A line break in the label
+  settles it at no cost, where narrowing the column would move the widths and the
+  alignment with them. That was tried and reverted.
 - **Empty cells are left empty.** No `N/A`, no dash.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.

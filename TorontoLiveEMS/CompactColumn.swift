@@ -45,7 +45,12 @@ enum CompactColumn: CaseIterable {
         case .incidentType:
             return "Incident Type"
         case .alarmLevel:
-            return "Alarm Level"
+            // Broken by hand so this header wraps like the other four. "Alarm Level" is a
+            // character shorter than the next shortest label, so it was the only one that
+            // fitted on a single line — which reads as a column of a different shape
+            // rather than as a shorter label. A line break costs nothing here, whereas
+            // narrowing the column would move the widths and the alignment with them.
+            return "Alarm\nLevel"
         case .dispatchedUnits:
             return "Dispatched Units"
         }
