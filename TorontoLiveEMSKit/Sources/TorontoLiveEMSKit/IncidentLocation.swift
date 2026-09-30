@@ -12,9 +12,9 @@ import Foundation
 /// whether to draw a pin or an area. A pin is a claim about a point; three of these four cases
 /// cannot support one.
 ///
-/// No MapKit here. What to look up and how to represent it is data; showing it is the app's job,
+/// Nothing here imports MapKit. What to look up and how to represent it is data; showing it is the app's job,
 /// and keeping the first half in the package is what lets it be tested.
-public enum IncidentLocation: Equatable, Sendable {
+public enum IncidentLocation: Hashable, Sendable {
 
     /// Two streets crossing. The most precise thing the feed publishes.
     case intersection(String)

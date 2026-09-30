@@ -147,3 +147,36 @@ struct IncidentPlacementTests {
         #expect(!IncidentLocation.unpublished.isArea)
     }
 }
+
+@Suite("What the colour rule marks")
+struct IncidentAttentionTests {
+
+    private func attention(type: String, level: String) -> Bool {
+        Incident(
+            incidentNumber: "F1",
+            primeStreet: "QUEEN ST W",
+            crossStreets: nil,
+            dispatchTime: "2026-09-29T18:24:39",
+            incidentType: type,
+            alarmLevel: level,
+            area: "426",
+            dispatchedUnits: nil
+        ).warrantsAttention
+    }
+
+    @Test("marks a dangerous category and an escalation, and neither on its own account")
+    func theRuleIsTwoConditions() {
+        // The map, Incident Type and Alarm Level all read this now. Before it was written down
+        // as one rule it was stated twice — once per column — which is how two columns come to
+        // disagree about what matters.
+        #expect(attention(type: "Fire - Residential", level: "0"))
+        #expect(attention(type: "MEDICAL", level: "2"))
+        #expect(!attention(type: "MEDICAL", level: "0"))
+        #expect(!attention(type: "Alarm Single Source", level: "0"))
+    }
+
+    @Test("is not fooled by a type it cannot categorise")
+    func unknownTypesAreNotMarked() {
+        #expect(!attention(type: "Hovercraft - Inverted", level: "0"))
+    }
+}

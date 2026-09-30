@@ -47,11 +47,17 @@ struct IncidentDetailView: View {
                     "Cross Street",
                     value: incident.crossStreets ?? NotProvided.mark
                 )
+
+                // A row of its own rather than inside one of the two above, because it is drawn
+                // from whichever of them the feed did publish — see `IncidentLocation`.
+                IncidentLocationMap(incident: incident)
             } header: {
                 Text("Location")
             } footer: {
                 if incident.isLocationPostalArea {
-                    Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy.")
+                    Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy. It is shown as an area, because that is what the City published — an address would be a guess.")
+                } else if IncidentLocation.from(incident) != .unpublished {
+                    Text("Placement is approximate. The City publishes a street or an intersection rather than a street number, so this is somewhere along it rather than a doorstep.")
                 }
             }
 

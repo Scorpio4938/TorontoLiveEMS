@@ -325,6 +325,33 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   Ours is typographically right and theirs is what they published; the difference is a
   deliberate one, not a transcription slip.
 
+## The map
+
+- **Two screens, and a `TabView` between them.** Apple's `Tab` API, not a segmented picker: a
+  segmented control filters content rather than navigating between places, and the tab bar is
+  what a reader already knows. The app's root is the tab view; the feed and the geocoder live
+  there rather than in either tab, because a map that fetched separately from the list could
+  disagree with it about what is happening.
+- **Refresh moved to the top bar, on every platform.** It was a bottom-bar item on iOS, chosen
+  when a thumb reaching it was the argument. The bottom belongs to the tab bar now, and two
+  things claiming it is what "shouldn't conflict with the refresh button" was about.
+- **Pins fill in as they resolve, and the map says how many are left.** Apple's geocoder takes
+  one address string against a service with undisclosed limits, so thirty-five incidents arrive
+  over some seconds. A reader counting dots against the list would otherwise find a discrepancy
+  and no explanation.
+- **The geocoder is in the environment, not passed down.** Three views use it and they are four
+  levels apart; threading it through the ones between would give four chances to forget.
+- **Apple's geocoder, and the current one.** `CLGeocoder` is deprecated at iOS 26 with the note
+  "Use MapKit"; `MKGeocodingRequest` is what the app uses. Every call in the map code was checked
+  against Apple's documentation or the SDK interface rather than remembered — which is how
+  `MapScaleView()` was caught: two initialisers, both fully defaulted, so the natural call is
+  ambiguous.
+- **A postal area is drawn as a circle, never a pin.** On the live capture that is 9 of 15
+  incidents, so it is most of the map rather than a courtesy.
+- **The detail map's frame becomes the location's own.** Zoomed in for a pin and backed off for
+  an area, so a circle sits inside the frame instead of being cropped by the edges and reading
+  as a pin that failed to load.
+
 ## Values
 
 - **Human-rendered, not raw pass-through.** The City's table cells apply zero

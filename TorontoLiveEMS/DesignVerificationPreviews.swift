@@ -126,12 +126,14 @@ private let previewStatus = FeedStatus(
     NavigationStack {
         IncidentDetailView(incident: PreviewIncidents.fire)
     }
+    .environment(IncidentGeocoder())
 }
 
 #Preview("Detail — dark") {
     NavigationStack {
         IncidentDetailView(incident: PreviewIncidents.fire)
     }
+    .environment(IncidentGeocoder())
     .preferredColorScheme(.dark)
 }
 
@@ -140,6 +142,7 @@ private let previewStatus = FeedStatus(
     NavigationStack {
         IncidentDetailView(incident: PreviewIncidents.locationWithheld)
     }
+    .environment(IncidentGeocoder())
 }
 
 // MARK: - Settings
@@ -206,4 +209,30 @@ private struct IconPreview: View {
 
 #Preview("Icon — tinted") {
     IconPreview(asset: "IconAppearanceTinted", label: "tinted")
+}
+
+// MARK: - The map
+
+/// The incidents placed on a map, as far as they can be in a canvas.
+///
+/// The circles and pins are the ones the geocoder would produce, and in a preview it produces
+/// none — so this shows what a reader sees in the seconds after opening the tab: the notice
+/// saying how many are still being found. The placement itself needs a network.
+#Preview("Map — with incidents") {
+    IncidentsMap(
+        model: IncidentFeedModel(
+            snapshot: LiveCADSnapshot(
+                updatedFromDatabaseAt: "2026-09-29 20:00:01",
+                incidents: PreviewIncidents.all
+            )
+        )
+    )
+    .environment(IncidentGeocoder())
+}
+
+#Preview("Detail — map section") {
+    NavigationStack {
+        IncidentDetailView(incident: PreviewIncidents.fire)
+    }
+    .environment(IncidentGeocoder())
 }
