@@ -10,7 +10,13 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
-    private static let notPublished = "Not published"
+    /// Shown where the City published nothing for a field.
+    ///
+    /// An em dash rather than the words "not published": the label already says which
+    /// field this is, so a sentence repeating that we have nothing adds noise. A dash is
+    /// the conventional absent-value mark, and unlike a hyphen it cannot be misread as a
+    /// minus sign or a range separator.
+    private static let notProvided = "—"
 
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
@@ -45,11 +51,11 @@ struct IncidentDetailView: View {
             Section("Location") {
                 FieldRow(
                     label: "Prime Street",
-                    value: incident.primeStreet ?? Self.notPublished
+                    value: incident.primeStreet ?? Self.notProvided
                 )
                 FieldRow(
                     label: "Cross Street",
-                    value: incident.crossStreets ?? Self.notPublished
+                    value: incident.crossStreets ?? Self.notProvided
                 )
                 if incident.isLocationPostalArea {
                     Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy.")
@@ -62,7 +68,7 @@ struct IncidentDetailView: View {
                 if units.isEmpty {
                     FieldRow(
                         label: "Dispatched Units",
-                        value: Self.notPublished
+                        value: Self.notProvided
                     )
                 } else {
                     ForEach(units, id: \.code) { unit in
