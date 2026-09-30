@@ -8,9 +8,11 @@ import TorontoLiveEMSKit
 ///
 /// A cell is never truncated and never moved out of its column. When a value needs more
 /// room than the column has, it wraps onto another line *within that cell*, so a long
-/// apparatus roster makes its own column taller and leaves the other four alone. That is
-/// the whole of the width strategy: five columns, each of which grows downward rather
-/// than sideways.
+/// apparatus roster makes its own column taller and leaves the other four alone.
+///
+/// Colour is applied to the text itself and nowhere else — no dots, no symbols, no
+/// badges. It costs no width and adds nothing to the layout, which is the point: the
+/// table stays a table.
 struct IncidentRow: View {
 
     let incident: Incident
@@ -21,10 +23,10 @@ struct IncidentRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: Self.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                Text(column.text(for: incident) ?? "")
+                let cell = column.cell(for: incident)
+                Text(cell.text ?? "")
                     .font(.caption2)
-                    // Let the cell take as many lines as it needs: no truncation, and
-                    // no moving the value somewhere else.
+                    .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

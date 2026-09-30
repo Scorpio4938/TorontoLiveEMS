@@ -81,25 +81,13 @@ struct ContentView: View {
             }
             .listStyle(.plain)
         } else if let failureMessage {
-            VStack {
-                Spacer()
-                VStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .imageScale(.large)
-                    Text(failureMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding()
-                Spacer()
-            }
+            ContentUnavailableView(
+                "Live feed unavailable",
+                systemImage: "exclamationmark.triangle",
+                description: Text(failureMessage)
+            )
         } else {
-            VStack {
-                Spacer()
-                ProgressView("Loading active incidents")
-                Spacer()
-            }
+            ProgressView("Loading active incidents")
         }
     }
 

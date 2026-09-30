@@ -24,4 +24,21 @@ struct AlarmLevelTests {
         #expect(AlarmLevel.meaning(for: "") == nil)
         #expect(AlarmLevel.meaning(for: "major") == nil)
     }
+
+    @Test("marks every level above the initial response")
+    func marksEscalation() {
+        // 0 is an initial response and covers 99.76% of incidents, so it is the neutral
+        // case and must not be marked.
+        #expect(!AlarmLevel.isEscalated("0"))
+
+        for level in ["1", "2", "3", "4", "5", "6"] {
+            #expect(AlarmLevel.isEscalated(level))
+        }
+    }
+
+    @Test("does not mistake an unpublished level for an escalation")
+    func missingLevelIsNotEscalation() {
+        #expect(!AlarmLevel.isEscalated(""))
+        #expect(!AlarmLevel.isEscalated("   "))
+    }
 }

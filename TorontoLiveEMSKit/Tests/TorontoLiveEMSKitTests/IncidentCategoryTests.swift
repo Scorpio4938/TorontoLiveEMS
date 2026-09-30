@@ -65,4 +65,32 @@ struct IncidentCategoryTests {
             #expect(!category.label.isEmpty)
         }
     }
+
+    @Test("marks only the categories where someone may be in danger")
+    func onlyDangerousCategoriesStandOut() {
+        #expect(IncidentCategory.fire.warrantsAttention)
+        #expect(IncidentCategory.hazmat.warrantsAttention)
+        #expect(IncidentCategory.carbonMonoxide.warrantsAttention)
+        #expect(IncidentCategory.rescue.warrantsAttention)
+
+        // The majority stay neutral. Marking them would make the 64% of incidents that
+        // are medical as loud as the 5% that are fires, which is the opposite of the job.
+        #expect(!IncidentCategory.medical.warrantsAttention)
+        #expect(!IncidentCategory.alarm.warrantsAttention)
+        #expect(!IncidentCategory.vehicle.warrantsAttention)
+        #expect(!IncidentCategory.gasLeak.warrantsAttention)
+        #expect(!IncidentCategory.water.warrantsAttention)
+        #expect(!IncidentCategory.wiresDown.warrantsAttention)
+        #expect(!IncidentCategory.checkCall.warrantsAttention)
+        #expect(!IncidentCategory.policeAssist.warrantsAttention)
+        #expect(!IncidentCategory.other.warrantsAttention)
+    }
+
+    @Test("marks a small minority of the categories")
+    func marksAMinority() {
+        // Colour is for exceptions. If this ever creeps up, the tint has stopped marking
+        // anything and become decoration.
+        let marked = IncidentCategory.allCases.filter(\.warrantsAttention)
+        #expect(marked.count == 4)
+    }
 }

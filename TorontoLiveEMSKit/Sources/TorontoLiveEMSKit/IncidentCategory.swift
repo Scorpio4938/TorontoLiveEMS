@@ -67,6 +67,22 @@ public enum IncidentCategory: CaseIterable, Sendable {
         return lookup[normalize(incidentType)]
     }
 
+    /// Whether this category is one that should stand out from the rest.
+    ///
+    /// Colour is for state, not taxonomy. Medical, alarm and vehicle incidents are the
+    /// overwhelming majority and stay neutral; these four are the ones where the answer
+    /// to "is anyone in danger" is plausibly yes. Together they are about 9% of
+    /// incidents. See `docs/design-decisions.md`.
+    public var warrantsAttention: Bool {
+        switch self {
+        case .fire, .hazmat, .carbonMonoxide, .rescue:
+            return true
+        case .medical, .alarm, .vehicle, .gasLeak, .water, .wiresDown, .checkCall,
+             .policeAssist, .other:
+            return false
+        }
+    }
+
     /// Case- and whitespace-insensitive, because the feed is inconsistent with itself:
     /// it sends `MEDICAL` in capitals where the City's vocabulary says `Medical`, and
     /// at least one type carries a doubled space.

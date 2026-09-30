@@ -13,6 +13,17 @@ public enum AlarmLevel {
         return meanings[published.trimmingCharacters(in: .whitespacesAndNewlines)]
     }
 
+    /// Whether the City escalated this incident past an initial response.
+    ///
+    /// Level `0` is an initial response and covers 99.76% of incidents, so it is the
+    /// neutral case and should not be marked. Anything else means a dispatcher or a crew
+    /// on scene decided this needed more, which is worth seeing without having to read
+    /// the number.
+    public static func isEscalated(_ published: String) -> Bool {
+        let trimmed = published.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed != "0"
+    }
+
     private static let meanings: [String: String] = [
         "0": "Initial response",
         "1": "Support fire response",

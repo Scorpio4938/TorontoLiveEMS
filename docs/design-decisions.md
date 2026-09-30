@@ -96,6 +96,15 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Codes we cannot decode are shown raw.** The legend appears not to be
   exhaustive — `L325` was observed once and is undefined. An undecodable code
   falls back to its raw token rather than a guess.
+- **Colour marks exceptions, not categories.** Incident Type is tinted only for Fire,
+  Hazmat, Carbon Monoxide and Rescue; Alarm Level only when it is not `0`. Together
+  those are about 9% of incidents. Colouring all thirteen categories equally would make
+  the 64% of incidents that are medical as loud as the 5% that are fires, which is the
+  opposite of what colour is for.
+- **The tint is the text colour and nothing else** — no dot, no symbol, no badge. It
+  costs no width and adds nothing to the layout, so the table stays a table.
+- **The detail view does not tint.** Colour there would mark nothing: a single incident
+  has nothing to stand out from.
 - **The street suffix is kept verbatim.** Real-street values carry a two-letter
   municipality code, never present on FSAs, and it is displayed as published. Every
   observation so far matches the street's geography:
@@ -117,8 +126,15 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **The detail view is the only place extra data appears.** Tapping an incident
   opens it; the compact table never gains columns.
 - **It carries everything**: all eight published fields, the full Incident Type
-  string, the decoded unit list, and the verbatim values alongside the formatted
-  ones.
+  string, and the decoded unit list.
+- **Laid out with `LabeledContent`**, the platform's own label-and-value row, with
+  explanations in section footers rather than stacked under each value. That is the
+  Settings and Contacts shape, and it arrives with Dynamic Type, VoiceOver labelling and
+  alignment behaviour we would otherwise hand-roll.
+- **Verbatim values live in an "As published" section of their own** — the raw Incident
+  Type, the raw timestamp, the raw apparatus roster. They are provenance rather than
+  information, so they get their own group instead of sitting in the readable screen
+  carrying its noise.
 - **It is where the legend lives.** Alarm Level meanings, unit-letter expansions
   and the rest of the City's explanatory text belong here, explaining *this*
   incident's values, rather than as footnotes under a table.
