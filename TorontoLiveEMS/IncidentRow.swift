@@ -1,28 +1,15 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// One incident, laid out to suit the reader's text size.
+/// One incident, laid out to suit the reader's text size — and, on this branch, the
+/// treatment being compared.
 ///
-/// At ordinary text sizes this is the compact table: five fields on a single grid row,
-/// each an equal share of the width, so columns line up between rows even though the
-/// List lays each row out independently.
+/// PROTOTYPE BRANCH. The treatment switch is throwaway and `master` does not have it.
+/// The accessibility layout below it is production code and is unchanged.
 ///
-/// At accessibility text sizes it becomes one field per line, each with its own label.
-/// Five columns cannot work there — the text scales up roughly threefold, so the row
-/// needs something like 450pt of width to hold five usable columns and has about 340 —
-/// and because a cell wraps rather than truncates, the grid does not clip when it runs
-/// out of room. It grows. An incident becomes a screenful with one word per line.
-///
-/// Both of those figures are estimates rather than measurements, made on a machine with
-/// no way to see the result. See `docs/design-decisions.md`.
-///
-/// The line is the system's, not ours: `DynamicTypeSize.isAccessibilitySize` is the
-/// boundary the platform already draws, and `LabeledContent` already knows how to lay a
-/// label and its value out on either side of it. Neither is reimplemented here.
-///
-/// Everything about this view's size and spacing comes from `CompactTable`, which the
-/// column header in `ContentView` reads too. The two are separate views that have to
-/// agree, so nothing about either is stated in either one.
+/// The five-column grid that normally lives here is now `PrototypeCurrentRow`, verbatim,
+/// so that it is one of the things being compared rather than the thing everything else
+/// is measured against in a different file.
 struct IncidentRow: View {
 
     let incident: Incident
@@ -32,35 +19,46 @@ struct IncidentRow: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @AppStorage(PrototypeDefaults.tableStyle)
+    private var prototypeStyle: PrototypeTableStyle = .current
+
     var body: some View {
-        if CompactTable.outgrowsTheGrid(dynamicTypeSize) {
-            stacked
+        if prototypeStyle == .cards {
+            treatment
+                // A card separates itself from the next one; the system's hairline on top
+                // of that was doing the same job twice, and worse.
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 5, leading: 12, bottom: 5, trailing: 12))
         } else {
-            grid
+            treatment
         }
     }
 
-    /// Five fields on one row, each an equal share of the width.
-    ///
-    /// A cell is never truncated and never moved out of its column. When a value needs
-    /// more room than the column has it wraps onto another line *within that cell*, so a
-    /// long apparatus roster makes its own column taller and leaves the other four alone.
-    private var grid: some View {
-        HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
-            ForEach(CompactColumn.allCases, id: \.self) { column in
-                CompactCellText(cell: column.cell(for: incident, timeFormat: timeFormat))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+    @ViewBuilder
+    private var treatment: some View {
+        if CompactTable.outgrowsTheGrid(dynamicTypeSize) {
+            // Accessibility sizes win over the treatment. Five columns of anything cannot
+            // be read at those sizes, so the comparison is meaningless there.
+            stacked
+        } else {
+            switch prototypeStyle {
+            case .current:
+                PrototypeCurrentRow(incident: incident, timeFormat: timeFormat)
+            case .hierarchy:
+                PrototypeHierarchyRow(incident: incident, timeFormat: timeFormat)
+            case .instrument:
+                PrototypeInstrumentRow(incident: incident, timeFormat: timeFormat)
+            case .cards:
+                PrototypeCardsRow(incident: incident, timeFormat: timeFormat)
             }
         }
     }
 
-    /// One field per line, each labelled.
+    /// One field per line, each labelled. Production code, unchanged by the prototype.
     ///
     /// The label stays the table's own type rather than the platform's body size: what
     /// fails at these sizes is the five-column width, not the size of the text, and
-    /// `caption2` at an accessibility size is already large. Keeping it also keeps one
-    /// incident looking like the same product in both layouts.
+    /// `caption2` at an accessibility size is already large.
     private var stacked: some View {
         VStack(alignment: .leading, spacing: CompactTable.stackedSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in

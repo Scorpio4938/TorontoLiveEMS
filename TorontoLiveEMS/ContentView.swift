@@ -24,6 +24,10 @@ struct ContentView: View {
     /// rows carry their own labels. See `IncidentRow`.
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// PROTOTYPE BRANCH — which treatment is being compared. Throwaway.
+    @AppStorage(PrototypeDefaults.tableStyle)
+    private var prototypeStyle: PrototypeTableStyle = .current
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -31,6 +35,10 @@ struct ContentView: View {
                 Divider()
                 content
             }
+            // PROTOTYPE BRANCH — throwaway. Pinned rather than in a toolbar so it is
+            // still there after scrolling, which is the point of a comparison you flip
+            // through while looking at the same incidents.
+            .safeAreaInset(edge: .bottom) { PrototypeSwitcher() }
             .navigationTitle("Active Incidents")
             #if os(iOS)
             // Inline rather than large. A large title collapses as the list scrolls while
@@ -43,17 +51,9 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) { settingsButton }
 
-                #if os(iOS)
-                // The same plain toolbar item as the settings button, in the system's
-                // bottom bar rather than the top one, and pushed to the trailing edge —
-                // a lone bottom-bar item sits centred without the Spacer.
-                ToolbarItemGroup(placement: .bottomBar) {
-                    Spacer()
-                    refreshButton
-                }
-                #else
+                // PROTOTYPE BRANCH — the refresh button moved off the bottom bar, which
+                // now holds the switcher.
                 ToolbarItem(placement: .primaryAction) { refreshButton }
-                #endif
             }
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -137,8 +137,11 @@ struct ContentView: View {
                 } header: {
                     // Above the accessibility text sizes the rows already show each field
                     // beside its own label, so a grid of column labels above them would
-                    // be a second, contradictory copy of the same thing.
-                    if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
+                    // be a second, contradictory copy of the same thing. Cards are not a
+                    // grid at all, so five column labels would name columns that are not
+                    // there.
+                    if prototypeStyle.showsColumnHeader,
+                       !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
                         columnHeader
                     }
                 }
