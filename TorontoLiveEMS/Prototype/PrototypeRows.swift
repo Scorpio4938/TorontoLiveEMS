@@ -4,8 +4,11 @@ import TorontoLiveEMSKit
 // PROTOTYPE — throwaway. Four drawings of the same row, over the same data.
 //
 // No tests, no abstraction, no error handling: the only thing these have to do is be
-// lookable-at side by side. Delete the whole Prototype folder when the question is
-// answered.
+// lookable-at side by side.
+//
+// Delete this BRANCH when the question is answered, not this folder. These four views
+// include the shipping grid — `PrototypeCurrentRow` is verbatim what master draws — so
+// the folder is no longer self-contained and cannot simply be removed.
 
 /// What ships today. The control for the comparison.
 struct PrototypeCurrentRow: View {

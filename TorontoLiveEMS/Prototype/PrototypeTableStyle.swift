@@ -18,7 +18,11 @@ enum PrototypeDefaults {
 ///
 /// This lives on the `prototype/table-treatments` branch and must not reach `master`.
 /// The answer it produces — which treatment was chosen, and why — goes in issue #12, and
-/// the chosen treatment gets built properly afterwards. Delete this whole folder.
+/// the chosen treatment gets built properly afterwards.
+///
+/// Delete this BRANCH, not this folder. Four of the views below are throwaway, but
+/// `PrototypeCurrentRow` is the shipping grid, so removing the folder would remove the
+/// table. The branch is the unit that goes away.
 ///
 /// Switch treatments with the floating control at the bottom of the screen.
 enum PrototypeTableStyle: String, CaseIterable, Identifiable {
