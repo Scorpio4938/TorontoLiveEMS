@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 """Draws the app icon and writes its appearance variants.
 
-Generated rather than drawn in an editor because there is no editor here and the mark
-is geometric. It is reproducible, and a change to the geometry is a change to a number
-rather than a re-export from a tool nobody else has.
+Generated rather than drawn in an editor because there is no editor here and the mark is one
+shape. It is reproducible, and a change to the geometry is a change to a number rather than a
+re-export from a tool nobody else has.
 
-The mark is a small table with one cell marked, which is the product and its one colour
-rule: five columns of incidents, and colour for the exception. It is not a flame, because
-most of what the feed carries is not a fire, and not a map pin, because every incident app
-has one.
+The mark is a flame. An earlier version was a small table with one cell marked — the product
+and its colour rule in one figure — and it was rejected for having too many parts and for not
+saying *fire* at a glance. That was the right call: this is Toronto Fire Services' feed, the
+flame is what the service itself uses, and an icon that is statistically representative of the
+incident mix is optimising the wrong thing. Nobody reads an icon for a census.
 
-Apple's own guidance for what we supply: a flat, opaque, square image. No transparency, no
-rounded corners, no drop shadow — the platform applies the mask, the shadow, and the Liquid
-Glass treatment over the top. Drawing any of those ourselves fights the system and looks
-wrong the moment the system changes its mind.
+Two tones rather than one, because a flame is two tones: a bright core inside a warmer body.
+That is also what Liquid Glass wants — separate layers it can refract between, which is what
+Icon Composer builds from if this ever moves to it.
+
+Apple's guidance for what we supply: flat, opaque, square. No transparency, no rounded
+corners, no shadow, no attempt at glass. The platform applies the mask, the shadow and the
+Liquid Glass treatment. Drawing any of those ourselves fights the system and looks wrong the
+moment the system changes its approach.
 
 Usage:
-    python3 scripts/make_app_icon.py            # write the three variants
-    python3 scripts/make_app_icon.py --preview  # ...and a contact sheet to look at
+    python3 scripts/make_app_icon.py             # write the three appearance files
+    python3 scripts/make_app_icon.py --preview   # ...and a copy to look at
 """
 
 import argparse
+import math
 import pathlib
 import struct
 import zlib
@@ -28,20 +34,16 @@ import zlib
 SIZE = 1024
 SUPERSAMPLE = 2
 
-# Apple's own values, so the icon and the app agree about what orange means.
-SYSTEM_ORANGE = (255, 149, 0, 255)
-INK = (236, 240, 248, 255)
-# Dimmer than it looks like it needs to be. Against systemOrange the first value measured
-# 1.4:1 — the exception was carried by hue alone, which is nothing to a reader who cannot
-# separate those two hues. This is about 2.6:1, so it is brighter *and* more orange, and
-# still 3.4:1 against the background.
-MUTED = (96, 104, 120, 255)
+# The flame. Warm rather than Apple's systemRed, which is built for text and controls on a
+# light background and reads as an error state at this size.
+OUTER = (255, 106, 32, 255)
+INNER = (255, 205, 92, 255)
 
 OUT = pathlib.Path("TorontoLiveEMS/Assets.xcassets/AppIcon.appiconset")
 
 
 class Canvas:
-    """An RGBA pixel buffer with just enough drawing for a geometric mark."""
+    """An RGBA pixel buffer with just enough drawing for one geometric mark."""
 
     def __init__(self, width, height):
         self.w = width
@@ -56,27 +58,34 @@ class Canvas:
     def vertical_gradient(self, top, bottom):
         for y in range(self.h):
             t = y / max(1, self.h - 1)
-            colour = tuple(
-                round(top[c] + (bottom[c] - top[c]) * t) for c in range(4)
-            )
-            row = bytes(colour) * self.w
+            colour = bytes(round(top[c] + (bottom[c] - top[c]) * t) for c in range(4))
             i = y * self.w * 4
-            self.px[i:i + self.w * 4] = row
+            self.px[i:i + self.w * 4] = colour * self.w
 
-    def rounded_rect(self, x, y, w, h, radius, colour):
-        """Hard-edged. The supersample pass below is what smooths it."""
-        if w <= 0 or h <= 0:
-            return
-        x0, y0 = int(x), int(y)
-        x1, y1 = int(x + w), int(y + h)
-        r = min(radius, w / 2, h / 2)
-        for py in range(max(0, y0), min(self.h, y1 + 1)):
-            for px in range(max(0, x0), min(self.w, x1 + 1)):
-                # Distance to the rect the corner circles are centred on.
-                cx = min(max(px, x0 + r), x1 - r)
-                cy = min(max(py, y0 + r), y1 - r)
-                if (px - cx) ** 2 + (py - cy) ** 2 <= r * r:
-                    self.set(px, py, colour)
+    def fill_polygon(self, points, colour):
+        """Even-odd scanline fill.
+
+        Scanline rather than testing every pixel in the bounding box: the mark is drawn at
+        twice the output size, so a bounding-box test is a few hundred million point-in-polygon
+        checks and this is a few hundred thousand.
+        """
+        ys = [p[1] for p in points]
+        top, bottom = int(min(ys)), int(max(ys))
+        n = len(points)
+        for y in range(max(0, top), min(self.h, bottom + 1)):
+            yc = y + 0.5
+            crossings = []
+            for i in range(n):
+                ax, ay = points[i]
+                bx, by = points[(i + 1) % n]
+                if (ay <= yc < by) or (by <= yc < ay):
+                    crossings.append(ax + (yc - ay) * (bx - ax) / (by - ay))
+            crossings.sort()
+            for i in range(0, len(crossings) - 1, 2):
+                start = max(0, int(crossings[i]))
+                end = min(self.w, int(crossings[i + 1]) + 1)
+                for x in range(start, end):
+                    self.set(x, y, colour)
 
     def downsample(self, factor):
         out = Canvas(self.w // factor, self.h // factor)
@@ -85,8 +94,9 @@ class Canvas:
             for x in range(out.w):
                 r = g = b = a = 0
                 for dy in range(factor):
+                    row = (y * factor + dy) * self.w
                     for dx in range(factor):
-                        i = ((y * factor + dy) * self.w + (x * factor + dx)) * 4
+                        i = (row + x * factor + dx) * 4
                         r += self.px[i]
                         g += self.px[i + 1]
                         b += self.px[i + 2]
@@ -121,89 +131,103 @@ class Canvas:
         path.write_bytes(self.png())
 
 
-def draw(columns, rows, cell_colour, accent, background):
-    """The mark: `columns` x `rows` cells, all but one in `cell_colour`."""
+def bezier(p0, p1, p2, p3, steps):
+    points = []
+    for i in range(steps + 1):
+        t = i / steps
+        m = 1 - t
+        points.append((
+            m ** 3 * p0[0] + 3 * m * m * t * p1[0] + 3 * m * t * t * p2[0] + t ** 3 * p3[0],
+            m ** 3 * p0[1] + 3 * m * m * t * p1[1] + 3 * m * t * t * p2[1] + t ** 3 * p3[1],
+        ))
+    return points
+
+
+# The flame, in its own coordinates: y = 0 at the base, y = 1 at the tip, x symmetric about 0.
+BASE_CENTRE_Y = 0.20
+BASE_RADIUS = 0.20
+# The side bulges out below the middle and draws back in to the tip. That waist is what makes
+# it a flame rather than a teardrop.
+BULGE_X, WAIST_X = 0.345, 0.205
+
+
+def flame_outline(steps=180):
+    """The closed outline of the flame, as a polygon.
+
+    Symmetric. A leaning tip is more lifelike and unreadable at 29pt, where the whole mark is
+    20 points tall and any asymmetry just looks like a rendering fault.
+    """
+    up = bezier(
+        (BASE_RADIUS, BASE_CENTRE_Y),
+        (BULGE_X, 0.46),
+        (WAIST_X, 0.72),
+        (0.0, 1.0),
+        steps,
+    )
+    down = [(-x, y) for (x, y) in reversed(up)]
+    # The base, from the left side round the bottom to the right, so the outline closes.
+    arc = [
+        (
+            BASE_RADIUS * math.cos(a),
+            BASE_CENTRE_Y + BASE_RADIUS * math.sin(a),
+        )
+        for a in (math.pi + math.pi * i / 90 for i in range(91))
+    ]
+    return up + down + arc
+
+
+def draw(background, outer, inner):
+    """One appearance: the flame on its background, at twice size, then halved."""
     c = Canvas(SIZE * SUPERSAMPLE, SIZE * SUPERSAMPLE)
-    c.vertical_gradient(background[0], background[1])
+    c.vertical_gradient(*background)
 
-    s = SUPERSAMPLE
-    # The mark occupies most of the square but not all of it. App icons are masked by the
-    # system, so artwork runs edge to edge; the *content* keeps a margin the way Apple's own
-    # icons do, or it reads as cramped once the corners come off.
-    # Wider than tall, so the cells come out square or wider. A square grid makes tall thin
-    # cells, which read as a bar chart rather than as a table.
-    margin_x = int(SIZE * s * 0.080)
-    margin_y = int(SIZE * s * 0.240)
-    grid_w = SIZE * s - margin_x * 2
-    grid_h = SIZE * s - margin_y * 2
+    height = SIZE * SUPERSAMPLE * 0.70
+    base_y = SIZE * SUPERSAMPLE * 0.855
+    centre_x = SIZE * SUPERSAMPLE / 2
 
-    gap = int(SIZE * s * 0.030)
-    cell_w = (grid_w - gap * (columns - 1)) / columns
-    cell_h = (grid_h - gap * (rows - 1)) / rows
-    radius = min(cell_w, cell_h) * 0.30
+    def place(points, scale, lift):
+        return [
+            (centre_x + x * height * scale, base_y - (y * scale + lift) * height)
+            for (x, y) in points
+        ]
 
-    # The exception: the second row, second from the right. Not the corner, because a mark
-    # in the corner reads as a badge rather than as one row among many.
-    marked = (rows - 2, columns - 2)
+    outline = flame_outline()
+    c.fill_polygon(place(outline, 1.0, 0.0), outer)
+    # The core: the same flame, smaller, sitting low inside the body the way a real one does.
+    c.fill_polygon(place(outline, 0.52, 0.055), inner)
 
-    for row in range(rows):
-        for col in range(columns):
-            colour = accent if (row, col) == marked else cell_colour
-            c.rounded_rect(
-                margin_x + col * (cell_w + gap),
-                margin_y + row * (cell_h + gap),
-                cell_w,
-                cell_h,
-                radius,
-                colour,
-            )
-
-    return c.downsample(s)
+    return c.downsample(SUPERSAMPLE)
 
 
-LIGHT = (((14, 17, 26, 255), (30, 36, 52, 255)), MUTED)
-DARK = (((6, 7, 11, 255), (16, 19, 28, 255)), (120, 130, 148, 255))
-# Tinted is greyscale: the system maps luminance onto whatever tint the reader chose, so
-# the exception has to be the brightest thing in the frame rather than the most orange.
-TINTED = (((18, 18, 20, 255), (30, 30, 34, 255)), (200, 200, 205, 255))
+# Light is the icon people see: the whole frame red, the flame warm inside it.
+LIGHT = (((150, 26, 22, 255), (74, 11, 14, 255)), OUTER, INNER)
+# Dark goes further down rather than up, so it sits with a dark Home Screen instead of glowing
+# off it.
+DARK = (((92, 16, 16, 255), (34, 6, 8, 255)), OUTER, INNER)
+# Tinted is greyscale and inverted in emphasis: the system maps luminance onto whatever tint
+# the reader chose, so the flame has to be the brightest thing in the frame. Supply it orange
+# and the tint eats it.
+TINTED = (((26, 26, 28, 255), (12, 12, 14, 255)), (255, 255, 255, 255), (168, 168, 172, 255))
 
-# Both have three rows. Four was drawn and dropped: at 29pt — Settings, Spotlight — its
-# cells come out under 3pt tall, which is not a cell, it is a smudge.
-VARIANTS = {
-    # Five columns, because the table has five.
-    "five": (5, 3),
-    # Three, because an icon is not a place to be accurate at the expense of being legible.
-    "three": (3, 3),
-}
-
-
-def render(columns, rows, appearance):
-    (background, cell_colour) = appearance
-    accent = SYSTEM_ORANGE if appearance is not TINTED else (255, 255, 255, 255)
-    return draw(columns, rows, cell_colour, accent, background)
+APPEARANCES = (("light", LIGHT), ("dark", DARK), ("tinted", TINTED))
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--variant", choices=sorted(VARIANTS), default="five")
     parser.add_argument("--preview", action="store_true")
     parser.add_argument("--out", type=pathlib.Path, default=OUT)
     args = parser.parse_args()
 
-    columns, rows = VARIANTS[args.variant]
-
     if args.preview:
         destination = pathlib.Path("/tmp/icon-preview")
-        for name, (c, r) in VARIANTS.items():
-            render(c, r, LIGHT).write(destination / f"{name}.png")
-        for name, appearance in (("light", LIGHT), ("dark", DARK), ("tinted", TINTED)):
-            render(columns, rows, appearance).write(destination / f"{args.variant}-{name}.png")
-        print(f"  wrote a contact sheet to {destination}")
+        for name, appearance in APPEARANCES:
+            draw(*appearance).write(destination / f"flame-{name}.png")
+        print(f"  wrote a copy to {destination}")
         return 0
 
-    for name, appearance in (("light", LIGHT), ("dark", DARK), ("tinted", TINTED)):
+    for name, appearance in APPEARANCES:
         path = args.out / f"icon-{name}.png"
-        render(columns, rows, appearance).write(path)
+        draw(*appearance).write(path)
         print(f"  {path}  {path.stat().st_size // 1024} KB")
     return 0
 

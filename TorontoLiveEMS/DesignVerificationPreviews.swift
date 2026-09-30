@@ -163,23 +163,22 @@ private let previewStatus = FeedStatus(
 
 // MARK: - The app icon
 
-/// The icon candidates, at the sizes iOS actually draws them.
+/// The icon at the sizes iOS actually draws it, under the mask it applies.
 ///
-/// Here rather than in a chat message because there is no other way to show them: they have
-/// to be rendered to be seen, and this is the only renderer on hand. 60pt is the Home Screen,
-/// 40pt is a notification, 29pt is Settings and Spotlight — the size that decides whether a
-/// mark is a mark or a smudge.
+/// Here rather than in a chat message because there is no other way to show it. 60pt is the
+/// Home Screen, 40pt a notification, 29pt Settings and Spotlight — the size that decides
+/// whether a mark is a mark or a smudge.
 ///
-/// Both are installed as assets. The one in `AppIcon.appiconset` is Three. Delete this
-/// section and the two `IconCandidate*` asset folders once one is chosen.
-private struct IconCandidate: View {
-    let name: String
+/// Delete this section and the three `IconAppearance*` asset folders once the icon is
+/// settled. They exist only to be looked at; the icon itself is in `AppIcon.appiconset`.
+private struct IconPreview: View {
+    let asset: String
     let label: String
 
-    /// iOS rounds icons with a continuous corner arc at about 22.4% of the edge. Shown so the
-    /// candidates are judged as they will appear, not as raw squares.
+    /// iOS rounds icons on a continuous corner arc at about 22.4% of the edge, so the
+    /// candidates are shown as they will appear rather than as raw squares.
     private func icon(_ size: CGFloat) -> some View {
-        Image(name)
+        Image(asset)
             .resizable()
             .frame(width: size, height: size)
             .clipShape(RoundedRectangle(cornerRadius: size * 0.2237, style: .continuous))
@@ -196,10 +195,15 @@ private struct IconCandidate: View {
     }
 }
 
-#Preview("Icon — five columns") {
-    IconCandidate(name: "IconCandidateFive", label: "five")
+#Preview("Icon — light") {
+    IconPreview(asset: "IconAppearanceLight", label: "light")
 }
 
-#Preview("Icon — three columns") {
-    IconCandidate(name: "IconCandidateThree", label: "three")
+#Preview("Icon — dark") {
+    IconPreview(asset: "IconAppearanceDark", label: "dark")
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Icon — tinted") {
+    IconPreview(asset: "IconAppearanceTinted", label: "tinted")
 }

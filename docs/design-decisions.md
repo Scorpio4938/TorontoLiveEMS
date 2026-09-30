@@ -206,30 +206,36 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The app icon
 
+- **A flame.** The first version was a small table with one cell marked — the product and its
+  colour rule in one figure — and it was rejected for having too many parts and for not saying
+  *fire* at a glance. That was the right call. This is Toronto Fire Services' feed, the flame
+  is what the service itself uses, and an icon that is statistically representative of the
+  incident mix is optimising the wrong thing: nobody reads an icon for a census.
+- **Two tones, not one.** A bright core inside a warmer body, because that is what a flame is.
+  It is also what Liquid Glass wants — separate layers it can refract between, and what Icon
+  Composer builds from if the icon ever moves to it.
+- **Red, because the app is about fire response.** The frame is red; the flame is warm inside
+  it. Apple's systemRed is built for text and controls on a light background and reads as an
+  error state at this size, so the background is a deeper red and the mark carries the heat.
+- **Symmetric.** A leaning tip is more lifelike and unreadable at 29pt, where the whole mark is
+  twenty points tall and any asymmetry just looks like a rendering fault.
 - **Generated, not drawn.** `scripts/make_app_icon.py` writes the three appearance files.
-  There is no image editor here and the mark is geometric, so it is reproducible and a
-  change to it is a change to a number rather than a re-export from a tool nobody else has.
-- **The mark is a small table with one cell marked.** Five columns of incidents, and colour
-  for the exception — the product and its one visual rule, in one shape. Not a flame, because
-  most of what the feed carries is not a fire; not a map pin, because every incident app has
-  one. The exception sits on the second row, not in a corner, because a mark in a corner
-  reads as a badge rather than as one row among many.
+  There is no image editor here and the mark is one shape, so it is reproducible and a change
+  to it is a change to a number rather than a re-export from a tool nobody else has.
 - **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
   no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
-  treatment. Drawing any of them ourselves fights the system and looks wrong the moment the
-  system changes its approach — which is rule 17 of `docs/design-grammar.md` applied to the
-  icon.
+  treatment — rule 17 of `docs/design-grammar.md` applied to the icon.
 - **Three appearances, because the manifest declares three.** Light, dark, and tinted. The
-  tinted one is greyscale and its exception is the brightest thing in the frame, because the
-  system maps luminance onto the reader's chosen tint — supply it orange and the tint eats it.
-- **The exception is brighter as well as more orange.** Against systemOrange, the first
-  unmarked-cell grey measured 1.4:1, which carries the difference by hue alone and carries
-  nothing at all for a reader who cannot separate those hues. It is about 2.6:1 now, and still
-  3.4:1 against the background. Measured from the pixels rather than assumed.
-- **Three rows is the limit, and a fourth was drawn and dropped.** At 29pt — Settings,
-  Spotlight — four rows puts the cells under 3pt tall, which is not a cell. Five columns with
-  three rows is the alternative in the asset catalogue, which echoes the table's five columns
-  at the cost of legibility.
+  tinted one is greyscale and its flame is the brightest thing in the frame, because the
+  system maps luminance onto the reader's chosen tint; supply it orange and the tint eats it.
+- **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
+  the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
+  to the orange that marks an exception, and those two have to stay tellable apart. If they
+  read as the same warm blur, the exception colour moves rather than the accent.
+- **The shape was verified by measuring it, not by looking.** The flame's width profile tapers
+  from 12px at the tip to 364px at 57% down and back to 100px at the rounded base, centred, at
+  70% of the frame — which is a flame and not a teardrop or a blob. Nothing in the repository
+  can see it, so the numbers are the check.
 
 ## Values
 
