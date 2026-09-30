@@ -1,13 +1,16 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// Incidents for the previews below. Not shipped data — the app's data comes from the
-/// feed, and these are here so a screen can be looked at without a network.
+/// Incidents for the previews. Not shipped data — the app's data comes from the feed, and
+/// these are here so a screen can be looked at without a network.
+///
+/// Internal rather than file-private so that previews elsewhere can render the same
+/// incidents, which is what makes two treatments comparable: same data, same conditions.
 ///
 /// Between them they cover every shape the feed publishes: a medical incident whose
 /// location is an FSA, an ordinary addressable one, an escalated alarm, one with a long
 /// apparatus roster, and the two blank shapes — no Prime Street, and no `units_disp`.
-private enum PreviewIncidents {
+enum PreviewIncidents {
 
     static let medicalFSA = Incident(
         incidentNumber: "F26154815",
