@@ -139,7 +139,7 @@ struct ContentView: View {
                     // beside its own label, so a grid of column labels above them would
                     // be a second, contradictory copy of the same thing.
                     if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
-                        columnHeader
+                        CompactColumnHeader()
                     }
                 }
             }
@@ -152,27 +152,6 @@ struct ContentView: View {
             )
         } else {
             ProgressView("Loading active incidents")
-        }
-    }
-
-    /// The column labels, held still above the rows they label.
-    ///
-    /// No horizontal padding of its own: the List supplies it, which is the point.
-    private var columnHeader: some View {
-        HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
-            ForEach(CompactColumn.allCases, id: \.self) { column in
-                Text(column.headerLabel)
-                    .font(CompactTable.headerFont)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            // Every row is a NavigationLink, and its disclosure chevron takes a slice of
-            // the row's trailing edge — so the rows lay their five columns out in less
-            // width than the header would otherwise claim. Reserving the same slice keeps
-            // the labels above the values instead of a little to the right of them.
-            // Left at the default font so its width matches the system's chevron.
-            Image(systemName: "chevron.right")
-                .opacity(0)
         }
     }
 
