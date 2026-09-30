@@ -27,11 +27,12 @@ struct IncidentRow: View {
         HStack(alignment: .top, spacing: Self.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
                 let cell = column.cell(for: incident, timeFormat: timeFormat)
-                Text(cell.text ?? "")
-                    .font(.caption2)
-                    .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                column.applyWidth(
+                    to: Text(cell.text ?? "")
+                        .font(.caption2)
+                        .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                )
             }
         }
     }

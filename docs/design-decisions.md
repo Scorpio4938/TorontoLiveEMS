@@ -86,6 +86,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   their widths every text column wraps on a phone. We mirror their *fields* and
   allocate widths ourselves.
 - **Empty cells are left empty.** No `N/A`, no dash.
+- **Alarm Level takes a fixed width; the other four share the rest.** It holds a single
+  digit, and its header wraps to two lines inside that width — deliberately, because a
+  header that fits on one line props the column open for no reason. The space goes to
+  Prime Street, Dispatch Time, Incident Type and Dispatched Units instead. Header and rows
+  set the same bounds through one call, so a label stays over its values.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.
 - **A value that does not fit wraps inside its own cell.** It is never truncated and

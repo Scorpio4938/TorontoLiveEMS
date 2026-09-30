@@ -152,10 +152,11 @@ struct ContentView: View {
     private var columnHeader: some View {
         HStack(alignment: .top, spacing: IncidentRow.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                Text(column.label)
-                    .font(.caption2.weight(.semibold))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                column.applyWidth(
+                    to: Text(column.label)
+                        .font(.caption2.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                )
             }
             // Every row is a NavigationLink, and its disclosure chevron takes a slice of
             // the row's trailing edge — so the rows lay their five columns out in less
