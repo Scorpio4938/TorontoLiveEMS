@@ -21,6 +21,15 @@ struct IncidentPresentationTests {
         #expect(IncidentPresentation.cards.label == "Cards")
     }
 
+    @Test("gives each arrangement a name of its own")
+    func labelsAreDistinct() {
+        // They are the two options of a picker, and the picker draws them from here. Two
+        // cases sharing a name would show the reader the same choice twice, with nothing
+        // but the stored value to tell them apart.
+        let labels = IncidentPresentation.allCases.map { $0.label }
+        #expect(Set(labels).count == labels.count)
+    }
+
     @Test("keeps a stable stored value for each")
     func storedValuesAreStable() {
         // These strings live in the reader's preferences. Renaming one silently resets the

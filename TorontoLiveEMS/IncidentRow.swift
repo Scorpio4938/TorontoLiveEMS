@@ -20,9 +20,12 @@ import TorontoLiveEMSKit
 /// boundary the platform already draws, and `LabeledContent` already knows how to lay a
 /// label and its value out on either side of it. Neither is reimplemented here.
 ///
+/// The accessibility layout is `IncidentLabeledRows`, shared with the card arrangement,
+/// because both need it and an unlabelled row of figures is what issue #9 was about.
+///
 /// Everything about this view's size and spacing comes from `CompactTable`, which the
-/// column header in `ContentView` reads too. The two are separate views that have to
-/// agree, so nothing about either is stated in either one.
+/// column header reads too. The two are separate views that have to agree, so nothing
+/// about either is stated in either one.
 struct IncidentRow: View {
 
     let incident: Incident
@@ -33,8 +36,8 @@ struct IncidentRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        if CompactTable.outgrowsTheGrid(dynamicTypeSize) {
-            stacked
+        if CompactTable.needsLabelledRows(dynamicTypeSize) {
+            IncidentLabeledRows(incident: incident, timeFormat: timeFormat)
         } else {
             grid
         }
@@ -51,25 +54,6 @@ struct IncidentRow: View {
                 CompactCellText(cell: column.cell(for: incident, timeFormat: timeFormat))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    /// One field per line, each labelled.
-    ///
-    /// The label stays the table's own type rather than the platform's body size: what
-    /// fails at these sizes is the five-column width, not the size of the text, and
-    /// `caption2` at an accessibility size is already large. Keeping it also keeps one
-    /// incident looking like the same product in both layouts.
-    private var stacked: some View {
-        VStack(alignment: .leading, spacing: CompactTable.stackedSpacing) {
-            ForEach(CompactColumn.allCases, id: \.self) { column in
-                LabeledContent {
-                    CompactCellText(cell: column.cell(for: incident, timeFormat: timeFormat))
-                } label: {
-                    Text(column.label)
-                        .font(CompactTable.font)
-                }
             }
         }
     }

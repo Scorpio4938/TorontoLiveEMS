@@ -1,12 +1,12 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The active incidents, arranged the way the reader chose.
-///
-/// Both arrangements are views of their own rather than private methods of the screen,
-/// because the previews have to render the real ones. A preview that draws its own copy
-/// can disagree with the app, and two views disagreeing about a column layout is exactly
-/// what broke the header alignment twice.
+// The active incidents, arranged the way the reader chose.
+//
+// Both arrangements are views of their own rather than private methods of the screen,
+// because the previews have to render the real ones. A preview that draws its own copy can
+// disagree with the app, and two views disagreeing about a column layout is exactly what
+// broke the header alignment twice.
 
 /// Five fields on one grid row per incident. The default, because it fits the most
 /// incidents on a screen.
@@ -47,10 +47,17 @@ struct CompactTableList: View {
 
 /// One block per incident, formed by the platform.
 ///
-/// A `Section` each, inside a grouped list, and nothing else. The block — background,
+/// A `Section` each, inside a grouped `List`, and nothing else. The block — background,
 /// corner radius, insets, gaps — is the platform's, not ours, which is the whole point of
 /// this arrangement. A hand-rolled version of it was built and rejected for exactly that
 /// reason; see `IncidentCardRow`.
+///
+/// **No `listStyle` is set, and that is deliberate.** The platform's default for a list of
+/// sections is already the grouped look — it is what the detail view gets, which is where
+/// this arrangement was asked to take its blocks from. Naming `.insetGrouped` explicitly
+/// would look identical on iOS and fail to build for macOS, where that style is marked
+/// unavailable. Letting the platform choose is both the more Apple-native answer and the
+/// portable one.
 ///
 /// No column header. There are no columns.
 struct CardsList: View {
@@ -70,6 +77,5 @@ struct CardsList: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
     }
 }

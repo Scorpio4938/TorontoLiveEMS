@@ -13,8 +13,10 @@ import TorontoLiveEMSKit
 /// padding picked by hand. That version is on the `prototype/table-treatments` branch and
 /// is not what ships.
 ///
-/// Nothing here is a grid, so nothing here needs the accessibility layout the compact
-/// table uses. Two stacked lines are already what that layout turns the table into.
+/// At accessibility text sizes it becomes `IncidentLabeledRows`, the same fallback the
+/// compact table uses. Two unlabelled lines are not an accessibility layout: `19:54  2
+/// P231, P234` names nothing, and a reader who needs large text is the last person to be
+/// handed a row of bare figures.
 struct IncidentCardRow: View {
 
     let incident: Incident
@@ -22,35 +24,57 @@ struct IncidentCardRow: View {
     /// The reader's chosen clock, from Settings.
     let timeFormat: DispatchTimeFormat
 
-    private func cell(_ column: CompactColumn) -> CompactCell {
-        column.cell(for: incident, timeFormat: timeFormat)
-    }
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        if CompactTable.needsLabelledRows(dynamicTypeSize) {
+            IncidentLabeledRows(incident: incident, timeFormat: timeFormat)
+        } else {
+            twoLines
+        }
+    }
+
+    /// The ordinary arrangement: where and what above, when and who below.
+    ///
+    /// Support text is secondary here where a table cell is primary — the arrangement
+    /// decides that, and the exception colour does not. Both go through `CompactAttention`
+    /// so the rule that orange means an exception has one definition.
+    private var twoLines: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(cell(.primeStreet).text ?? "")
+                let street = cell(.primeStreet)
+                Text(street.text ?? "")
                     .font(.headline)
+                    .foregroundStyle(CompactAttention.colour(for: street) ?? .primary)
 
                 Spacer(minLength: 4)
 
-                Text(cell(.incidentType).text ?? "")
+                let type = cell(.incidentType)
+                Text(type.text ?? "")
                     .font(.subheadline)
-                    .foregroundStyle(cell(.incidentType).warrantsAttention
-                                     ? Color.orange : Color.secondary)
+                    .foregroundStyle(CompactAttention.colour(for: type) ?? .secondary)
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text(cell(.dispatchTime).text ?? "")
+                let time = cell(.dispatchTime)
+                Text(time.text ?? "")
                     .monospacedDigit()
-                Text(cell(.alarmLevel).text ?? "")
-                    .foregroundStyle(cell(.alarmLevel).warrantsAttention
-                                     ? Color.orange : Color.secondary)
-                Text(cell(.dispatchedUnits).text ?? "")
+                    .foregroundStyle(CompactAttention.colour(for: time) ?? .secondary)
+
+                let alarm = cell(.alarmLevel)
+                Text(alarm.text ?? "")
+                    .foregroundStyle(CompactAttention.colour(for: alarm) ?? .secondary)
+
+                let units = cell(.dispatchedUnits)
+                Text(units.text ?? "")
                     .lineLimit(2)
+                    .foregroundStyle(CompactAttention.colour(for: units) ?? .secondary)
             }
             .font(.footnote)
-            .foregroundStyle(Color.secondary)
         }
+    }
+
+    private func cell(_ column: CompactColumn) -> CompactCell {
+        column.cell(for: incident, timeFormat: timeFormat)
     }
 }

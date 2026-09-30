@@ -25,9 +25,12 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    // The names come from the type rather than being written here, so
+                    // the strings a test pins are the strings a reader sees.
                     Picker("Layout", selection: $presentation) {
-                        Text("Table").tag(IncidentPresentation.compactTable)
-                        Text("Cards").tag(IncidentPresentation.cards)
+                        ForEach(IncidentPresentation.allCases, id: \.self) { option in
+                            Text(option.label).tag(option)
+                        }
                     }
                 } header: {
                     Text("Active Incidents")
