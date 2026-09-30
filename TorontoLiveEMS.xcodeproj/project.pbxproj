@@ -6,6 +6,10 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA10C0DE00000000000000B1 /* TorontoLiveEMSKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA10C0DE00000000000000D1 /* TorontoLiveEMSKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		7BB9E7E3306A18D90095E50B /* TorontoLiveEMS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TorontoLiveEMS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +26,7 @@
 		7BB9E7E0306A18D90095E50B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				AA10C0DE00000000000000B1 /* TorontoLiveEMSKit in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 				7BB9E7E5306A18D90095E50B /* TorontoLiveEMS */,
 			);
 			name = TorontoLiveEMS;
+			packageProductDependencies = (
+				AA10C0DE00000000000000D1 /* TorontoLiveEMSKit */,
+			);
 			productName = TorontoLiveEMS;
 			productReference = 7BB9E7E3306A18D90095E50B /* TorontoLiveEMS.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +96,9 @@
 			);
 			mainGroup = 7BB9E7DA306A18D90095E50B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA10C0DE00000000000000E1 /* XCLocalSwiftPackageReference "TorontoLiveEMSKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7BB9E7E4306A18D90095E50B /* Products */;
 			projectDirPath = "";
@@ -333,6 +344,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AA10C0DE00000000000000E1 /* XCLocalSwiftPackageReference "TorontoLiveEMSKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TorontoLiveEMSKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA10C0DE00000000000000D1 /* TorontoLiveEMSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TorontoLiveEMSKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7BB9E7DB306A18D90095E50B /* Project object */;
 	validationLevel = 1;
