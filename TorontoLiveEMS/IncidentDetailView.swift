@@ -12,11 +12,9 @@ struct IncidentDetailView: View {
 
     /// Shown where the City published nothing for a field.
     ///
-    /// An em dash rather than the words "not published": the label already says which
-    /// field this is, so a sentence repeating that we have nothing adds noise. A dash is
-    /// the conventional absent-value mark, and unlike a hyphen it cannot be misread as a
-    /// minus sign or a range separator.
-    private static let notProvided = "—"
+    /// A single slash rather than the words "not published": the label directly above
+    /// already names the field, so a sentence restating the absence only adds noise.
+    private static let notProvided = "/"
 
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
