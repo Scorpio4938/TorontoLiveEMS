@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var isShowingStaleResult = false
     @State private var isRefreshing = false
     @State private var isShowingSettings = false
+    @State private var isShowingNothingToUpdate = false
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
@@ -53,6 +54,11 @@ struct ContentView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
+            .alert("Nothing to Update", isPresented: $isShowingNothingToUpdate) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(nothingToUpdateMessage)
+            }
         }
         // Runs when the view appears. It deliberately does not run again when the app
         // comes back from the background: the previous result is still in memory, and the
@@ -70,7 +76,7 @@ struct ContentView: View {
     /// no button style, background or padding of its own, so the platform draws it.
     private var refreshButton: some View {
         Button {
-            Task { await load() }
+            Task { await refresh() }
         } label: {
             Label("Refresh", systemImage: "arrow.clockwise")
         }
@@ -83,6 +89,29 @@ struct ContentView: View {
         } label: {
             Label("Settings", systemImage: "gearshape")
         }
+    }
+
+    /// Refreshes, unless the City provably has not republished since the tick we hold.
+    ///
+    /// The feed is a five-minute snapshot of a source that only changes every five
+    /// minutes, so between two of its boundaries there is nothing to fetch. Asking anyway
+    /// would be a request whose answer we already know, against a server that never
+    /// offered the endpoint in the first place.
+    ///
+    /// The message is an alert rather than a change to the status line, because the whole
+    /// reason this exists is that a tap has to be visibly acknowledged — a silent skip is
+    /// indistinguishable from the dead button reported earlier.
+    private func refresh() async {
+        guard FeedRefresh.mayHaveRefreshed(since: snapshot?.updatedFromDatabaseAt) else {
+            isShowingNothingToUpdate = true
+            return
+        }
+        await load()
+    }
+
+    private var nothingToUpdateMessage: String {
+        let updated = snapshot?.updatedFromDatabaseAt ?? "an unknown time"
+        return "The City last published at \(updated) and refreshes every five minutes. There is nothing newer to fetch yet."
     }
 
     @ViewBuilder

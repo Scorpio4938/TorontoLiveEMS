@@ -10,6 +10,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   an undocumented path on the City's server and its data cannot change more often
   than every five minutes, so repeated fetching buys nothing and pressures a
   service that never advertised this endpoint.
+- **A refresh is skipped when the City cannot have republished.** The published tick
+  lands on a five-minute boundary, so between two boundaries there is nothing new, and
+  tapping Refresh in that window shows an alert rather than making a request whose answer
+  we already know. The alert is the point: a silent skip is indistinguishable from a dead
+  button, which is exactly the bug reported earlier. The gate **fails open** — no tick, or
+  one of an unexpected shape, allows the fetch rather than blocking it.
 - **One fetch when the app has no data to show** — a cold launch, so it is never
   empty on arrival. This matches the City's own page, whose AJAX call fires on
   `document.ready` and whose refresh button is `location.reload()`.
