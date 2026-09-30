@@ -275,6 +275,16 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   emergency vehicles* beside a roster of five tokens and concludes the app has miscounted. The
   City's own footnote — that support vehicles are not in that count — is the answer, and until
   now nothing in the app said it.
+- **The City's page is linked, and the feed is not.** They are two different addresses for two
+  different readers: `pageURLString` is a page a person can open, `urlString` is the XML the app
+  reads. The feed is undocumented and was never offered to people, so linking to it would be
+  inviting someone to read a document that was never meant for them — and would advertise an
+  endpoint the app deliberately asks for as little as possible.
+- **Links are blue, wherever a link appears.** Three screens now draw text containing one, so
+  the colour lives in `LinkedText` rather than at each call site: three screens should not be
+  able to disagree about what a link looks like. `AttributionText` became a thin wrapper around
+  a wrapper and was removed rather than kept.
+
 - **The City's `10-14` stays `10–14`.** Their list uses a hyphen and the app uses an en dash.
   Ours is typographically right and theirs is what they published; the difference is a
   deliberate one, not a transcription slip.

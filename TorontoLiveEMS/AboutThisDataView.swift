@@ -24,7 +24,11 @@ struct AboutThisDataView: View {
                 } header: {
                     Text("The Data")
                 } footer: {
-                    Text("Taken from the City of Toronto's own Toronto Fire Active Incidents page, which is the page this feed belongs to.")
+                    LinkedText(markdown: """
+                        Taken from the City of Toronto's own \
+                        [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page, which is \
+                        the page this feed belongs to.
+                        """)
                 }
 
                 Section {
@@ -57,7 +61,7 @@ struct AboutThisDataView: View {
                 }
 
                 Section {
-                    AttributionText()
+                    LinkedText(Attribution.attributed)
                 }
             }
             .navigationTitle("About this Data")

@@ -50,7 +50,7 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    AttributionText()
+                    LinkedText(Attribution.attributed)
                 } header: {
                     Text("About")
                 }

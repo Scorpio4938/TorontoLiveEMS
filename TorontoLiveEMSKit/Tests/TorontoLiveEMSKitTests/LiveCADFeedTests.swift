@@ -23,4 +23,25 @@ struct LiveCADFeedTests {
         #expect(url.host() == "www.toronto.ca")
         #expect(url.path() == "/data/fire/livecad.xml")
     }
+
+    /// The expected value is the page's own address, taken from the page rather than
+    /// recomputed from the constant under test.
+    @Test("links to the page a person can open, not to the file the app reads")
+    func pageIsSeparateFromTheEndpoint() throws {
+        // Held apart on purpose. `urlString` serves the XML, `pageURLString` is the page. They
+        // are different documents for different readers, and the feed is undocumented and was
+        // never offered to people — so the app links to the second and merely fetches the first.
+        #expect(LiveCADFeed.pageURLString != LiveCADFeed.urlString)
+
+        let page = try #require(URL(string: LiveCADFeed.pageURLString))
+        #expect(page.scheme == "https")
+        #expect(page.host() == "www.toronto.ca")
+        #expect(page.path()
+            == "/community-people/public-safety-alerts/alerts-notifications/toronto-fire-active-incidents/")
+    }
+
+    @Test("names the page the way the City does")
+    func pageNameIsTheCitysOwn() {
+        #expect(LiveCADFeed.pageName == "Toronto Fire Active Incidents")
+    }
 }
