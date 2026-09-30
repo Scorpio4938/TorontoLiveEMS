@@ -118,13 +118,31 @@ public enum LiveCADParser {
 
         /// Trimmed text, or `nil` when there is nothing in it.
         ///
-        /// The feed expresses "not published" three different ways — an empty element
-        /// (`<cross_streets/>`), a missing element (`units_disp`), and an XML-escaped
-        /// space (`<prime_street>&#x20;</prime_street>`). All three mean the same
-        /// thing here, and all three become `nil`.
+        /// The feed expresses "not published" four different ways. They all mean the same
+        /// thing here, and they all become `nil`:
+        ///
+        ///   - an empty element — `<cross_streets/>`
+        ///   - a missing element — `units_disp`, for roughly one incident in five
+        ///   - an XML-escaped space — `<prime_street>&#x20;</prime_street>`
+        ///   - **a punctuation placeholder** — `<cross_streets> / </cross_streets>`
+        ///
+        /// The fourth was found in a live capture on 2026-09-30, paired with the escaped
+        /// space in Prime Street. It matters because it is *not* blank: it survives a trim, so
+        /// it read as a real intersection, and the compact table's address fallback then
+        /// offered a bare slash as a location — with the mark that says the location was
+        /// substituted sitting on top of it.
+        ///
+        /// The rule is general rather than a check for a slash, because the feed has produced
+        /// four shapes already and a fifth is a matter of when. Nothing the City publishes in
+        /// these three fields is punctuation: a street name and a postal area carry letters,
+        /// and an apparatus code carries letters and digits. A value with neither is standing
+        /// in for nothing.
         private static func published(_ raw: String?) -> String? {
             let trimmed = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmed.isEmpty ? nil : trimmed
+            guard trimmed.contains(where: { $0.isLetter || $0.isNumber }) else {
+                return nil
+            }
+            return trimmed
         }
     }
 }

@@ -196,10 +196,23 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Dispatch Time is formatted**, not the raw ISO string the City displays with
   its `T` intact. The reader chooses between the City's own 12-hour form and a 24-hour
   one in Settings; 12-hour is the default because it is what the City publishes.
-- **There is one setting.** Settings is reached from a toolbar button shaped exactly like
-  the refresh button, and holds a single choice. It is stored with `@AppStorage`, the
-  platform's own preference store, behind a `RawRepresentable` enum — no settings model,
-  no synchronisation, because there is nothing to synchronise.
+- **There are two settings** — how the incidents are arranged, and how the time of day is
+  shown. Both are reached from a toolbar button shaped exactly like the refresh button, and
+  both are stored with `@AppStorage`, the platform's own preference store, behind a
+  `RawRepresentable` enum — no settings model, no synchronisation, because there is nothing
+  to synchronise.
+- **"Not published" has four shapes, and all four become nothing.** An empty element
+  (`<cross_streets/>`); a missing element (`units_disp`, roughly one incident in five); the
+  XML-escaped space the City sends for a Prime Street it will not publish
+  (`<prime_street>&#x20;</prime_street>`); and a **punctuation placeholder** —
+  `<cross_streets> / </cross_streets>`, a bare slash standing in for an intersection.
+  The rule is *no letter and no digit means no value*, not a check for each shape, because
+  the feed has produced four already and a fifth is a matter of when.
+- **The fourth was found in a live capture on 2026-09-30, and it had gone unnoticed.** A slash
+  survives a trim, so it read as a real intersection; the address fallback then offered a bare
+  `/` as a location, with the mark for a substituted address sitting on top of it. The
+  captured snapshot had the escaped space paired with a *real* intersection every time, so the
+  one row where the fallback had nothing to fall back to was the one row missing from it.
 - **Dispatched Units are decoded in the detail view, and left raw in the table.**
   Decoding uses the City's own legend — `P` Pumper, `R` Rescue, `A` Aerial, `T` Tower,
   `PL` Platform, `S` Squad, `HR` Highrise, `HZ` HazMat, `FB` Fireboat, `CMD` Command

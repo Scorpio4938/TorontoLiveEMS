@@ -20,6 +20,17 @@ enum Fixtures {
 
     static var unitsElementAbsentData: Data { Data(unitsElementAbsent.utf8) }
 
+    /// The shape a live capture showed on 2026-09-30: Prime Street is the XML-escaped space
+    /// and Cross Street is a lone slash, so both are placeholders and this incident has no
+    /// published location at all.
+    ///
+    /// It was not in the snapshot above, which is why it went unnoticed: the captured feed had
+    /// the escaped space paired with a *real* intersection, so the one row where the fallback
+    /// had nothing to fall back to was the one row missing.
+    static let bothStreetsPlaceholders = "<tfs_active_incidents><update_from_db_time>2026-09-30 13:15:02</update_from_db_time><event><prime_street>&#x20;</prime_street><cross_streets> / </cross_streets><dispatch_time>2026-09-30T13:10:00</dispatch_time><event_num>F26154900</event_num><event_type>MEDICAL</event_type><alarm_lev>0</alarm_lev><beat>111</beat><units_disp>P111</units_disp></event></tfs_active_incidents>"
+
+    static var bothStreetsPlaceholdersData: Data { Data(bothStreetsPlaceholders.utf8) }
+
     /// Synthetic. Truncated mid-element, so the parser rejects it.
     static let malformed = "<tfs_active_incidents><event><prime_street>M1A"
 

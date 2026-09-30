@@ -30,7 +30,7 @@ _Avoid_: Main street, address, location, street
 
 **Cross Street**:
 The two intersecting streets that bound an addressable incident's location.
-Empty for medical incidents.
+Empty, or a placeholder slash, for medical incidents.
 _Avoid_: Intersection, crossroad, cross
 
 **Dispatch Time**:

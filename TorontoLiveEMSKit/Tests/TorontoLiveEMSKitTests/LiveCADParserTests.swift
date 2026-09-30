@@ -132,4 +132,17 @@ struct LiveCADParserTests {
             try LiveCADParser.parse(Fixtures.malformedData)
         }
     }
+
+    @Test("treats a punctuation placeholder as nothing at all")
+    func punctuationPlaceholderIsNotAValue() throws {
+        // Seen live on 2026-09-30: `<cross_streets> / </cross_streets>` beside the escaped
+        // space in Prime Street. It is not blank — it survives a trim — so it read as a real
+        // intersection, and the table's address fallback offered a bare slash as a location,
+        // with the mark for a substituted address on top of it.
+        let snapshot = try LiveCADParser.parse(Fixtures.bothStreetsPlaceholdersData)
+        let incident = try #require(snapshot.incidents.first)
+
+        #expect(incident.primeStreet == nil)
+        #expect(incident.crossStreets == nil)
+    }
 }
