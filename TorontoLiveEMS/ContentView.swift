@@ -14,6 +14,10 @@ struct ContentView: View {
     @State private var failureMessage: String?
     @State private var isShowingStaleResult = false
     @State private var isRefreshing = false
+    @State private var isShowingSettings = false
+
+    @AppStorage(SettingsKey.dispatchTimeFormat)
+    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
     var body: some View {
         NavigationStack {
@@ -24,10 +28,12 @@ struct ContentView: View {
             }
             .navigationTitle("Active Incidents")
             .toolbar {
+                ToolbarItem(placement: .primaryAction) { settingsButton }
+
                 #if os(iOS)
-                // The same plain toolbar item as before, in the system's bottom bar
-                // rather than the top one, and pushed to the trailing edge — a lone
-                // bottom-bar item sits centred without the Spacer.
+                // The same plain toolbar item as the settings button, in the system's
+                // bottom bar rather than the top one, and pushed to the trailing edge —
+                // a lone bottom-bar item sits centred without the Spacer.
                 ToolbarItemGroup(placement: .bottomBar) {
                     Spacer()
                     refreshButton
@@ -35,6 +41,9 @@ struct ContentView: View {
                 #else
                 ToolbarItem(placement: .primaryAction) { refreshButton }
                 #endif
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
             }
         }
         // Runs when the view appears. It deliberately does not run again when the app
@@ -59,6 +68,15 @@ struct ContentView: View {
         }
     }
 
+    /// The same shape as the refresh button, in the platform's standard spot for it.
+    private var settingsButton: some View {
+        Button {
+            isShowingSettings = true
+        } label: {
+            Label("Settings", systemImage: "gearshape")
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         if let snapshot {
@@ -72,7 +90,7 @@ struct ContentView: View {
                         NavigationLink {
                             IncidentDetailView(incident: incident)
                         } label: {
-                            IncidentRow(incident: incident)
+                            IncidentRow(incident: incident, timeFormat: dispatchTimeFormat)
                         }
                     }
                 } header: {

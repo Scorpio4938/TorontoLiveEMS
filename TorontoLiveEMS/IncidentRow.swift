@@ -17,13 +17,16 @@ struct IncidentRow: View {
 
     let incident: Incident
 
+    /// The reader's chosen clock, from Settings.
+    let timeFormat: DispatchTimeFormat
+
     /// Kept alongside the header so the two grids stay in step.
     static let spacing: CGFloat = 6
 
     var body: some View {
         HStack(alignment: .top, spacing: Self.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                let cell = column.cell(for: incident)
+                let cell = column.cell(for: incident, timeFormat: timeFormat)
                 Text(cell.text ?? "")
                     .font(.caption2)
                     .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)

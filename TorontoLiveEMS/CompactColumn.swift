@@ -57,13 +57,15 @@ enum CompactColumn: CaseIterable {
     /// placeholder, no substitute.
     ///
     /// Anything we cannot interpret falls back to the published string.
-    func cell(for incident: Incident) -> CompactCell {
+    func cell(for incident: Incident, timeFormat: DispatchTimeFormat) -> CompactCell {
         switch self {
         case .primeStreet:
             return CompactCell(incident.primeStreet)
 
         case .dispatchTime:
-            return CompactCell(DispatchTimestamp.clockTime(incident.dispatchTime))
+            return CompactCell(
+                DispatchTimestamp.clockTime(incident.dispatchTime, format: timeFormat)
+            )
 
         case .incidentType:
             let category = IncidentCategory.from(incidentType: incident.incidentType)

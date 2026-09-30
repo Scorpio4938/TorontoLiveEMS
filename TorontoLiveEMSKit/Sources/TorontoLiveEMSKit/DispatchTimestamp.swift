@@ -1,4 +1,15 @@
-/// Formats the feed's dispatch timestamp for people.///
+/// How a dispatch time should be rendered for reading.
+public enum DispatchTimeFormat: String, CaseIterable, Sendable {
+
+    /// `6:24 PM` — what the City's own page shows.
+    case twelveHour
+
+    /// `18:24`
+    case twentyFourHour
+}
+
+/// Formats the feed's dispatch timestamp for people.
+///
 /// The feed publishes local Toronto wall-clock time with no UTC offset —
 /// `2026-09-29T18:24:39`. Reading the components straight out of the string means the
 /// time a reader sees is the time the City published. Handing it to a date formatter
@@ -9,30 +20,39 @@
 /// upstream format change degrades to the raw value rather than to a wrong one.
 public enum DispatchTimestamp {
 
-    /// `6:24 PM`. For the compact table, where an active incident is almost always
-    /// from today and the date would be a near-constant column.
-    public static func clockTime(_ published: String) -> String {
+    /// The time of day, in the requested format.
+    ///
+    /// Twelve-hour is the default because it is what the City publishes.
+    public static func clockTime(
+        _ published: String,
+        format: DispatchTimeFormat = .twelveHour
+    ) -> String {
         guard let parts = Parts(published) else {
             return published
         }
-        return "\(parts.hour):\(parts.minute) \(parts.meridiem)"
+
+        switch format {
+        case .twelveHour:
+            return parts.twelveHour
+        case .twentyFourHour:
+            return parts.twentyFourHour
+        }
     }
 
-    /// `Sep 29, 6:24 PM`. For the detail view, where there is room for the date.
+    /// `Sep 29, 6:24 PM`. Kept for a display with room for the date.
     public static func dateAndTime(_ published: String) -> String {
         guard let parts = Parts(published) else {
             return published
         }
-        return "\(parts.month) \(parts.day), \(parts.hour):\(parts.minute) \(parts.meridiem)"
+        return "\(parts.month) \(parts.day), \(parts.twelveHour)"
     }
 
     private struct Parts {
 
         let month: String
         let day: String
-        let hour: String
+        let hour24: Int
         let minute: String
-        let meridiem: String
 
         init?(_ published: String) {
             let halves = published.split(separator: "T")
@@ -47,11 +67,11 @@ public enum DispatchTimestamp {
                   time.count >= 2,
                   let monthNumber = Int(date[1]),
                   let dayNumber = Int(date[2]),
-                  let hour24 = Int(time[0]),
+                  let hour = Int(time[0]),
                   let minuteNumber = Int(time[1]),
                   (1...12).contains(monthNumber),
                   (1...31).contains(dayNumber),
-                  (0...23).contains(hour24),
+                  (0...23).contains(hour),
                   (0...59).contains(minuteNumber)
             else {
                 return nil
@@ -59,11 +79,23 @@ public enum DispatchTimestamp {
 
             self.month = Self.monthNames[monthNumber - 1]
             self.day = String(dayNumber)
+            self.hour24 = hour
             // Padded by hand rather than with String(format:), where an Int against a
             // `%d` format is a width mismatch on a 64-bit platform.
             self.minute = minuteNumber < 10 ? "0\(minuteNumber)" : String(minuteNumber)
-            self.hour = String(hour24 % 12 == 0 ? 12 : hour24 % 12)
-            self.meridiem = hour24 < 12 ? "AM" : "PM"
+        }
+
+        /// `6:24 PM` — the hour unpadded, as the City shows it.
+        var twelveHour: String {
+            let hour = hour24 % 12 == 0 ? 12 : hour24 % 12
+            let meridiem = hour24 < 12 ? "AM" : "PM"
+            return "\(hour):\(minute) \(meridiem)"
+        }
+
+        /// `18:24` — the hour padded, which is what the 24-hour clock means.
+        var twentyFourHour: String {
+            let hour = hour24 < 10 ? "0\(hour24)" : String(hour24)
+            return "\(hour):\(minute)"
         }
 
         private static let monthNames = [

@@ -39,5 +39,41 @@ struct DispatchTimestampTests {
         #expect(DispatchTimestamp.clockTime("2026-09-29") == "2026-09-29")
         #expect(DispatchTimestamp.clockTime("2026-13-29T18:24:39") == "2026-13-29T18:24:39")
         #expect(DispatchTimestamp.clockTime("2026-09-29T25:00:00") == "2026-09-29T25:00:00")
+        #expect(
+            DispatchTimestamp.clockTime("nonsense", format: .twentyFourHour) == "nonsense"
+        )
+    }
+
+    @Test("renders the time on the 24-hour clock when the reader asks for it")
+    func twentyFourHour() {
+        // The hour is padded, which is what the 24-hour clock means.
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T18:24:39", format: .twentyFourHour)
+                == "18:24"
+        )
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T09:07:00", format: .twentyFourHour)
+                == "09:07"
+        )
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T00:05:00", format: .twentyFourHour)
+                == "00:05"
+        )
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T12:00:00", format: .twentyFourHour)
+                == "12:00"
+        )
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T23:59:59", format: .twentyFourHour)
+                == "23:59"
+        )
+    }
+
+    @Test("twelve-hour is the default, because it is what the City publishes")
+    func twelveHourIsTheDefault() {
+        #expect(
+            DispatchTimestamp.clockTime("2026-09-29T18:24:39")
+                == DispatchTimestamp.clockTime("2026-09-29T18:24:39", format: .twelveHour)
+        )
     }
 }

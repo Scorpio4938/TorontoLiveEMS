@@ -88,7 +88,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   transformation and put all readability in a footnote legend; we render values
   readably and carry the explanation inline.
 - **Dispatch Time is formatted**, not the raw ISO string the City displays with
-  its `T` intact.
+  its `T` intact. The reader chooses between the City's own 12-hour form and a 24-hour
+  one in Settings; 12-hour is the default because it is what the City publishes.
+- **There is one setting.** Settings is reached from a toolbar button shaped exactly like
+  the refresh button, and holds a single choice. It is stored with `@AppStorage`, the
+  platform's own preference store, behind a `RawRepresentable` enum — no settings model,
+  no synchronisation, because there is nothing to synchronise.
 - **Dispatched Units are decoded in the detail view, and left raw in the table.**
   Decoding uses the City's own legend — `P` Pumper, `R` Rescue, `A` Aerial, `T` Tower,
   `PL` Platform, `S` Squad, `HR` Highrise, `HZ` HazMat, `FB` Fireboat, `CMD` Command
