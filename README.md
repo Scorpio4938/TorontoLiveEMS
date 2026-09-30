@@ -25,8 +25,8 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 ## Layout
 
 ```
-TorontoLiveEMS/         the app — views, and nothing else
-TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 53 tests
+TorontoLiveEMS/         the app — the views, and the table's measurements
+TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 68 tests
 scripts/check_swift.py  a structural check, see below
 docs/                   the decisions
 ```
@@ -51,7 +51,7 @@ python3 scripts/check_swift.py TorontoLiveEMS
 ## Building and testing
 
 ```bash
-cd TorontoLiveEMSKit && swift test        # the 53 tests
+cd TorontoLiveEMSKit && swift test        # the 68 tests
 ```
 
 Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.

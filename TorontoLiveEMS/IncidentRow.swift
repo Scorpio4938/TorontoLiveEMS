@@ -13,6 +13,9 @@ import TorontoLiveEMSKit
 /// and because a cell wraps rather than truncates, the grid does not clip when it runs
 /// out of room. It grows. An incident becomes a screenful with one word per line.
 ///
+/// Both of those figures are estimates rather than measurements, made on a machine with
+/// no way to see the result. See `docs/design-decisions.md`.
+///
 /// The line is the system's, not ours: `DynamicTypeSize.isAccessibilitySize` is the
 /// boundary the platform already draws, and `LabeledContent` already knows how to lay a
 /// label and its value out on either side of it. Neither is reimplemented here.
@@ -30,7 +33,7 @@ struct IncidentRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
+        if CompactTable.outgrowsTheGrid(dynamicTypeSize) {
             stacked
         } else {
             grid
@@ -42,17 +45,10 @@ struct IncidentRow: View {
     /// A cell is never truncated and never moved out of its column. When a value needs
     /// more room than the column has it wraps onto another line *within that cell*, so a
     /// long apparatus roster makes its own column taller and leaves the other four alone.
-    ///
-    /// Colour is applied to the text itself and nowhere else — no dots, no symbols, no
-    /// badges. It costs no width and adds nothing to the layout, which is the point: the
-    /// table stays a table.
     private var grid: some View {
         HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                let cell = column.cell(for: incident, timeFormat: timeFormat)
-                Text(cell.text ?? "")
-                    .font(CompactTable.font)
-                    .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
+                CompactCellText(cell: column.cell(for: incident, timeFormat: timeFormat))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -68,12 +64,11 @@ struct IncidentRow: View {
     private var stacked: some View {
         VStack(alignment: .leading, spacing: CompactTable.stackedSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
-                let cell = column.cell(for: incident, timeFormat: timeFormat)
                 LabeledContent {
-                    Text(cell.text ?? "")
-                        .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
+                    CompactCellText(cell: column.cell(for: incident, timeFormat: timeFormat))
                 } label: {
                     Text(column.label)
+                        .font(CompactTable.font)
                 }
             }
         }

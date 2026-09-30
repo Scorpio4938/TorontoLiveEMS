@@ -38,4 +38,16 @@ enum CompactTable {
     /// this only has to group each pair, and at accessibility sizes a large gap would
     /// put one field per screen.
     static let stackedSpacing: CGFloat = 2
+
+    /// Whether a text size has outgrown the five-column grid.
+    ///
+    /// Named rather than inlined because two views have to agree on it: the rows restack
+    /// *and* the column header stands down, together. A header that stayed while the rows
+    /// restacked is the same class of divergence that broke the column alignment twice —
+    /// two grids stating the same thing independently, with nothing enforcing agreement.
+    ///
+    /// The boundary itself is the platform's. We only name it.
+    static func outgrowsTheGrid(_ size: DynamicTypeSize) -> Bool {
+        size.isAccessibilitySize
+    }
 }

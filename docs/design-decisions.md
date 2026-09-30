@@ -87,9 +87,30 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   allocate widths ourselves.
 - **Every column header takes two lines.** "Alarm Level" is a character shorter than the
   next shortest label, so it was the only one that fitted on a single line — which reads as
-  a column of a different shape rather than as a shorter label. A line break in the label
-  settles it at no cost, where narrowing the column would move the widths and the
-  alignment with them. That was tried and reverted.
+  a column of a different shape rather than as a shorter label. The break is forced, at no
+  cost, where narrowing the column would move the widths and the alignment with them. That
+  was tried and reverted.
+- **A field's label and its column header are separate things.** The header carries the
+  forced break above; a field's label appears beside its value in the accessibility layout
+  below, where the same break would be a stray blank line. `CompactColumn.label` is the
+  City's field name, `headerLabel` is the header, and they differ only for Alarm Level.
+- **Above the accessibility text sizes the grid becomes a stack.** Five columns cannot be
+  made readable at those sizes — the text scales up roughly threefold, so a row needs
+  something like 450pt of width to hold five usable columns and has about 340 — and because
+  a cell wraps rather than truncates, running out of room does not clip the grid, it grows.
+  One incident becomes a screenful with one word per line. Above that boundary an incident
+  is one field per line, each labelled, and the column header stands down because the rows
+  now carry their own labels. The boundary is the platform's and the layout is
+  `LabeledContent`'s; only the naming of the boundary is ours, because the rows and the
+  header have to agree on it. *Those two measurements are estimates, not readings.*
+- **The table's measurements have one home.** The header and the rows are separate views
+  that have to agree on type size, header weight and column spacing, and each used to state
+  its own with nothing enforcing the match. They now read `CompactTable`. A header that
+  disagrees with its rows is what broke the column alignment twice before.
+- **The columns live in the package; the measurements do not.** `CompactColumn` maps an
+  Incident to what a cell shows — content rather than layout, importing nothing from
+  SwiftUI — so it sits in `TorontoLiveEMSKit`, where it can be tested. `CompactTable`
+  holds SwiftUI values and stays in the app target.
 - **Empty cells are left empty.** No `N/A`, no dash.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.

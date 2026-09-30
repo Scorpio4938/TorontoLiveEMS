@@ -42,7 +42,11 @@ It asks for all of these at once:
 
 The compact table is 11pt throughout. Applied literally, that advice produces a secondary
 tier at 11pt — which is precisely the tiny grey text it forbids. Secondary label grey on
-white at 11pt lands near 3.5:1 contrast, under the 4.5:1 that small text needs.
+white at 11pt lands around 3.5:1, under the 4.5:1 that small text needs.
+
+*That ratio is an estimate. Nothing in this repository can measure a colour, and it is the
+shape of the argument that matters rather than the decimal: a second tier at this size has
+less contrast than the first, not more.*
 
 **At this size there is no room for a second tier.** Hierarchy in the table therefore has
 to be built at a single size, through **weight** — or the table has to get larger, which
@@ -55,10 +59,10 @@ the source ("make the table more hierarchical") is the one that breaks the table
 - "Use negative space."
 - Avoid "densely packed".
 
-A live incident board with five columns exists *to* maximise the information visible at
-once. That is the product, not a failure of restraint. The document has no concept of a
-deliberately dense artifact being the right answer, and it cannot arbitrate the density
-question it raises. That is issue #12's job.
+The five-column table exists *to* maximise the information visible at once. That is the
+product, not a failure of restraint. The document has no concept of a deliberately dense
+artifact being the right answer, and it cannot arbitrate the density question it raises.
+That is #12's decision to make.
 
 ### 3. It is silent on the actual problem
 
@@ -93,7 +97,7 @@ Seventeen rules, against this app, at the time of writing.
 | 16 | Accessibility is part of the visual system | **Gap** — see #9 and #11 |
 | 17 | Don't hand-roll what the system provides | **Already** — and adopted as policy below |
 
-**Twelve already. Two moot. Three unverified or open. One real gap.**
+**Ten already. One moot. Five open or unresolved. One real gap.**
 
 That is the honest result: the document validates far more than it instructs, and the
 single actionable thing it surfaced was an accessibility defect.
