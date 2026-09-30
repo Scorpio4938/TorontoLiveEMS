@@ -38,13 +38,16 @@ struct IncidentPresentationTests {
         #expect(IncidentPresentation.cards.rawValue == "cards")
     }
 
-    @Test("opens on the table")
-    func standardIsTheTable() {
-        // The product is a board, so the arrangement that fits the most incidents at once
-        // is the one to open on. It lives in the package rather than as a default in two
-        // views precisely so that this test can exist.
-        #expect(IncidentPresentation.standard == .compactTable)
-        #expect(IncidentPresentation.standard == IncidentPresentation.allCases.first)
+    @Test("opens on cards")
+    func standardIsCards() {
+        // Chosen rather than derived, and it costs density: cards show fewer incidents at once
+        // than the table does. That is the trade, made on purpose. It lives in the package
+        // rather than as a default in two views precisely so that this test can exist.
+        //
+        // Not asserted against a position in `allCases`. Where a case sits in that list is
+        // incidental, and pinning the default to a position would make reordering the list a
+        // silent change of default.
+        #expect(IncidentPresentation.standard == .cards)
     }
 
     @Test("survives a round trip through the stored value")

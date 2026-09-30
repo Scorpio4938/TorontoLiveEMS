@@ -179,10 +179,14 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The two arrangements
 
-- **The reader picks between a table and cards, in Settings.** Table is the default: it
-  fits the most incidents on a screen, which is what the product is for. Cards give each
-  incident a block of its own. Same five fields, same words, same data in both — only the
-  shape differs.
+- **The reader picks between a table and cards, in Settings. Cards are the default.** They show
+  fewer incidents at once than the table does, and that is the trade being made deliberately:
+  one incident per block is what the app opens on, and the table remains for a reader who wants
+  more on screen. Same five fields, same words, same data in both — only the shape differs.
+- **The default only decides what an *unset* preference resolves to.** A reader who has chosen
+  either arrangement keeps it, because the choice is written to their preferences and the
+  default is never consulted again. So this changes what a new install opens on, not what
+  anybody already using the app sees.
 - **Cards are rows in the platform's own list**, and the platform draws everything: the
   container, the corner radius, and the hairlines between rows inset from the leading edge.
   The references are the Notes app and this app's own detail view, which both get this by
