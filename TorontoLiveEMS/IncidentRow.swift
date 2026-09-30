@@ -13,6 +13,10 @@ import TorontoLiveEMSKit
 /// Colour is applied to the text itself and nowhere else — no dots, no symbols, no
 /// badges. It costs no width and adds nothing to the layout, which is the point: the
 /// table stays a table.
+///
+/// Everything here reads its measurements from `CompactTable`, which the column header
+/// in `ContentView` reads too. The two are separate views that must agree, so nothing
+/// about their size or spacing is stated in either one.
 struct IncidentRow: View {
 
     let incident: Incident
@@ -20,15 +24,12 @@ struct IncidentRow: View {
     /// The reader's chosen clock, from Settings.
     let timeFormat: DispatchTimeFormat
 
-    /// Kept alongside the header so the two grids stay in step.
-    static let spacing: CGFloat = 6
-
     var body: some View {
-        HStack(alignment: .top, spacing: Self.spacing) {
+        HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
                 let cell = column.cell(for: incident, timeFormat: timeFormat)
                 Text(cell.text ?? "")
-                    .font(.caption2)
+                    .font(CompactTable.font)
                     .foregroundStyle(cell.warrantsAttention ? Color.orange : Color.primary)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)

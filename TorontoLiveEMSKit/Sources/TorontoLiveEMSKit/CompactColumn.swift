@@ -1,17 +1,15 @@
-import Foundation
-import TorontoLiveEMSKit
-
 /// One cell of the compact table: what to show, and whether it should stand out.
 ///
 /// Almost every cell is neutral. Colour marks state rather than taxonomy — a fire, a
 /// hazmat call, an escalated alarm level — because colouring all thirteen categories
 /// equally would make the sixty-four percent of incidents that are medical as loud as
 /// the five percent that are fires. See `docs/design-decisions.md`.
-struct CompactCell: Equatable {
-    let text: String?
-    let warrantsAttention: Bool
+public struct CompactCell: Equatable, Sendable {
 
-    init(_ text: String?, warrantsAttention: Bool = false) {
+    public let text: String?
+    public let warrantsAttention: Bool
+
+    public init(_ text: String?, warrantsAttention: Bool = false) {
         self.text = text
         self.warrantsAttention = warrantsAttention
     }
@@ -27,7 +25,12 @@ struct CompactCell: Equatable {
 /// one — and it is a refinement of Prime Street rather than a peer of it, so on a phone
 /// it spent width it rarely used. It lives in the detail view. Incident Number and Area
 /// are there too. See `docs/design-decisions.md`.
-enum CompactColumn: CaseIterable {
+///
+/// Lives in the package rather than the app target because it is content, not layout:
+/// it maps an Incident to strings and flags, and imports nothing from SwiftUI. That is
+/// what lets the mapping be tested. The measurements that lay these columns out are
+/// `CompactTable`, in the app target.
+public enum CompactColumn: CaseIterable, Sendable {
 
     case primeStreet
     case dispatchTime
@@ -36,7 +39,7 @@ enum CompactColumn: CaseIterable {
     case dispatchedUnits
 
     /// The City's own label for the field.
-    var label: String {
+    public var label: String {
         switch self {
         case .primeStreet:
             return "Prime Street"
@@ -62,7 +65,7 @@ enum CompactColumn: CaseIterable {
     /// placeholder, no substitute.
     ///
     /// Anything we cannot interpret falls back to the published string.
-    func cell(for incident: Incident, timeFormat: DispatchTimeFormat) -> CompactCell {
+    public func cell(for incident: Incident, timeFormat: DispatchTimeFormat) -> CompactCell {
         switch self {
         case .primeStreet:
             return CompactCell(incident.primeStreet)

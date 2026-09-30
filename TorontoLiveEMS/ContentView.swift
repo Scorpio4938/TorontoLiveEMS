@@ -150,10 +150,10 @@ struct ContentView: View {
     ///
     /// No horizontal padding of its own: the List supplies it, which is the point.
     private var columnHeader: some View {
-        HStack(alignment: .top, spacing: IncidentRow.spacing) {
+        HStack(alignment: .top, spacing: CompactTable.columnSpacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
                 Text(column.label)
-                    .font(.caption2.weight(.semibold))
+                    .font(CompactTable.headerFont)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
