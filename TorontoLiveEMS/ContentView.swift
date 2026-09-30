@@ -9,6 +9,7 @@ import SwiftUI
 import TorontoLiveEMSKit
 
 struct ContentView: View {
+
     @State private var snapshot: LiveCADSnapshot?
     @State private var failureMessage: String?
 
@@ -23,8 +24,13 @@ struct ContentView: View {
     @ViewBuilder
     private var content: some View {
         if let snapshot {
-            List(snapshot.incidents) { incident in
-                Text(incident.incidentType)
+            VStack(spacing: 0) {
+                header
+                Divider()
+                List(snapshot.incidents) { incident in
+                    IncidentRow(incident: incident)
+                }
+                .listStyle(.plain)
             }
         } else if let failureMessage {
             VStack(spacing: 8) {
@@ -39,6 +45,20 @@ struct ContentView: View {
         } else {
             ProgressView("Loading active incidents")
         }
+    }
+
+    /// The column labels, held still above the list so a long list stays readable.
+    private var header: some View {
+        HStack(alignment: .top, spacing: IncidentRow.spacing) {
+            ForEach(CompactColumn.allCases, id: \.self) { column in
+                Text(column.label)
+                    .font(.caption2.weight(.semibold))
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 6)
     }
 
     private func load() async {
