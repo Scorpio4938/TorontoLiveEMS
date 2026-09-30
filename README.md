@@ -71,11 +71,14 @@ Any `A` or `D` means reopen. Nothing printed means you are fine, and a rebuild i
 
 ## Status
 
-**The app has been built and run successfully in the iOS Simulator, and `swift test` has
-passed at an earlier revision.** Everything since then is unverified:
+**`b2c36c0` is the last commit that was built and run in the iOS Simulator, and the last at
+which `swift test` passed.** Everything after it is unverified — none of it has been
+compiled, and the test count has grown from 42 to 53 since. To see how much is outstanding:
 
-- **23 commits** have landed since the last build, and none has been compiled.
-- **53 tests** are declared; 42 were the count when they last passed.
+```bash
+git log --oneline b2c36c0..HEAD | wc -l
+```
+
 - Tag `v0.0.1` marks the last state that was built and behaved as expected. That is the
   fallback.
 
