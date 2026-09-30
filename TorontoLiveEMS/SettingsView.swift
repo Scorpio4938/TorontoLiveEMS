@@ -30,6 +30,12 @@ struct SettingsView: View {
                 } footer: {
                     Text("How the time of day is shown in the table.")
                 }
+
+                Section {
+                    Text(Attribution.attributed)
+                } header: {
+                    Text("About")
+                }
             }
             .navigationTitle("Settings")
             #if os(iOS)
