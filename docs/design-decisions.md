@@ -260,6 +260,33 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   came from a measurement rather than from a decision — the invisible housing, and the rays
   that would not survive 29pt.
 
+## Where an incident is
+
+- **Three things the feed publishes, and they are not interchangeable.** An *intersection* is
+  two streets crossing, so it names a place. A *street* is a street — `LAWRENCE AVE, SC` has no
+  number, so the most anyone can say is somewhere along it. A *postal area* is not a place at
+  all; it is a neighbourhood, published in place of an address, and ADR-0004 forbids narrowing it.
+- **The intersection wins when there is one**, even though the list shows Prime Street as the
+  location. For reading, the street names the incident's place; for looking up, two crossing
+  streets are strictly more precise than one street name.
+- **A postal area is drawn as an area, never a pin.** A pin is a claim about a point and a
+  postal area cannot support one. On the live capture, **9 of 15 incidents are postal areas** —
+  so this is most of the map, not an edge case, and a pin-per-incident map would be wrong for
+  the majority of what it showed.
+- **Nothing published means nothing on the map.** Not a best guess and not a default centre.
+- **The City's former-municipality suffix is dropped before looking anything up.** `SC` is
+  Scarborough, part of Toronto since 1998, and no geocoder wants the 1998 answer. Matched by
+  shape — two capital letters after a comma — because the four observed are TT, ET, NY and SC
+  and a fifth would otherwise reach a geocoder as part of a street name.
+- **Every lookup says Toronto.** The feed is Toronto-only, and a bare `QUEEN ST W` geocodes
+  confidently to the wrong continent. A geocoder that answers wrongly is worse than one that
+  does not answer.
+- **`CLGeocoder` is deprecated at iOS 26** — Apple's note says "Use MapKit" — so the app uses
+  `MKGeocodingRequest`, which is new at iOS 26 and returns `MKMapItem`s. Checked against Apple's
+  own documentation rather than guessed.
+- **The `.street` case does not occur in the current capture**, where every addressable incident
+  publishes an intersection. Kept and tested because the feed changes without telling anyone.
+
 ## What the app explains
 
 - **The City's own explanations are in the app, quoted rather than paraphrased**, and they live
