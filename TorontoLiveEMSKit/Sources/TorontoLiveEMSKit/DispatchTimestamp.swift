@@ -1,7 +1,4 @@
-import Foundation
-
-/// Formats the feed's dispatch timestamp for people.
-///
+/// Formats the feed's dispatch timestamp for people.///
 /// The feed publishes local Toronto wall-clock time with no UTC offset —
 /// `2026-09-29T18:24:39`. Reading the components straight out of the string means the
 /// time a reader sees is the time the City published. Handing it to a date formatter
@@ -62,7 +59,9 @@ public enum DispatchTimestamp {
 
             self.month = Self.monthNames[monthNumber - 1]
             self.day = String(dayNumber)
-            self.minute = String(format: "%02d", minuteNumber)
+            // Padded by hand rather than with String(format:), where an Int against a
+            // `%d` format is a width mismatch on a 64-bit platform.
+            self.minute = minuteNumber < 10 ? "0\(minuteNumber)" : String(minuteNumber)
             self.hour = String(hour24 % 12 == 0 ? 12 : hour24 % 12)
             self.meridiem = hour24 < 12 ? "AM" : "PM"
         }

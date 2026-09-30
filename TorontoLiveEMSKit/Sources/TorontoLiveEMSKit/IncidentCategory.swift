@@ -11,7 +11,7 @@ import Foundation
 /// Alarm is deliberately separate from Fire. The City's codes separate `FA*` from
 /// `FI*`; merging them would label roughly a fifth of all incidents `Fire` when the
 /// Open Data `Final_Incident_Type` shows those are overwhelmingly benign.
-public enum IncidentCategory: String, CaseIterable, Sendable {
+public enum IncidentCategory: CaseIterable, Sendable {
 
     case medical
     case fire

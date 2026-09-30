@@ -76,6 +76,8 @@ struct IncidentDetailView: View {
             }
 
             Section {
+                Text("Data provided by the City of Toronto.")
+                    .font(.footnote)
                 Text("Contains information licensed under the Open Government Licence – Toronto.")
                     .font(.footnote)
                 if let licenceURL {

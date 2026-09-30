@@ -51,9 +51,10 @@ public enum LiveCADParser {
         )
     }
 
-    /// `XMLParserDelegate`'s members are all optional, and an @objc method that Swift
-    /// does not expose is never called — which would fail silently rather than at
-    /// compile time. Hence the explicit `@objc` on each.
+    /// The delegate's methods are optional requirements of an `@objc` protocol, and
+    /// Swift infers `@objc` for a declaration that satisfies a protocol requirement, so
+    /// no explicit attribute is needed. Adding one would also make this file
+    /// Darwin-only, contradicting the FoundationXML import above.
     final class Delegate: NSObject, XMLParserDelegate {
 
         var updatedFromDatabaseAt: String?
@@ -63,7 +64,7 @@ public enum LiveCADParser {
         private var fields: [String: String] = [:]
         private var insideEvent = false
 
-        @objc func parser(
+        func parser(
             _ parser: XMLParser,
             didStartElement elementName: String,
             namespaceURI: String?,
@@ -77,11 +78,11 @@ public enum LiveCADParser {
             }
         }
 
-        @objc func parser(_ parser: XMLParser, foundCharacters string: String) {
+        func parser(_ parser: XMLParser, foundCharacters string: String) {
             text += string
         }
 
-        @objc func parser(
+        func parser(
             _ parser: XMLParser,
             didEndElement elementName: String,
             namespaceURI: String?,
