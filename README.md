@@ -71,21 +71,18 @@ Any `A` or `D` means reopen. Nothing printed means you are fine, and a rebuild i
 
 ## Status
 
-**`b2c36c0` is the last commit that was built and run in the iOS Simulator, and the last at
-which `swift test` passed.** Everything after it is unverified — none of it has been
-compiled, and the test count has grown from 42 to 53 since. To see how much is outstanding:
+**The app builds and runs in the iOS Simulator, and `swift test` passes in the package.**
+The four APIs that were the main compile risk — `LabeledContent` in the detail view,
+`@AppStorage` over a `RawRepresentable` in Settings, `AttributedString(markdown:)` in the
+attribution, and `scrollEdgeEffectStyle` — are therefore known to build.
 
-```bash
-git log --oneline b2c36c0..HEAD | wc -l
-```
+"It builds" is not the same as "it has been looked at under every setting", and the
+difference is tracked rather than assumed. The system's appearance and accessibility
+settings — dark mode, Reduce Transparency, Increase Contrast, Reduce Motion — have not been
+exercised; that is #11 in the tracker.
 
-- Tag `v0.0.1` marks the last state that was built and behaved as expected. That is the
-  fallback.
-
-The pieces most likely to fail, because they are the newest APIs and were written without a
-compiler: `LabeledContent` in the detail view, `@AppStorage` over a `RawRepresentable`
-enum in Settings, `AttributedString(markdown:)` in the attribution, and
-`scrollEdgeEffectStyle` in the detail view.
+Tag `v0.0.1` marks an earlier, rougher checkpoint from before the design work. It is a
+fallback, not a good state.
 
 ## Documentation
 
