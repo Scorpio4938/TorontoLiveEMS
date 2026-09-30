@@ -38,8 +38,13 @@ enum CompactColumn: CaseIterable {
 
     /// What to show in this column for an incident.
     ///
-    /// `nil` means the feed published nothing for the field. It renders as an empty
-    /// cell — no placeholder, no substitute.
+    /// `nil` means there is nothing to show. It renders as an empty cell — no
+    /// placeholder, no substitute.
+    ///
+    /// The feed's values are rendered for people here, not passed through: the
+    /// timestamp is formatted, the Incident Type becomes a category, and the
+    /// apparatus codes become the City's names. Anything we cannot interpret falls
+    /// back to the published string.
     func text(for incident: Incident) -> String? {
         switch self {
         case .primeStreet:
@@ -47,13 +52,15 @@ enum CompactColumn: CaseIterable {
         case .crossStreet:
             return incident.crossStreets
         case .dispatchTime:
-            return incident.dispatchTime
+            return DispatchTimestamp.clockTime(incident.dispatchTime)
         case .incidentType:
-            return incident.incidentType
+            return IncidentCategory.from(incidentType: incident.incidentType)?.label
+                ?? incident.incidentType
         case .alarmLevel:
             return incident.alarmLevel
         case .dispatchedUnits:
-            return incident.dispatchedUnits
+            let units = DispatchedUnit.roster(from: incident.dispatchedUnits)
+            return units.isEmpty ? nil : units.map(\.display).joined(separator: ", ")
         }
     }
 }
