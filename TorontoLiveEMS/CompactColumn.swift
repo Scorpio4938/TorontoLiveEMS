@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 import TorontoLiveEMSKit
 
 /// One cell of the compact table: what to show, and whether it should stand out.
@@ -50,34 +49,6 @@ enum CompactColumn: CaseIterable {
         case .dispatchedUnits:
             return "Dispatched Units"
         }
-    }
-
-    /// A width of this column's own, for a column whose contents never need to grow.
-    ///
-    /// Everything else shares what is left. Alarm Level gets one because it holds a single
-    /// digit and its header wraps to two lines inside this, which hands the space back to
-    /// Prime Street, Dispatch Time, Incident Type and Dispatched Units — the four that
-    /// actually have something to say.
-    var fixedWidth: CGFloat? {
-        switch self {
-        case .alarmLevel:
-            return 34
-        case .primeStreet, .dispatchTime, .incidentType, .dispatchedUnits:
-            return nil
-        }
-    }
-
-    /// Sizes a cell or a header for this column.
-    ///
-    /// Both bounds are set for a fixed column, so a header reading "Alarm Level" and a row
-    /// reading "0" come out the same width and stay lined up. A flexible column has no
-    /// minimum and takes everything offered.
-    func applyWidth<V: View>(to view: V) -> some View {
-        return view.frame(
-            minWidth: fixedWidth,
-            maxWidth: fixedWidth ?? .infinity,
-            alignment: .leading
-        )
     }
 
     /// What to show in this column for an incident, and whether it should stand out.
