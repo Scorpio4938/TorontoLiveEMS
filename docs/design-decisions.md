@@ -22,6 +22,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   reopen it, and you see three-hour-old incidents. That is what the always-visible
   `update_from_db_time` timestamp is for — staleness stays legible instead of
   hidden.
+- **The refresh control sits at the bottom**, within thumb reach, with a progress
+  indicator and a disabled button while a fetch is in flight — so a tap is visibly
+  acknowledged even when the feed returns the same incidents it did a moment ago. The
+  column header and the status line are pinned above the list, and the title is inline
+  so it does not collapse away from the columns it labels.
 - **The feed's own timestamp is always shown.** `update_from_db_time` renders as
   the City's page renders it ("Last Updated"), except with the space after the
   colon they omit. Using the *source's* timestamp rather than our fetch time keeps
@@ -42,24 +47,25 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The compact table
 
-- **Six fixed columns:** Prime Street, Cross Street, Dispatch Time, Incident Type,
-  Alarm Level, Dispatched Units. The table never grows columns.
+- **Five fixed columns:** Prime Street, Dispatch Time, Incident Type, Alarm Level,
+  Dispatched Units. The table never grows columns.
+- **Cross Street is not a column.** It is blank on most incidents — every medical
+  one — and it refines Prime Street rather than being a peer of it, so on a phone it
+  spent width it rarely used. It lives in the detail view, with Incident Number and
+  Area.
 - **The City's column *proportions* are not mirrored.** They are desktop-tuned: at
   their widths every text column wraps on a phone. We mirror their *fields* and
   allocate widths ourselves.
-- **Empty cells are left empty.** Cross Street is blank for roughly two-thirds of
-  incidents (all medical ones). No `N/A`, no dash.
+- **Empty cells are left empty.** No `N/A`, no dash.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.
+- **A value that does not fit wraps inside its own cell.** It is never truncated and
+  is never moved out of its column, so a long apparatus roster makes its own column
+  taller and leaves the other four alone. A nine-unit response therefore makes a tall,
+  narrow cell rather than a wide one. This replaces an earlier full-width continuation
+  line, which read as though the value belonged to whichever column it landed under.
 - **Incident Number and Area are not columns.** They live in the model and in the
   detail view.
-- **Long values get a full-width continuation line** beneath the six-field grid
-  rather than wrapping inside a narrow column. Dispatched Units at the City's 16%
-  width fits about ten characters per line; a nine-unit response decoded runs to
-  about 104 characters, so in-column wrapping would mean a ~150pt-tall cell in a
-  ~58pt-wide column. Spanning the full width renders the same content in two
-  lines. The 67% of rows that are single-unit medical calls stay a clean one-line
-  grid, and row height ends up proportional to response size.
 
 ## Values
 
@@ -68,12 +74,14 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   readably and carry the explanation inline.
 - **Dispatch Time is formatted**, not the raw ISO string the City displays with
   its `T` intact.
-- **Dispatched Units are decoded using the City's own legend** — `P` Pumper,
-  `R` Rescue, `A` Aerial, `T` Tower, `PL` Platform, `S` Squad, `HR` Highrise,
-  `HZ` HazMat, `FB` Fireboat, `CMD` Command Vehicle, `C` Chief, `LA` Air Light,
-  `TRS` Trench Rescue Support, `WT` Water Tanker, `HS` Haz Support, `Sup7` and
-  `Box12` Canteen, `DE` Decon, `MP` Mini Pumper, `FI` Fire Investigator. This is
-  the City's vocabulary, not ours.
+- **Dispatched Units are decoded in the detail view, and left raw in the table.**
+  Decoding uses the City's own legend — `P` Pumper, `R` Rescue, `A` Aerial, `T` Tower,
+  `PL` Platform, `S` Squad, `HR` Highrise, `HZ` HazMat, `FB` Fireboat, `CMD` Command
+  Vehicle, `C` Chief, `LA` Air Light, `TRS` Trench Rescue Support, `WT` Water Tanker,
+  `HS` Haz Support, `Sup7` and `Box12` Canteen, `DE` Decon, `MP` Mini Pumper,
+  `FI` Fire Investigator. That is the City's vocabulary, not ours. The table keeps the
+  published tokens — `P231, P234` — because it has the least room and the detail view is
+  one tap away.
 - **Codes we cannot decode are shown raw.** The legend appears not to be
   exhaustive — `L325` was observed once and is undefined. An undecodable code
   falls back to its raw token rather than a guess.

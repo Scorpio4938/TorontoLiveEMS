@@ -13,27 +13,29 @@ struct ContentView: View {
     @State private var snapshot: LiveCADSnapshot?
     @State private var failureMessage: String?
     @State private var isShowingStaleResult = false
+    @State private var isRefreshing = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if snapshot != nil {
-                    header
-                }
                 statusLine
+                if snapshot != nil {
+                    columnHeader
+                }
                 Divider()
                 content
             }
             .navigationTitle("Active Incidents")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        Task { await load() }
-                    } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise")
-                    }
-                }
-            }
+            #if os(iOS)
+            // Without this the title is large and collapses as the list scrolls, while
+            // the column header below it stays put — which reads as the header row
+            // drifting away from the columns it belongs to.
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            // A refresh control at the bottom, within thumb reach on a phone. Applied as
+            // a safe-area inset so it sits below the list rather than over the last row,
+            // and so the list keeps its own scrolling without being clipped.
+            .safeAreaInset(edge: .bottom) { refreshBar }
         }
         // Runs when the view appears. It deliberately does not run again when the app
         // comes back from the background: the previous result is still in memory, and the
@@ -83,17 +85,37 @@ struct ContentView: View {
     }
 
     /// The column labels, held still above the list so a long list stays readable.
-    private var header: some View {
+    private var columnHeader: some View {
         HStack(alignment: .top, spacing: IncidentRow.spacing) {
             ForEach(CompactColumn.allCases, id: \.self) { column in
                 Text(column.label)
                     .font(.caption2.weight(.semibold))
-                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 6)
+        .padding(.bottom, 4)
+    }
+
+    private var refreshBar: some View {
+        HStack(spacing: 8) {
+            if isRefreshing {
+                ProgressView()
+                    .controlSize(.small)
+            }
+            Spacer()
+            Button {
+                Task { await load() }
+            } label: {
+                Label("Refresh", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .disabled(isRefreshing)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(.bar)
     }
 
     /// The feed's own timestamp, on screen at all times — including before the first
@@ -113,7 +135,8 @@ struct ContentView: View {
         .font(.caption2)
         .foregroundStyle(isShowingStaleResult ? Color.orange : Color.secondary)
         .padding(.horizontal)
-        .padding(.bottom, 4)
+        .padding(.top, 6)
+        .padding(.bottom, 2)
     }
 
     private var statusText: String {
@@ -129,6 +152,9 @@ struct ContentView: View {
     }
 
     private func load() async {
+        isRefreshing = true
+        defer { isRefreshing = false }
+
         do {
             snapshot = try await LiveCADClient().snapshot()
             failureMessage = nil

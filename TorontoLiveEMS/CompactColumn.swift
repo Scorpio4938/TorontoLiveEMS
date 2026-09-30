@@ -3,16 +3,17 @@ import TorontoLiveEMSKit
 
 /// The compact table's columns, in the order they are shown.
 ///
-/// This is the single source of truth for the column set — order, label, and the
-/// value each column draws from an Incident. It is fixed at six: the table never
-/// grows columns, so one layout serves every row on every device.
+/// This is the single source of truth for the column set — order, label, and the value
+/// each column draws from an Incident. It is fixed at five: the table never grows
+/// columns, so one layout serves every row on every device.
 ///
-/// Incident Number and Area are deliberately absent. They are carried in the model
-/// and shown in the detail view. See `docs/design-decisions.md`.
+/// Cross Street is deliberately absent. It is blank on most incidents — every medical
+/// one — and it is a refinement of Prime Street rather than a peer of it, so on a phone
+/// it spent width it rarely used. It lives in the detail view. Incident Number and Area
+/// are there too. See `docs/design-decisions.md`.
 enum CompactColumn: CaseIterable {
 
     case primeStreet
-    case crossStreet
     case dispatchTime
     case incidentType
     case alarmLevel
@@ -23,8 +24,6 @@ enum CompactColumn: CaseIterable {
         switch self {
         case .primeStreet:
             return "Prime Street"
-        case .crossStreet:
-            return "Cross Street"
         case .dispatchTime:
             return "Dispatch Time"
         case .incidentType:
@@ -41,16 +40,11 @@ enum CompactColumn: CaseIterable {
     /// `nil` means there is nothing to show. It renders as an empty cell — no
     /// placeholder, no substitute.
     ///
-    /// The feed's values are rendered for people here, not passed through: the
-    /// timestamp is formatted, the Incident Type becomes a category, and the
-    /// apparatus codes become the City's names. Anything we cannot interpret falls
-    /// back to the published string.
+    /// Anything we cannot interpret falls back to the published string.
     func text(for incident: Incident) -> String? {
         switch self {
         case .primeStreet:
             return incident.primeStreet
-        case .crossStreet:
-            return incident.crossStreets
         case .dispatchTime:
             return DispatchTimestamp.clockTime(incident.dispatchTime)
         case .incidentType:
@@ -59,8 +53,10 @@ enum CompactColumn: CaseIterable {
         case .alarmLevel:
             return incident.alarmLevel
         case .dispatchedUnits:
-            let units = DispatchedUnit.roster(from: incident.dispatchedUnits)
-            return units.isEmpty ? nil : units.map(\.display).joined(separator: ", ")
+            // Left exactly as published. Decoding `P231` to `Pumper 231` is worth the
+            // characters in the detail view and not here, where width is the scarcest
+            // thing we have.
+            return incident.dispatchedUnits
         }
     }
 }
