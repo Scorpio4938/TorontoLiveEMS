@@ -206,36 +206,35 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The app icon
 
-- **A flame.** The first version was a small table with one cell marked — the product and its
-  colour rule in one figure — and it was rejected for having too many parts and for not saying
-  *fire* at a glance. That was the right call. This is Toronto Fire Services' feed, the flame
-  is what the service itself uses, and an icon that is statistically representative of the
-  incident mix is optimising the wrong thing: nobody reads an icon for a census.
-- **Two tones, not one.** A bright core inside a warmer body, because that is what a flame is.
-  It is also what Liquid Glass wants — separate layers it can refract between, and what Icon
-  Composer builds from if the icon ever moves to it.
-- **Red, because the app is about fire response.** The frame is red; the flame is warm inside
-  it. Apple's systemRed is built for text and controls on a light background and reads as an
-  error state at this size, so the background is a deeper red and the mark carries the heat.
-- **Symmetric.** A leaning tip is more lifelike and unreadable at 29pt, where the whole mark is
-  twenty points tall and any asymmetry just looks like a rendering fault.
-- **Generated, not drawn.** `scripts/make_app_icon.py` writes the three appearance files.
-  There is no image editor here and the mark is one shape, so it is reproducible and a change
-  to it is a change to a number rather than a re-export from a tool nobody else has.
+- **An emergency light bar, not a flame.** Two marks were tried and rejected first. A small
+  table with one cell marked was the product and its colour rule, and it had too many parts. A
+  flame said *fire*, and the app reports the *response* to a fire rather than fire itself. A
+  light bar is the thing arriving, which is what the feed actually carries, and it is what a
+  fire truck shows: red, white, red.
+- **Nothing smaller than it looks.** At 29pt — Settings, Spotlight — the whole mark is twenty
+  points tall. Three large lenses survive that; the beacon alternative's rays come out under a
+  point thick and do not.
+- **Each appearance gets a housing that reads against its own ground.** A dark bar on a dark
+  ground measured 1.2:1 in the tinted appearance — present in the geometry, invisible in the
+  picture. The tinted housing is *lighter* than its ground, the opposite of the other two,
+  because in tinted the lenses are the brightest thing in the frame either way.
+- **Red, because the app is about fire response.** The lens is a brighter red than the ground,
+  because on a red icon a red light has to be the brighter red or it is not a light.
+- **Generated, not drawn.** `scripts/make_app_icon.py` writes the three appearance files, and
+  `--compare` writes every candidate. There is no image editor here, so the mark is a number
+  rather than an export from a tool nobody else has.
 - **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
   no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
   treatment — rule 17 of `docs/design-grammar.md` applied to the icon.
-- **Three appearances, because the manifest declares three.** Light, dark, and tinted. The
-  tinted one is greyscale and its flame is the brightest thing in the frame, because the
-  system maps luminance onto the reader's chosen tint; supply it orange and the tint eats it.
 - **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
   the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
   to the orange that marks an exception, and those two have to stay tellable apart. If they
-  read as the same warm blur, the exception colour moves rather than the accent.
-- **The shape was verified by measuring it, not by looking.** The flame's width profile tapers
-  from 12px at the tip to 364px at 57% down and back to 100px at the rounded base, centred, at
-  70% of the frame — which is a flame and not a teardrop or a blob. Nothing in the repository
-  can see it, so the numbers are the check.
+  read as one warm blur, the exception colour moves rather than the accent.
+- **The shape is verified by measuring it.** Nothing in this repository can look at it, so the
+  numbers are the check: partly-counted shapes, contrast between each part and the thing it
+  sits on, and the size of every part at the sizes iOS draws. Two of the three revisions here
+  came from a measurement rather than from a decision — the invisible housing, and the rays
+  that would not survive 29pt.
 
 ## Values
 

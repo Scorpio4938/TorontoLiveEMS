@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 """Draws the app icon and writes its appearance variants.
 
-Generated rather than drawn in an editor because there is no editor here and the mark is one
-shape. It is reproducible, and a change to the geometry is a change to a number rather than a
-re-export from a tool nobody else has.
+Generated rather than drawn in an editor because there is no editor here. It is
+reproducible, and a change to the mark is a change to a number.
 
-The mark is a flame. An earlier version was a small table with one cell marked — the product
-and its colour rule in one figure — and it was rejected for having too many parts and for not
-saying *fire* at a glance. That was the right call: this is Toronto Fire Services' feed, the
-flame is what the service itself uses, and an icon that is statistically representative of the
-incident mix is optimising the wrong thing. Nobody reads an icon for a census.
+**What the mark is, and what it deliberately is not.** Two versions have been tried and
+rejected. A small table with one cell marked was the product and its colour rule, and it had
+too many parts. A flame said *fire*, and the app is about the response to a fire rather than
+fire itself. So: a beacon and a light bar. Those are the shapes that mean *responder* — the
+thing arriving, not the thing burning — which is what the feed actually reports.
 
-Two tones rather than one, because a flame is two tones: a bright core inside a warmer body.
-That is also what Liquid Glass wants — separate layers it can refract between, which is what
-Icon Composer builds from if this ever moves to it.
+Both are on a dark ground so the red carries, and both are two or three shapes rather than
+fifteen, because at 29pt the whole mark is twenty points tall.
 
 Apple's guidance for what we supply: flat, opaque, square. No transparency, no rounded
 corners, no shadow, no attempt at glass. The platform applies the mask, the shadow and the
@@ -21,8 +19,8 @@ Liquid Glass treatment. Drawing any of those ourselves fights the system and loo
 moment the system changes its approach.
 
 Usage:
-    python3 scripts/make_app_icon.py             # write the three appearance files
-    python3 scripts/make_app_icon.py --preview   # ...and a copy to look at
+    python3 scripts/make_app_icon.py                    # write the installed icon
+    python3 scripts/make_app_icon.py --compare          # every candidate, plus both previews
 """
 
 import argparse
@@ -34,16 +32,22 @@ import zlib
 SIZE = 1024
 SUPERSAMPLE = 2
 
-# The flame. Warm rather than Apple's systemRed, which is built for text and controls on a
-# light background and reads as an error state at this size.
-OUTER = (255, 106, 32, 255)
-INNER = (255, 205, 92, 255)
+# The lens. Brighter than the ground it sits on, because on a red icon a red light has to be
+# the brighter red or it is not a light — and Apple's systemRed, which is built for text on a
+# light background, reads as an error state at this size.
+RED = (255, 74, 58, 255)
+# The lens that alternates with it on real fire apparatus.
+WHITE = (255, 246, 240, 255)
+# The housing, and it has to be *visible*: the first value was almost exactly the ground, so
+# the bar the lights sit in was there in the geometry and invisible in the picture.
+HOUSING = (16, 5, 7, 255)
+RAY = (255, 132, 104, 255)
 
 OUT = pathlib.Path("TorontoLiveEMS/Assets.xcassets/AppIcon.appiconset")
 
 
 class Canvas:
-    """An RGBA pixel buffer with just enough drawing for one geometric mark."""
+    """An RGBA pixel buffer with just enough drawing for two or three shapes."""
 
     def __init__(self, width, height):
         self.w = width
@@ -55,6 +59,10 @@ class Canvas:
             i = (y * self.w + x) * 4
             self.px[i:i + 4] = bytes(colour)
 
+    def get(self, x, y):
+        i = (y * self.w + x) * 4
+        return tuple(self.px[i:i + 3])
+
     def vertical_gradient(self, top, bottom):
         for y in range(self.h):
             t = y / max(1, self.h - 1)
@@ -65,9 +73,9 @@ class Canvas:
     def fill_polygon(self, points, colour):
         """Even-odd scanline fill.
 
-        Scanline rather than testing every pixel in the bounding box: the mark is drawn at
-        twice the output size, so a bounding-box test is a few hundred million point-in-polygon
-        checks and this is a few hundred thousand.
+        Scanline rather than testing every pixel in a bounding box: the mark is drawn at twice
+        the output size, so a box test is hundreds of millions of point-in-polygon checks where
+        this is a few hundred thousand.
         """
         ys = [p[1] for p in points]
         top, bottom = int(min(ys)), int(max(ys))
@@ -82,9 +90,7 @@ class Canvas:
                     crossings.append(ax + (yc - ay) * (bx - ax) / (by - ay))
             crossings.sort()
             for i in range(0, len(crossings) - 1, 2):
-                start = max(0, int(crossings[i]))
-                end = min(self.w, int(crossings[i + 1]) + 1)
-                for x in range(start, end):
+                for x in range(max(0, int(crossings[i])), min(self.w, int(crossings[i + 1]) + 1)):
                     self.set(x, y, colour)
 
     def downsample(self, factor):
@@ -131,103 +137,146 @@ class Canvas:
         path.write_bytes(self.png())
 
 
-def bezier(p0, p1, p2, p3, steps):
-    points = []
+# --- shapes, all in canvas pixels, all as polygons so one fill routine serves everything ---
+
+def rrect(cx, cy, w, h, radius, corner_steps=24):
+    """A rounded rectangle centred on (cx, cy)."""
+    x0, y0, x1, y1 = cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
+    r = min(radius, w / 2, h / 2)
+    pts = []
+
+    def arc(ax, ay, start, end):
+        for i in range(corner_steps + 1):
+            a = start + (end - start) * i / corner_steps
+            pts.append((ax + r * math.cos(a), ay + r * math.sin(a)))
+
+    arc(x1 - r, y0 + r, -math.pi / 2, 0)
+    arc(x1 - r, y1 - r, 0, math.pi / 2)
+    arc(x0 + r, y1 - r, math.pi / 2, math.pi)
+    arc(x0 + r, y0 + r, math.pi, 3 * math.pi / 2)
+    return pts
+
+
+def dome(cx, base_y, radius, steps=90):
+    """A half-circle sitting on a flat base — the shape of the light itself."""
+    pts = [(cx - radius, base_y)]
     for i in range(steps + 1):
-        t = i / steps
-        m = 1 - t
-        points.append((
-            m ** 3 * p0[0] + 3 * m * m * t * p1[0] + 3 * m * t * t * p2[0] + t ** 3 * p3[0],
-            m ** 3 * p0[1] + 3 * m * m * t * p1[1] + 3 * m * t * t * p2[1] + t ** 3 * p3[1],
-        ))
-    return points
+        a = math.pi + math.pi * i / steps
+        pts.append((cx + radius * math.cos(a), base_y + radius * math.sin(a)))
+    pts.append((cx + radius, base_y))
+    return pts
 
 
-# The flame, in its own coordinates: y = 0 at the base, y = 1 at the tip, x symmetric about 0.
-BASE_CENTRE_Y = 0.20
-BASE_RADIUS = 0.20
-# The side bulges out below the middle and draws back in to the tip. That waist is what makes
-# it a flame rather than a teardrop.
-BULGE_X, WAIST_X = 0.345, 0.205
-
-
-def flame_outline(steps=180):
-    """The closed outline of the flame, as a polygon.
-
-    Symmetric. A leaning tip is more lifelike and unreadable at 29pt, where the whole mark is
-    20 points tall and any asymmetry just looks like a rendering fault.
-    """
-    up = bezier(
-        (BASE_RADIUS, BASE_CENTRE_Y),
-        (BULGE_X, 0.46),
-        (WAIST_X, 0.72),
-        (0.0, 1.0),
-        steps,
-    )
-    down = [(-x, y) for (x, y) in reversed(up)]
-    # The base, from the left side round the bottom to the right, so the outline closes.
-    arc = [
-        (
-            BASE_RADIUS * math.cos(a),
-            BASE_CENTRE_Y + BASE_RADIUS * math.sin(a),
-        )
-        for a in (math.pi + math.pi * i / 90 for i in range(91))
+def ray(cx, cy, inner, outer, half_width, angle):
+    """A tapered bar from `inner` to `outer` along `angle` (radians from straight up)."""
+    dx, dy = math.sin(angle), -math.cos(angle)
+    px, py = math.cos(angle), math.sin(angle)
+    return [
+        (cx + dx * inner + px * half_width, cy + dy * inner + py * half_width),
+        (cx + dx * outer + px * half_width * 0.55, cy + dy * outer + py * half_width * 0.55),
+        (cx + dx * outer - px * half_width * 0.55, cy + dy * outer - py * half_width * 0.55),
+        (cx + dx * inner - px * half_width, cy + dy * inner - py * half_width),
     ]
-    return up + down + arc
 
 
-def draw(background, outer, inner):
-    """One appearance: the flame on its background, at twice size, then halved."""
+# --- the two candidates ---------------------------------------------------------------
+
+def beacon(background, light, glow, housing=HOUSING):
+    """A beacon on its housing, throwing light. The siren, as a shape."""
     c = Canvas(SIZE * SUPERSAMPLE, SIZE * SUPERSAMPLE)
     c.vertical_gradient(*background)
+    s = SIZE * SUPERSAMPLE
+    cx = s / 2
 
-    height = SIZE * SUPERSAMPLE * 0.70
-    base_y = SIZE * SUPERSAMPLE * 0.855
-    centre_x = SIZE * SUPERSAMPLE / 2
-
-    def place(points, scale, lift):
-        return [
-            (centre_x + x * height * scale, base_y - (y * scale + lift) * height)
-            for (x, y) in points
-        ]
-
-    outline = flame_outline()
-    c.fill_polygon(place(outline, 1.0, 0.0), outer)
-    # The core: the same flame, smaller, sitting low inside the body the way a real one does.
-    c.fill_polygon(place(outline, 0.52, 0.055), inner)
-
+    base_y = s * 0.700
+    c.fill_polygon(rrect(cx, s * 0.790, s * 0.560, s * 0.180, s * 0.070), housing)
+    c.fill_polygon(dome(cx, base_y, s * 0.185), light)
+    # Short, thick, few. Thin rays are the first thing to vanish at 29pt, so these are the
+    # light's flourish rather than the thing that carries the meaning — the dome carries it.
+    for angle in (-0.62, 0.0, 0.62):
+        c.fill_polygon(
+            ray(cx, base_y - s * 0.055, s * 0.245, s * 0.375, s * 0.052, angle),
+            glow,
+        )
     return c.downsample(SUPERSAMPLE)
 
 
-# Light is the icon people see: the whole frame red, the flame warm inside it.
-LIGHT = (((150, 26, 22, 255), (74, 11, 14, 255)), OUTER, INNER)
-# Dark goes further down rather than up, so it sits with a dark Home Screen instead of glowing
-# off it.
-DARK = (((92, 16, 16, 255), (34, 6, 8, 255)), OUTER, INNER)
-# Tinted is greyscale and inverted in emphasis: the system maps luminance onto whatever tint
-# the reader chose, so the flame has to be the brightest thing in the frame. Supply it orange
-# and the tint eats it.
-TINTED = (((26, 26, 28, 255), (12, 12, 14, 255)), (255, 255, 255, 255), (168, 168, 172, 255))
+def lightbar(background, left_light, right_light, middle, housing=HOUSING):
+    """The bar itself, three lenses. Red, white, red — what a fire truck actually shows."""
+    c = Canvas(SIZE * SUPERSAMPLE, SIZE * SUPERSAMPLE)
+    c.vertical_gradient(*background)
+    s = SIZE * SUPERSAMPLE
+    cx, cy = s / 2, s * 0.500
 
-APPEARANCES = (("light", LIGHT), ("dark", DARK), ("tinted", TINTED))
+    c.fill_polygon(rrect(cx, cy, s * 0.720, s * 0.300, s * 0.110), housing)
+    for offset, colour in ((-0.222, left_light), (0.0, middle), (0.222, right_light)):
+        c.fill_polygon(
+            rrect(cx + s * offset, cy, s * 0.180, s * 0.208, s * 0.060),
+            colour,
+        )
+    return c.downsample(SUPERSAMPLE)
+
+
+# Light is the icon people see. Dark goes further down rather than up, so it sits on a dark
+# Home Screen instead of glowing off it.
+# Light enough that the housing reads as a bar rather than as nothing. At the first value the
+# bar and the ground measured 1.6:1 — present in the geometry, invisible in the picture.
+LIGHT_GROUND = ((146, 32, 28, 255), (52, 10, 12, 255))
+DARK_GROUND = ((120, 26, 24, 255), (36, 8, 9, 255))
+# Tinted is greyscale: the system maps luminance onto whatever tint the reader chose, so the
+# lights have to be the brightest thing in the frame. Supply them red and the tint eats them.
+TINTED_GROUND = ((8, 8, 10, 255), (0, 0, 0, 255))
+# And its housing is *lighter* than its ground, the opposite of the other two. A dark bar on a
+# dark ground is nothing: that appearance measured 1.2:1, so the bar was in the geometry and
+# invisible in the picture. In tinted the lenses are the brightest things in the frame either
+# way, so the bar can sit above the ground instead of below it.
+TINTED_HOUSING = (76, 76, 80, 255)
+
+CANDIDATES = {
+    "beacon": lambda ground, tinted, housing: beacon(
+        ground,
+        (255, 255, 255, 255) if tinted else RED,
+        (168, 168, 172, 255) if tinted else RAY,
+        housing,
+    ),
+    "lightbar": lambda ground, tinted, housing: lightbar(
+        ground,
+        (255, 255, 255, 255) if tinted else RED,
+        (255, 255, 255, 255) if tinted else RED,
+        (150, 150, 154, 255) if tinted else WHITE,
+        housing,
+    ),
+}
+
+APPEARANCES = (
+    ("light", LIGHT_GROUND, HOUSING),
+    ("dark", DARK_GROUND, HOUSING),
+    ("tinted", TINTED_GROUND, TINTED_HOUSING),
+)
+
+
+def render(candidate, appearance_name, ground, housing):
+    return CANDIDATES[candidate](ground, appearance_name == "tinted", housing)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--preview", action="store_true")
+    parser.add_argument("--candidate", choices=sorted(CANDIDATES), default="beacon")
+    parser.add_argument("--compare", action="store_true")
     parser.add_argument("--out", type=pathlib.Path, default=OUT)
     args = parser.parse_args()
 
-    if args.preview:
+    if args.compare:
         destination = pathlib.Path("/tmp/icon-preview")
-        for name, appearance in APPEARANCES:
-            draw(*appearance).write(destination / f"flame-{name}.png")
-        print(f"  wrote a copy to {destination}")
+        for candidate in CANDIDATES:
+            for name, ground, housing in APPEARANCES:
+                render(candidate, name, ground, housing).write(destination / f"{candidate}-{name}.png")
+        print(f"  wrote both candidates to {destination}")
         return 0
 
-    for name, appearance in APPEARANCES:
+    for name, ground, housing in APPEARANCES:
         path = args.out / f"icon-{name}.png"
-        draw(*appearance).write(path)
+        render(args.candidate, name, ground, housing).write(path)
         print(f"  {path}  {path.stat().st_size // 1024} KB")
     return 0
 
