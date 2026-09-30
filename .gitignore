@@ -12,3 +12,6 @@ xcuserdata/
 .build/
 .swiftpm/
 Package.resolved
+
+# Left behind by running scripts/check_swift.py
+__pycache__/

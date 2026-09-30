@@ -8,7 +8,7 @@ import TorontoLiveEMSKit
 /// incidents, which is what makes two treatments comparable: same data, same conditions.
 ///
 /// Between them they cover every shape the feed publishes: a medical incident whose
-/// location is an FSA, an ordinary addressable one, an escalated alarm, one with a long
+/// location is an FSA, an ordinary addressable one, an escalated alarm with a long
 /// apparatus roster, and the two blank shapes — no Prime Street, and no `units_disp`.
 enum PreviewIncidents {
 
@@ -38,7 +38,7 @@ enum PreviewIncidents {
     static let locationWithheld = Incident(
         incidentNumber: "F26154880",
         primeStreet: nil,
-        crossStreets: "ARDAGH ST / JANE ST",
+        crossStreets: "ARDAGH ST / JANE RD",
         dispatchTime: "2026-09-29T19:54:42",
         incidentType: "Vehicle - Personal Injury",
         alarmLevel: "0",
@@ -53,18 +53,33 @@ enum PreviewIncidents {
 
 /// A `List` of rows rather than `ContentView`, which fetches on appear and would show a
 /// loading state in the canvas.
+///
+/// It mirrors the screen deliberately, in the two places a preview would otherwise lie:
+/// the rows are wrapped in a `NavigationLink` because that is what gives them the
+/// disclosure chevron the column header reserves width for, and the header is shown only
+/// at sizes the app would show it at. A preview that draws either differently is showing
+/// an alignment the app does not have.
 private struct PreviewTable: View {
+
     var incidents: [Incident] = PreviewIncidents.all
     var timeFormat: DispatchTimeFormat = .twelveHour
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         List {
             Section {
                 ForEach(incidents) { incident in
-                    IncidentRow(incident: incident, timeFormat: timeFormat)
+                    NavigationLink {
+                        IncidentDetailView(incident: incident)
+                    } label: {
+                        IncidentRow(incident: incident, timeFormat: timeFormat)
+                    }
                 }
             } header: {
-                CompactColumnHeader()
+                if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
+                    CompactColumnHeader()
+                }
             }
         }
         .listStyle(.plain)
@@ -84,7 +99,7 @@ private struct PreviewTable: View {
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
-/// system setting and hunting for it.
+/// system setting and then finding it.
 #Preview("Table — accessibility text") {
     PreviewTable().environment(\.dynamicTypeSize, .accessibility3)
 }
@@ -97,7 +112,7 @@ private struct PreviewTable: View {
 // MARK: - The detail view, where the system's chrome is
 
 /// The detail view carries the toolbar and the scroll edge effect, so it is the screen
-/// where Reduce Transparency and Increase Contrast actually change something.
+/// where a change of appearance actually changes something.
 #Preview("Detail — light") {
     NavigationStack {
         IncidentDetailView(incident: PreviewIncidents.fire)
@@ -109,28 +124,6 @@ private struct PreviewTable: View {
         IncidentDetailView(incident: PreviewIncidents.fire)
     }
     .preferredColorScheme(.dark)
-}
-
-#Preview("Detail — increased contrast") {
-    NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
-    }
-    .environment(\.colorSchemeContrast, .increased)
-}
-
-#Preview("Detail — reduced transparency") {
-    NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
-    }
-    .environment(\.accessibilityReduceTransparency, true)
-}
-
-#Preview("Detail — reduced transparency, dark") {
-    NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
-    }
-    .preferredColorScheme(.dark)
-    .environment(\.accessibilityReduceTransparency, true)
 }
 
 /// The medical case, whose location is a postal area and whose footer says so.
@@ -149,3 +142,12 @@ private struct PreviewTable: View {
 #Preview("Settings — dark") {
     SettingsView().preferredColorScheme(.dark)
 }
+
+// NOTE: there were previews here for Increase Contrast and Reduce Transparency, and they
+// were removed rather than kept. Both would need to set an environment value through a
+// key path whose writability could not be confirmed from this machine, and a preview is
+// not worth risking the build for — a failed preview fails the build.
+//
+// Both remain on issue #11's list, and both need the Simulator rather than the canvas:
+// Settings → Accessibility → Display & Text Size → Increase Contrast, and
+// Settings → Accessibility → Motion → Reduce Transparency.
