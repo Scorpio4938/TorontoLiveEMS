@@ -36,41 +36,44 @@ struct IncidentCardRow: View {
 
     /// The ordinary arrangement: where and what above, when and who below.
     ///
-    /// Support text is secondary here where a table cell is primary — the arrangement
-    /// decides that, and the exception colour does not. Both go through `CompactAttention`
-    /// so the rule that orange means an exception has one definition.
+    /// Every value goes through `CompactCellText`, which is also what the table draws. The
+    /// type and the ordinary colour are the only things this arrangement chooses; the
+    /// exception colour, and the mark on a substituted address, are decided once for both.
     private var twoLines: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                let street = cell(.primeStreet)
-                Text(street.text ?? "")
-                    .font(.headline)
-                    .foregroundStyle(CompactAttention.colour(for: street) ?? .primary)
+                CompactCellText(cell: cell(.primeStreet), font: .headline)
 
                 Spacer(minLength: 4)
 
-                let type = cell(.incidentType)
-                Text(type.text ?? "")
-                    .font(.subheadline)
-                    .foregroundStyle(CompactAttention.colour(for: type) ?? .secondary)
+                CompactCellText(
+                    cell: cell(.incidentType),
+                    font: .subheadline,
+                    ordinaryColour: .secondary
+                )
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                let time = cell(.dispatchTime)
-                Text(time.text ?? "")
-                    .monospacedDigit()
-                    .foregroundStyle(CompactAttention.colour(for: time) ?? .secondary)
+                CompactCellText(
+                    cell: cell(.dispatchTime),
+                    font: .footnote,
+                    ordinaryColour: .secondary
+                )
+                .monospacedDigit()
 
-                let alarm = cell(.alarmLevel)
-                Text(alarm.text ?? "")
-                    .foregroundStyle(CompactAttention.colour(for: alarm) ?? .secondary)
+                CompactCellText(
+                    cell: cell(.alarmLevel),
+                    font: .footnote,
+                    ordinaryColour: .secondary
+                )
 
-                let units = cell(.dispatchedUnits)
-                Text(units.text ?? "")
-                    .lineLimit(2)
-                    .foregroundStyle(CompactAttention.colour(for: units) ?? .secondary)
+                CompactCellText(
+                    cell: cell(.dispatchedUnits),
+                    font: .footnote,
+                    ordinaryColour: .secondary
+                )
+                .lineLimit(2)
             }
-            .font(.footnote)
         }
     }
 

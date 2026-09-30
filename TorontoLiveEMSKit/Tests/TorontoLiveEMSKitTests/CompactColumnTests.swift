@@ -12,6 +12,7 @@ struct CompactColumnTests {
 
     private func incident(
         primeStreet: String? = "QUEEN ST W",
+        crossStreets: String? = nil,
         dispatchTime: String = "2026-09-29T18:24:39",
         incidentType: String = "MEDICAL",
         alarmLevel: String = "0",
@@ -20,7 +21,7 @@ struct CompactColumnTests {
         Incident(
             incidentNumber: "F26154815",
             primeStreet: primeStreet,
-            crossStreets: nil,
+            crossStreets: crossStreets,
             dispatchTime: dispatchTime,
             incidentType: incidentType,
             alarmLevel: alarmLevel,
@@ -99,6 +100,54 @@ struct CompactColumnTests {
         let cell = CompactColumn.primeStreet.cell(for: incident(), timeFormat: .twelveHour)
         #expect(cell.text == "QUEEN ST W")
         #expect(!cell.warrantsAttention)
+    }
+
+    @Test("falls back to the intersection when there is no prime street")
+    func fallsBackToTheIntersection() {
+        // The City publishes an intersection instead of an address for some incidents and
+        // leaves Prime Street blank. The cell used to be empty, hiding a location the feed
+        // does supply, on exactly the incidents whose location is hardest to infer.
+        let cell = CompactColumn.primeStreet.cell(
+            for: incident(primeStreet: nil, crossStreets: "ARDAGH ST / JANE ST"),
+            timeFormat: .twelveHour
+        )
+        #expect(cell.text == "ARDAGH ST / JANE ST")
+        #expect(cell.isFallback)
+    }
+
+    @Test("marks nothing as a fallback when the prime street is there")
+    func noFallbackWhenTheAddressIsPublished() {
+        let cell = CompactColumn.primeStreet.cell(
+            for: incident(primeStreet: "QUEEN ST W", crossStreets: "BAY ST / YORK ST"),
+            timeFormat: .twelveHour
+        )
+        #expect(cell.text == "QUEEN ST W")
+        #expect(!cell.isFallback)
+    }
+
+    @Test("does not invent a location when neither street is published")
+    func noFallbackWithoutEither() {
+        let cell = CompactColumn.primeStreet.cell(
+            for: incident(primeStreet: nil, crossStreets: nil),
+            timeFormat: .twelveHour
+        )
+        #expect(cell.text == nil)
+        #expect(!cell.isFallback)
+    }
+
+    @Test("only the prime street column ever falls back")
+    func onlyPrimeStreetFallsBack() {
+        // The other four read one field each and have nothing to fall back to. If this ever
+        // fails, something has started substituting values in a column that names itself
+        // after one field.
+        let barren = incident(
+            primeStreet: nil,
+            crossStreets: "ARDAGH ST / JANE ST",
+            dispatchedUnits: nil
+        )
+        for column in CompactColumn.allCases where column != .primeStreet {
+            #expect(!column.cell(for: barren, timeFormat: .twelveHour).isFallback)
+        }
     }
 
     @Test("leaves a cell empty when the feed published nothing")

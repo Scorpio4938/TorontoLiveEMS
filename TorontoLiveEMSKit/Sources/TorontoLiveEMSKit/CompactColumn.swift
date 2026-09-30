@@ -9,9 +9,26 @@ public struct CompactCell: Equatable, Sendable {
     public let text: String?
     public let warrantsAttention: Bool
 
-    public init(_ text: String?, warrantsAttention: Bool = false) {
+    /// Whether this value came from a field other than the one the column names.
+    ///
+    /// There is one case. The City publishes an intersection instead of an address for some
+    /// incidents, and leaves Prime Street blank when it does — the intersection is not a
+    /// refinement of a missing address there, it is the only location there is. So it stands
+    /// in, and is marked, because a reader who sees two street names joined by a slash in a
+    /// column that otherwise holds one address should be able to find out why.
+    ///
+    /// A flag rather than a mark baked into `text`, so the published value stays exactly as
+    /// published and the view decides how to say the rest.
+    public let isFallback: Bool
+
+    public init(
+        _ text: String?,
+        warrantsAttention: Bool = false,
+        isFallback: Bool = false
+    ) {
         self.text = text
         self.warrantsAttention = warrantsAttention
+        self.isFallback = isFallback
     }
 }
 
@@ -84,7 +101,24 @@ public enum CompactColumn: CaseIterable, Sendable {
     public func cell(for incident: Incident, timeFormat: DispatchTimeFormat) -> CompactCell {
         switch self {
         case .primeStreet:
-            return CompactCell(incident.primeStreet)
+            // Normally the address, or the postal area the City publishes in its place for a
+            // medical incident. Both are `primeStreet`, and both are shown as published.
+            if let street = incident.primeStreet {
+                return CompactCell(street)
+            }
+
+            // Prime Street is blank here, which means the City published an intersection and
+            // nothing else. Leaving the cell empty would hide a location the feed supplies,
+            // for the incidents whose location is hardest to guess — so the intersection
+            // stands in, marked as the fallback it is.
+            //
+            // Cross Street stays out of the table otherwise: it is a refinement of Prime
+            // Street rather than a peer of it, and it is blank on most incidents. See
+            // `docs/design-decisions.md`.
+            guard let intersection = incident.crossStreets else {
+                return CompactCell(nil)
+            }
+            return CompactCell(intersection, isFallback: true)
 
         case .dispatchTime:
             return CompactCell(

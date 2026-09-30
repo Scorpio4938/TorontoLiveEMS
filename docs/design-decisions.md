@@ -101,6 +101,19 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   one — and it refines Prime Street rather than being a peer of it, so on a phone it
   spent width it rarely used. It lives in the detail view, with Incident Number and
   Area.
+- **Except when the intersection is the only location there is.** The City publishes an
+  intersection instead of an address for some incidents, and leaves Prime Street blank when
+  it does. There is no address to refine, so that intersection stands in for the missing one
+  rather than the cell being left empty — which hid a location the feed had supplied, on
+  precisely the incidents whose location is hardest to infer.
+- **A substituted address is marked, and the mark is deliberately tiny.** Two arrows
+  pointing apart, before the value: the smallest thing that can carry the meaning, and one
+  that needs no legend, because the value beside it is two street names joined by a slash
+  where every other row holds one address. It keeps its own small type even on a card, where
+  the address itself is a headline — a mark that scaled with the value would stop being a
+  footnote. It is a mark rather than a word such as "at" because the column has no characters
+  to spare, and because the app shows what the City published rather than a rendering of it.
+  It carries an accessibility label, so the mark is not information only sighted readers get.
 - **The City's column *proportions* are not mirrored.** They are desktop-tuned: at
   their widths every text column wraps on a phone. We mirror their *fields* and
   allocate widths ourselves.
@@ -130,7 +143,8 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   Incident to what a cell shows — content rather than layout, importing nothing from
   SwiftUI — so it sits in `TorontoLiveEMSKit`, where it can be tested. `CompactTable`
   holds SwiftUI values and stays in the app target.
-- **Empty cells are left empty.** No `N/A`, no dash.
+- **Empty cells are left empty.** No `N/A`, no dash. The one substitution is the address
+  above, and it is a fallback to another published field rather than a placeholder.
 - **Alarm Level shows the bare ordinal**, always, including `0`. Note the cost: it
   is `0` on 99.76% of incidents, so the column is near-constant by design.
 - **A value that does not fit wraps inside its own cell.** It is never truncated and
