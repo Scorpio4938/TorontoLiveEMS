@@ -39,10 +39,21 @@ struct CompactCellText: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(cell.text ?? "")
+                .font(font)
+                .foregroundStyle(CompactAttention.colour(for: cell) ?? ordinaryColour)
+
             if cell.isFallback {
                 // The only mark in the table, and deliberately the smallest thing that can
                 // carry meaning: two arrows pointing apart, which is what an intersection is,
                 // rather than a word that would cost characters the column does not have.
+                //
+                // **After the value, not before it.** In front, it pushed the address right,
+                // so that row's text started where no other row's did — against the column in
+                // the table, and against its own second line in a card. A marker that moves
+                // the thing it marks is worse than no marker: the value stopped being in the
+                // column it belongs to. Trailing, the value keeps the leading edge, and only
+                // its wrap shortens.
                 //
                 // Its own type rather than the value's. A card sets the address in `headline`
                 // and a mark that scaled with it would stop being a footnote.
@@ -51,10 +62,6 @@ struct CompactCellText: View {
                     .foregroundStyle(Color.secondary)
                     .accessibilityLabel("Intersection")
             }
-
-            Text(cell.text ?? "")
-                .font(font)
-                .foregroundStyle(CompactAttention.colour(for: cell) ?? ordinaryColour)
         }
     }
 }

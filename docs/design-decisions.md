@@ -107,13 +107,18 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   rather than the cell being left empty — which hid a location the feed had supplied, on
   precisely the incidents whose location is hardest to infer.
 - **A substituted address is marked, and the mark is deliberately tiny.** Two arrows
-  pointing apart, before the value: the smallest thing that can carry the meaning, and one
-  that needs no legend, because the value beside it is two street names joined by a slash
-  where every other row holds one address. It keeps its own small type even on a card, where
-  the address itself is a headline — a mark that scaled with the value would stop being a
-  footnote. It is a mark rather than a word such as "at" because the column has no characters
-  to spare, and because the app shows what the City published rather than a rendering of it.
-  It carries an accessibility label, so the mark is not information only sighted readers get.
+  pointing apart: the smallest thing that can carry the meaning, and one that needs no
+  legend, because the value beside it is two street names joined by a slash where every other
+  row holds one address. It keeps its own small type even on a card, where the address itself
+  is a headline — a mark that scaled with the value would stop being a footnote. It is a mark
+  rather than a word such as "at" because the column has no characters to spare, and because
+  the app shows what the City published rather than a rendering of it. It carries an
+  accessibility label, so the mark is not information only sighted readers get.
+- **The mark goes after the value, not before it.** In front it pushed the address right, so
+  that row's text began where no other row's did — against the column in the table, and
+  against its own second line in a card. A marker that moves the thing it marks is worse than
+  no marker: the value stops being in the column it belongs to. Trailing, the value keeps the
+  leading edge and only its wrap shortens, on the rows that need it.
 - **A mark can never sit on nothing.** With both streets absent — which happens, when the
   counter is the only place a location was published — the cell is empty and carries no
   mark. That is settled in `CompactCell`'s initialiser rather than at the call site, so a
