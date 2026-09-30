@@ -135,10 +135,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   explanations in section footers rather than stacked under each value. That is the
   Settings and Contacts shape, and it arrives with Dynamic Type, VoiceOver labelling and
   alignment behaviour we would otherwise hand-roll.
-- **Verbatim values live in an "As published" section of their own** — the raw Incident
-  Type, the raw timestamp, the raw apparatus roster. They are provenance rather than
-  information, so they get their own group instead of sitting in the readable screen
-  carrying its noise.
+- **The detail view shows the City's values, not our renderings of them.** Incident
+  Type appears as `MEDICAL`, Dispatch Time as `2026-09-29T18:24:39`, Dispatched Units as
+  `R346`. The rendering — the category label, the clock time — belongs to the table,
+  where width is scarce enough to justify it and where a value has to be scannable at a
+  glance. On a screen with room, the published value is the honest one. Showing both was
+  duplication, and it has been removed.
 - **It is where the legend lives.** Alarm Level meanings, unit-letter expansions and
   the rest of the City's explanatory text belong here, explaining *this* incident's
   values from the section footers rather than as footnotes under a table.

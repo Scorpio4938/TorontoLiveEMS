@@ -4,18 +4,19 @@ import TorontoLiveEMSKit
 /// Everything the City publishes about one incident.
 ///
 /// Laid out the way the platform lays out a details screen: `LabeledContent` for every
-/// label-and-value pair, explanations in section footers, and the verbatim published
-/// values in a group of their own rather than tangled in with the readable ones. See
-/// `docs/design-decisions.md` and `docs/adr/0005-apple-components-first.md`.
+/// label-and-value pair, and explanations in section footers rather than stacked under
+/// each value. See `docs/design-decisions.md` and
+/// `docs/adr/0005-apple-components-first.md`.
+///
+/// The values here are the City's own, not our renderings of them. The table turns
+/// Incident Type into a category and Dispatch Time into a clock time because width is
+/// scarce there; on a screen with room, the published value is the honest one, and
+/// showing both was clutter.
 struct IncidentDetailView: View {
 
     let incident: Incident
 
     private static let notProvided = "/"
-
-    private var category: IncidentCategory? {
-        IncidentCategory.from(incidentType: incident.incidentType)
-    }
 
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
@@ -29,15 +30,9 @@ struct IncidentDetailView: View {
         List {
             Section {
                 LabeledContent("Incident Number", value: incident.incidentNumber)
-                LabeledContent(
-                    "Incident Type",
-                    value: category?.label ?? incident.incidentType
-                )
+                LabeledContent("Incident Type", value: incident.incidentType)
                 LabeledContent("Alarm Level", value: incident.alarmLevel)
-                LabeledContent(
-                    "Dispatch Time",
-                    value: DispatchTimestamp.dateAndTime(incident.dispatchTime)
-                )
+                LabeledContent("Dispatch Time", value: incident.dispatchTime)
                 LabeledContent("Area", value: incident.area)
             } header: {
                 Text("Incident")
@@ -66,6 +61,8 @@ struct IncidentDetailView: View {
                 if units.isEmpty {
                     LabeledContent("Dispatched Units", value: Self.notProvided)
                 } else {
+                    // Each unit already carries its published code as the label, so the
+                    // raw roster needs no section of its own.
                     ForEach(units, id: \.code) { unit in
                         LabeledContent {
                             Text(unit.display)
@@ -80,18 +77,6 @@ struct IncidentDetailView: View {
                 if hasUndecodedUnit {
                     Text("A code not named here is not in the City's published legend.")
                 }
-            }
-
-            Section {
-                LabeledContent("Incident Type", value: incident.incidentType)
-                LabeledContent("Dispatch Time", value: incident.dispatchTime)
-                if let published = incident.dispatchedUnits {
-                    LabeledContent("Dispatched Units", value: published)
-                }
-            } header: {
-                Text("As published")
-            } footer: {
-                Text("The City's own values, before any of the above was rendered for reading.")
             }
 
             Section {
