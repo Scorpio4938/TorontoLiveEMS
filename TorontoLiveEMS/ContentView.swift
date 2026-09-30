@@ -27,6 +27,14 @@ struct ContentView: View {
                 content
             }
             .navigationTitle("Active Incidents")
+            #if os(iOS)
+            // Inline rather than large. A large title collapses as the list scrolls while
+            // the status line and column header below it stay pinned, so the chrome moves
+            // in two directions at once. It also reserves a band of space above the title
+            // that a table cannot afford. Inline sits on the same bar as the settings
+            // button, rather than on a band above it, and does not move.
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .primaryAction) { settingsButton }
 

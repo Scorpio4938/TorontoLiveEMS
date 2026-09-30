@@ -33,10 +33,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   button's appearance is untouched. The feed only changes every five minutes, so a
   refresh returning exactly what we already had is the normal case — it has to be
   distinguishable from a tap that did nothing.
-- **The title is the system's navigation title**, large and bold by default, collapsing to
-  inline as the list scrolls. Stock iOS, taken over a pinned hand-styled title. It does
-  mean the title moves while the column header below it stays put — that is how iOS
-  section headers behave, and it is the price of having a table at all.
+- **The title is the system's navigation title, pinned inline.** The large title was tried
+  first and rejected on sight: it collapses as the list scrolls while the status line and
+  column header below it stay pinned, so the chrome moves in two directions at once. It
+  also reserves a band of empty space above the title that a table cannot afford. Inline
+  puts the title on the same bar as the settings button rather than on a band above it.
 - **The column header is a pinned section header** and the status line sits above the list.
 - **The feed's own timestamp is always shown**, as a hand-built caption line above the
   column header. There is no platform component for "the age of this data", and

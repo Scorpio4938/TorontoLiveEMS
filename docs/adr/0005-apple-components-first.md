@@ -29,10 +29,9 @@ Consequences we accept:
 - **The table is ours, and so are its costs.** An invisible `chevron.right` in the column
   header reserves the width the disclosure chevron takes from every row, so the labels sit
   over the values. There is no platform component that does this for us.
-- **The title moves while the column header stays.** The system's large title collapses on
-  scroll; the column header is a pinned section header, because a table whose column labels
-  scroll away is a grid of unlabelled numbers. Somebody will find this inconsistent and want
-  to pin the title too. That was tried and rejected: it means hand-styling the title, which
-  is a larger departure than the one it fixes.
+- **The title sits inline in the navigation bar, pinned.** A large title was tried first
+  and rejected on sight: it collapses as the list scrolls while the pinned status line and
+  column header below it stay put, so the chrome moves in two directions at once — and it
+  reserves a band of empty space above the title that a table cannot afford.
 - **This is an exception, not an oversight.** Replacing the table with `Table` on a phone
   would not make it better. It would delete it.
