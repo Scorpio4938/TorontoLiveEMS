@@ -38,15 +38,24 @@ into the app target *and* into the module, which does not work. The package is l
 the app target by a local package reference.
 
 **`scripts/check_swift.py`** exists because this repo is partly developed on a machine with
-no Swift toolchain — no `swift`, no `xcodebuild`, no container to borrow one. It checks
-balanced delimiters and raw newlines inside single-line string literals, which are the
-transcription errors that writing blind produces. It caught a real one: a generated test
-fixture containing a literal newline in a string. Run it after any edit to Swift here:
+no Swift toolchain — no `swift`, no `xcodebuild`, no container to borrow one. It checks the
+three things that blind authoring gets wrong: balanced delimiters, raw newlines inside
+single-line string literals, and references to a member that does not exist on one of our
+own types.
+
+The third was added after a real one. Renaming `CompactTable.outgrowsTheGrid` to
+`needsLabelledRows` updated every reference but one, in a file my own hand-written check had
+not covered, and the miss reached a build. Grepping for the old name would have found it;
+remembering to grep for every name I had touched did not. So the check is mechanical now,
+and reports the file and the line:
 
 ```bash
-python3 scripts/check_swift.py TorontoLiveEMSKit
-python3 scripts/check_swift.py TorontoLiveEMS
+python3 scripts/check_swift.py TorontoLiveEMS TorontoLiveEMSKit
 ```
+
+**Give it both roots.** Declarations are pooled across them, so a member the app target uses
+from the package resolves. One root at a time still checks delimiters and literals, but the
+cross-reference check only sees types declared in the roots it was given.
 
 ## Building and testing
 

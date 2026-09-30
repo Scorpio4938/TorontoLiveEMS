@@ -36,7 +36,7 @@ struct CompactTableList: View {
                 // Above the accessibility text sizes the rows already show each field
                 // beside its own label, so a grid of column labels above them would be a
                 // second, contradictory copy of the same thing.
-                if !CompactTable.outgrowsTheGrid(dynamicTypeSize) {
+                if !CompactTable.needsLabelledRows(dynamicTypeSize) {
                     CompactColumnHeader()
                 }
             }
