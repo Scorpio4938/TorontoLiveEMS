@@ -76,4 +76,22 @@ struct DispatchedUnitTests {
 
         #expect(units.map(\.display) == ["L325", "Rescue 325"])
     }
+
+    @Test("offers the legend in the order a reader looks something up")
+    func legendHasAReadingOrder() {
+        // The list it comes from is ordered longest-code-first, because prefix matching needs
+        // it that way; this is the same list read by a person, so it is sorted by name.
+        let names = DispatchedUnit.documentedApparatus.map(\.name)
+        #expect(!names.isEmpty)
+        #expect(names == names.sorted())
+
+        // And every entry really is the City's legend, not a second copy of it. Two codes
+        // share a name — `Box12` and `Sup7` are both Canteen vehicles — so the code is what
+        // identifies an entry, and it has to be unique for a list to render from it.
+        let codes = DispatchedUnit.documentedApparatus.map(\.code)
+        #expect(Set(codes).count == codes.count)
+        for entry in DispatchedUnit.documentedApparatus {
+            #expect(DispatchedUnit(code: entry.code + "231").apparatus == entry.name)
+        }
+    }
 }

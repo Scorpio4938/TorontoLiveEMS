@@ -256,6 +256,29 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   came from a measurement rather than from a decision — the invisible housing, and the rays
   that would not survive 29pt.
 
+## What the app explains
+
+- **The City's own explanations are in the app, quoted rather than paraphrased**, and they live
+  with the thing they describe: `LiveCADFeed.sourceNote` for where the incidents come from and
+  how often, `AlarmLevel.escalationNote` for how a level is arrived at, `AlarmLevel.countingNote`
+  for what its vehicle counts count. A wording change happens beside the field, not in a view.
+- **A screen of its own, behind an info button beside Settings.** Reference material rather than
+  a preference: somebody wondering what an Alarm Level is should not have to guess that it is
+  filed under settings. Settings keeps the attribution; this screen carries the licence too,
+  because a reference screen that explains the data should say who published it.
+- **The levels and the apparatus legend are rendered from the same tables the app parses with.**
+  `AlarmLevel.levels` and `DispatchedUnit.documentedApparatus` were added for it, and
+  `AlarmLevel.meaning(for:)` now reads from the list rather than from a dictionary beside it —
+  so the screen and the rest of the app cannot come to believe different things about what a
+  `2` means.
+- **The counting note is the one that earns its place.** A reader sees *Alarm Level 2 = 10–14
+  emergency vehicles* beside a roster of five tokens and concludes the app has miscounted. The
+  City's own footnote — that support vehicles are not in that count — is the answer, and until
+  now nothing in the app said it.
+- **The City's `10-14` stays `10–14`.** Their list uses a hyphen and the app uses an en dash.
+  Ours is typographically right and theirs is what they published; the difference is a
+  deliberate one, not a transcription slip.
+
 ## Values
 
 - **Human-rendered, not raw pass-through.** The City's table cells apply zero

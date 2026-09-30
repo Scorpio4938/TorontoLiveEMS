@@ -8,6 +8,8 @@ produces and that nothing else here can:
   2. a raw newline inside a single-line string literal;
   3. a reference to a member that does not exist on one of our own types.
 
+Multi-line literals are exempt from (2), because a newline in one is the point.
+
 The third is here because of a real one. Renaming `CompactTable.outgrowsTheGrid`
 to `needsLabelledRows` updated every reference but one, and the miss reached a
 build. Grepping for the old name would have found it; remembering to grep for
@@ -43,6 +45,17 @@ def scan(src):
         if src.startswith("/*", i):
             j = src.find("*/", i + 2)
             i = n if j < 0 else j + 2
+            continue
+        # A multi-line literal, before the single-line branch below can misread its opening
+        # quotes. None existed in this repo until the City's own paragraphs were quoted
+        # verbatim, so the checker had never had to know about them — it read `"""` as an
+        # empty string and then treated the paragraph as code, complete with real newlines.
+        if src.startswith('"""', i):
+            close = src.find('"""', i + 3)
+            end = n if close < 0 else close
+            bodies.append(src[i + 3:end])
+            code.append('""')
+            i = n if close < 0 else close + 3
             continue
         if src[i] == '"':
             i += 1

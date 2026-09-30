@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var isShowingStaleResult = false
     @State private var isRefreshing = false
     @State private var isShowingSettings = false
+    @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
@@ -36,6 +37,10 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
+                // Declared before the settings button so settings keeps the rightmost slot it
+                // has always had. The two sit beside each other either way, and moving the one
+                // a reader already knows would be a change nobody asked for.
+                ToolbarItem(placement: .primaryAction) { infoButton }
                 ToolbarItem(placement: .primaryAction) { settingsButton }
 
                 #if os(iOS)
@@ -52,6 +57,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $isShowingAboutData) {
+                AboutThisDataView()
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
@@ -87,6 +95,17 @@ struct ContentView: View {
             isShowingSettings = true
         } label: {
             Label("Settings", systemImage: "gearshape")
+        }
+    }
+
+    /// What the fields mean, and where the data comes from. Reference material, so it is a
+    /// button of its own rather than a row in Settings — somebody wondering what an Alarm Level
+    /// is should not have to guess that it is filed under preferences.
+    private var infoButton: some View {
+        Button {
+            isShowingAboutData = true
+        } label: {
+            Label("About this Data", systemImage: "info.circle")
         }
     }
 

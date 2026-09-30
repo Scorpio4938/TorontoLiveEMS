@@ -76,13 +76,27 @@ public struct DispatchedUnit: Equatable, Sendable {
         return String(token[start...])
     }
 
-    private struct Legend: Sendable {
-        let code: String
-        let name: String
+    /// One entry from the City's legend.
+    public struct Legend: Equatable, Sendable {
+
+        /// The code as published at the start of a token, e.g. `HZ`.
+        public let code: String
+
+        /// The City's name for that apparatus.
+        public let name: String
+    }
+
+    /// The City's legend in the order a reader looks something up.
+    ///
+    /// Sorted by name, where the list it comes from is ordered longest-code-first for prefix
+    /// matching. One list, two readings: a parser needs the codes in one order and a person
+    /// needs them in another, and neither should be a copy of the other.
+    public static var documentedApparatus: [Legend] {
+        legend.sorted { $0.name < $1.name }
     }
 
     /// The City's legend, ordered longest code first so prefix matching is correct.
-    private static let legend: [Legend] = [
+    static let legend: [Legend] = [
         Legend(code: "Box12", name: "Canteen vehicle"),
         Legend(code: "Sup7", name: "Canteen vehicle"),
         Legend(code: "CMD", name: "Command Vehicle"),
