@@ -22,10 +22,13 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   reopen it, and you see three-hour-old incidents. That is what the always-visible
   `update_from_db_time` timestamp is for — staleness stays legible instead of
   hidden.
-- **The refresh control sits at the bottom on iOS**, within thumb reach, as the same
-  plain toolbar item it always was — no custom bar, no button style, no padding of its
-  own, so the platform draws it and it keeps the system's current button treatment.
+- **The refresh control is the only way to refresh**, at the bottom right on iOS, within
+  thumb reach. It is a plain toolbar item — no button style, background or padding of its
+  own — so the platform draws it and it keeps the system's current button treatment.
   macOS keeps it in the top bar, where a bottom bar does not exist.
+- **Pull-to-refresh is deliberately absent.** It called exactly the same function as the
+  button, so the two were one action with two affordances; and because only the gesture
+  showed a spinner, a working button looked like a broken one beside it.
 - **A refresh in flight is announced in the status line**, not in the button, so the
   button's appearance is untouched. The feed only changes every five minutes, so a
   refresh returning exactly what we already had is the normal case — it has to be

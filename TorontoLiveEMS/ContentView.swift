@@ -31,10 +31,13 @@ struct ContentView: View {
             #endif
             .toolbar {
                 #if os(iOS)
-                // The same toolbar item as before, in the system's bottom bar rather
-                // than the top one. Left as a plain toolbar item so it keeps the
-                // platform's own styling.
-                ToolbarItem(placement: .bottomBar) { refreshButton }
+                // The same plain toolbar item as before, in the system's bottom bar
+                // rather than the top one, and pushed to the trailing edge — a lone
+                // bottom-bar item sits centred without the Spacer.
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Spacer()
+                    refreshButton
+                }
                 #else
                 ToolbarItem(placement: .primaryAction) { refreshButton }
                 #endif
@@ -83,7 +86,6 @@ struct ContentView: View {
                 }
             }
             .listStyle(.plain)
-            .refreshable { await load() }
         } else if let failureMessage {
             VStack {
                 Spacer()
