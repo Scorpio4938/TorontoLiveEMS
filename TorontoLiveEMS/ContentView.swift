@@ -25,12 +25,8 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                statusLine
-                Divider()
-                content
-            }
-            .navigationTitle("Active Incidents")
+            content
+                .navigationTitle("Active Incidents")
             #if os(iOS)
             // Inline rather than large. A large title collapses as the list scrolls while
             // the status line and column header below it stay pinned, so the chrome moves
@@ -122,9 +118,17 @@ struct ContentView: View {
         if let snapshot {
             switch presentation {
             case .compactTable:
-                CompactTableList(incidents: snapshot.incidents, timeFormat: dispatchTimeFormat)
+                CompactTableList(
+                    incidents: snapshot.incidents,
+                    timeFormat: dispatchTimeFormat,
+                    status: status(for: snapshot)
+                )
             case .cards:
-                CardsList(incidents: snapshot.incidents, timeFormat: dispatchTimeFormat)
+                CardsList(
+                    incidents: snapshot.incidents,
+                    timeFormat: dispatchTimeFormat,
+                    status: status(for: snapshot)
+                )
             }
         } else if let failureMessage {
             ContentUnavailableView(
@@ -137,49 +141,37 @@ struct ContentView: View {
         }
     }
 
-    /// The feed's own timestamp, on screen at all times — including before the first
-    /// fetch has returned, when it says so rather than disappearing.
+    /// The feed's own timestamp, and whether what is on screen is the last good result.
     ///
     /// It is the age of the *data*, not of our request, which is what a reader needs in
-    /// order to judge whether what they are looking at is current. The City shows the
-    /// same value; we add the space after the colon that their page omits.
+    /// order to judge whether what they are looking at is current. The City shows the same
+    /// value; we add the space after the colon that their page omits.
     ///
-    /// A refresh in flight says so here rather than in the toolbar, so the button keeps
-    /// its untouched appearance. The feed only changes every five minutes, so a refresh
-    /// that returns exactly what we already had is the normal case and needs to be
+    /// A refresh in flight says so here rather than in the toolbar, so the button keeps its
+    /// untouched appearance. The feed only changes every five minutes, so a refresh that
+    /// returns exactly what we already had is the normal case and has to be
     /// distinguishable from a tap that did nothing.
-    private var statusLine: some View {
-        HStack(spacing: 4) {
-            if isShowingStaleResult {
-                Image(systemName: "exclamationmark.triangle")
-            }
-            Text(statusText)
-            Spacer()
-        }
-        .font(.caption2)
-        .foregroundStyle(isShowingStaleResult ? Color.orange : Color.secondary)
-        .padding(.horizontal)
-        .padding(.top, 6)
-        .padding(.bottom, 2)
-    }
-
-    private var statusText: String {
-        guard let snapshot else {
-            return failureMessage == nil ? "Fetching…" : "Nothing fetched yet"
-        }
+    ///
+    /// No case for having no snapshot. This used to be drawn outside the list, where it was
+    /// visible while the first fetch was in flight and could say "Fetching…". A section
+    /// header only exists when there is a section, and the list is only built from a
+    /// snapshot — so those states are now said by the `ProgressView` and the
+    /// `ContentUnavailableView` that stand in the list's place, which is where a reader
+    /// looks for them anyway.
+    private func status(for snapshot: LiveCADSnapshot) -> FeedStatus {
         // "City data as of", not "Last updated". The value is the City's own refresh tick
-        // — update_from_db_time, which lands on a five-minute boundary — and not the
-        // moment we fetched it. "Last updated" left that open to exactly the wrong
-        // reading.
+        // — update_from_db_time, which lands on a five-minute boundary — and not the moment
+        // we fetched it. "Last updated" left that open to exactly the wrong reading.
         let updated = snapshot.updatedFromDatabaseAt ?? "unknown"
         let base = "City data as of \(updated)"
+
         if isShowingStaleResult {
-            return "\(base) · showing the last result"
+            return FeedStatus(text: "\(base) · showing the last result", isStale: true)
         }
         if isRefreshing {
-            return "\(base) · checking…"
+            return FeedStatus(text: "\(base) · checking…", isStale: false)
         }
-        return base
+        return FeedStatus(text: base, isStale: false)
     }
 
     private func load() async {

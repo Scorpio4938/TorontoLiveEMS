@@ -49,6 +49,13 @@ enum PreviewIncidents {
     static let all = [medicalFSA, fire, locationWithheld]
 }
 
+/// What the status line says in the previews. The real value is the City's refresh tick,
+/// which lands on a five-minute boundary — see `ContentView.status(for:)`.
+private let previewStatus = FeedStatus(
+    text: "City data as of 2026-09-29 20:00:01",
+    isStale: false
+)
+
 // MARK: - The two arrangements
 //
 // These render the real list views, not copies. A preview that drew its own version could
@@ -56,45 +63,58 @@ enum PreviewIncidents {
 // file did, in both layouts at once.
 
 #Preview("Table — light") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
 }
 
 #Preview("Table — dark") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
 }
 
 #Preview("Cards — dark") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .preferredColorScheme(.dark)
 }
 
 /// Cards are already a stack of two lines, so there is no separate accessibility layout
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour)
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility5)
+}
+
+/// The status line's warning state, which is otherwise only reachable by breaking the
+/// network mid-session.
+#Preview("Cards — last result kept") {
+    CardsList(
+        incidents: PreviewIncidents.all,
+        timeFormat: .twelveHour,
+        status: FeedStatus(
+            text: "City data as of 2026-09-29 20:00:01 · showing the last result",
+            isStale: true
+        )
+    )
 }
 
 // MARK: - The detail view, where the system's chrome is

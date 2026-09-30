@@ -44,9 +44,21 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   column header below it stay pinned, so the chrome moves in two directions at once. It
   also reserves a band of empty space above the title that a table cannot afford. Inline
   puts the title on the same bar as the settings button rather than on a band above it.
-- **The column header is a pinned section header** and the status line sits above the list.
-- **The feed's own timestamp is always shown**, as a hand-built caption line above the
-  column header, labelled **"City data as of …"**. That value is `update_from_db_time` —
+- **Everything above the incidents is inside the list, as a section header** — the status
+  line, and the column labels when there are columns. Nothing is drawn outside it, and
+  there is no `Divider` between them. The status line used to be a hand-built band above
+  the list with its own padding, which meant its 16pt inset lined up with neither the
+  blocks below nor the rows within them; that misalignment was reported as the cards
+  looking wrong. As a section header the platform insets it with everything else.
+- **One consequence, deliberately taken.** The status line was always visible; as a section
+  header in a grouped list it scrolls away with the content. It is context for what you are
+  reading rather than a control, so scrolling is the right behaviour — but it is a change.
+- **The states with no incidents are said by the views that replace the list.** A section
+  header exists only when there is a section, so "Fetching…" and "Nothing fetched yet" — the
+  two states that used to be written into the status line — are now the `ProgressView` and
+  the `ContentUnavailableView` instead.
+- **The feed's own timestamp is always shown**, in that header, labelled
+  **"City data as of …"**. That value is `update_from_db_time` —
   the City's own refresh tick, which lands on a five-minute boundary — and not the moment
   we fetched it. "Last updated" left that open to the wrong reading, and was changed after
   it was mistaken for our own fetch time.

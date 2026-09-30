@@ -15,10 +15,14 @@ import TorontoLiveEMSKit
 /// Outside, its insets were my own guess and the rows' were the system's, so the two never
 /// quite lined up. In here the system insets both identically, and a plain list keeps the
 /// header pinned while its rows scroll.
+///
+/// The status line is in this header too, for the same reason one level up: it used to sit
+/// outside the list above a hairline, at an inset that matched nothing below it.
 struct CompactTableList: View {
 
     let incidents: [Incident]
     let timeFormat: DispatchTimeFormat
+    let status: FeedStatus
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -33,11 +37,15 @@ struct CompactTableList: View {
                     }
                 }
             } header: {
-                // Above the accessibility text sizes the rows already show each field
-                // beside its own label, so a grid of column labels above them would be a
-                // second, contradictory copy of the same thing.
-                if !CompactTable.needsLabelledRows(dynamicTypeSize) {
-                    CompactColumnHeader()
+                VStack(alignment: .leading, spacing: 6) {
+                    FeedStatusLine(status: status)
+
+                    // Above the accessibility text sizes the rows already show each field
+                    // beside its own label, so a grid of column labels above them would be
+                    // a second, contradictory copy of the same thing.
+                    if !CompactTable.needsLabelledRows(dynamicTypeSize) {
+                        CompactColumnHeader()
+                    }
                 }
             }
         }
@@ -64,11 +72,17 @@ struct CompactTableList: View {
 /// arrangement was asked to take its design from. Naming `.insetGrouped` would look
 /// identical on iOS and fail to build for macOS, where that style is marked unavailable.
 ///
+/// One consequence of the status line living here rather than above the list: section
+/// headers in this style scroll away, where the old band stayed put. The line is context
+/// for what you are reading, not a control, so scrolling with the content is the right
+/// behaviour — but it is a change, and it is deliberate.
+///
 /// No column header. There are no columns.
 struct CardsList: View {
 
     let incidents: [Incident]
     let timeFormat: DispatchTimeFormat
+    let status: FeedStatus
 
     var body: some View {
         List {
@@ -80,6 +94,11 @@ struct CardsList: View {
                         IncidentCardRow(incident: incident, timeFormat: timeFormat)
                     }
                 }
+            } header: {
+                // The same line the table puts above its column labels. As a section header
+                // the platform insets it to the block's leading edge, so it lines up with
+                // the cards below instead of floating at an inset of its own.
+                FeedStatusLine(status: status)
             }
         }
     }
