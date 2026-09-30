@@ -54,7 +54,7 @@ struct ContentView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
-            .alert("Nothing to Update", isPresented: $isShowingNothingToUpdate) {
+            .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(nothingToUpdateMessage)
@@ -111,7 +111,7 @@ struct ContentView: View {
 
     private var nothingToUpdateMessage: String {
         let updated = snapshot?.updatedFromDatabaseAt ?? "an unknown time"
-        return "The City last published at \(updated) and refreshes every five minutes. There is nothing newer to fetch yet."
+        return "Nothing newer than \(updated)."
     }
 
     @ViewBuilder
