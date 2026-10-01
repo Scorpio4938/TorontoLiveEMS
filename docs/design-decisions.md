@@ -558,19 +558,26 @@ say which of them mattered.
   `.glassEffect` alone, per the callout decision above — and the page's name sits centred
   above the map as plain text, where the bar's inline title used to. Its first floating
   version was a capsule too, and that read as a button: the title is a name, not a control.
-- **One definition for the top-right controls — and the capsule is deliberately not it.** The
-  two pages had two implementations of the same two buttons, and the obvious fix, one shared
-  capsule, was tried and made them *less* alike. Hosted as a toolbar item — even with
-  `sharedBackgroundVisibility(.hidden)`, which exists and does suppress the platform's glass —
-  the items came out larger, because the platform pads a custom item on top of what the view
-  already carries, and the wide item pushed the centred inline title off centre. Which of those
-  is the cause is not established; that a bar and a hand-drawn capsule cannot be made to agree
-  is. So what is shared is the *controls* — `InfoControl` and `SettingsControl`: symbol, size,
-  colour, VoiceOver name — and the bar draws its own material around them while the map draws
-  the capsule. Everything that was drifting between the pages is in those two types, and the
-  only thing left differing is who draws the material, which is the platform's decision inside
-  a bar and not a number either page can set. The header text is untouched by all of this, by
-  requirement: it is the bar's, and the bar stays.
+- **The top-right controls are one layer above both pages, like the tab bar.** Not a toolbar item
+  on each page — one overlay on the tab view, `screenControlsLayer`, declared once and drawn
+  above whichever page is showing. The tab bar is the model and the argument: it is not part of
+  either page, the container draws it, and that is why it cannot differ between them. Apple
+  provides no top-side equivalent — `tabViewBottomAccessory` is the only accessory API and it is
+  the bottom — so an overlay on the container is how that arrangement is reached.
+- **That is the end of a long road, and it is worth recording** because each step was a real
+  hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
+  items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule
+  was made the reference and the bar's items were given its metrics. Then the whole capsule was
+  hosted *in* the bar, with `sharedBackgroundVisibility(.hidden)` — a real API that really does
+  suppress the platform's glass — which made the pages *less* alike, because the platform pads a
+  custom item and a wide item pushes a centred inline title. Then the shared controls were made
+  sizeless, which restored the title. Every one of those tried to reconcile two renderers, and two
+  renderers cannot be reconciled. One layer cannot disagree with itself.
+- **What the bars keep.** The incidents page keeps its navigation bar and its centred title; the
+  map page keeps its hidden bar and its floating name. On iOS the bars simply no longer hold these
+  two controls, and a detail view pushed from either page gets them from the same layer rather
+  than from its own bar. On the platforms whose window toolbar is the right place for them,
+  nothing changed — the bar behaviour this avoids is an iOS bar's.
 - **A toolbar item's content must not size itself.** The title came to sit to the left because
   the shared controls carried a `.frame(width: 34, height: 34)` and a `.font(.title3)`: a content
   view larger than the platform's own makes the platform's toolbar item larger too, and a wide

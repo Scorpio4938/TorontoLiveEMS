@@ -46,15 +46,20 @@ struct SettingsControl: View {
     }
 }
 
-/// The two controls in the app's own capsule: the shape for the page that has no bar to hold
-/// them.
+/// The two controls in the app's own capsule — drawn once, above every page.
 ///
-/// **What is shared, and what cannot be.** The controls above are shared with `AppToolbar`
-/// exactly. The capsule is not, and hosting it in a bar was tried: a custom toolbar item is
-/// padded by the platform on top of whatever the view already carries — even with
-/// `sharedBackgroundVisibility(.hidden)`, which does suppress the platform's glass — so the items
-/// came out larger, and the wide item moved the title. Both hosts therefore keep their own
-/// material around the same two controls.
+/// **One layer, like the tab bar.** The tab bar is not part of either page: the container draws
+/// it, and that is exactly why it cannot differ between them. This is the same arrangement at the
+/// top of the screen, applied to the tab view by `screenControlsLayer`, so there is exactly one of
+/// it — one declaration, one position, one rendering, over whichever page is showing and over a
+/// pushed detail view as well. Nothing about it can drift between the pages, because there are not
+/// two of them.
+///
+/// **Why it is not in the bars, which is where it started.** A bar draws its items itself: it pads
+/// a custom item on top of whatever that view already carries, sizes a toolbar symbol by its own
+/// rules, and moves its centred title when an item is wide. Every attempt to make two bars agree —
+/// and then to make one bar agree with a hand-drawn capsule — was an attempt to reconcile two
+/// renderers. One renderer cannot disagree with itself.
 ///
 /// **The padding is what makes this capsule, not the icons.** With the controls left at their
 /// natural size, the outer padding is the only thing giving this shape its size — which is the

@@ -84,6 +84,26 @@ struct RootView: View {
 
     var body: some View {
         tabs
+            // **The app's controls, drawn once, above both pages.**
+            //
+            // The tab bar is the model. It is not part of either page — the container draws it —
+            // and that is exactly why it cannot differ between them. These two controls are now
+            // the same thing at the other end of the screen: one declaration, one position, one
+            // rendering, over whichever page is showing, and over a pushed detail view as well.
+            //
+            // Why not an accessory: the platform has none at the top. `tabViewBottomAccessory`
+            // is the only one, and it is the bottom. An overlay on the tab view is the
+            // container-level layer, and the safe area it respects is the tab view's own — the
+            // status bar on iPhone, and on iPad the top tab bar, so the controls land below it
+            // rather than on top of it.
+            //
+            // What this replaces: each page hosting a toolbar item, which could not be made to
+            // match, because a bar draws its items itself and pads what it is given. The bar
+            // keeps the title, which was never the part in question.
+            .screenControlsLayer(
+                onInfo: { isShowingAboutData = true },
+                onSettings: { isShowingSettings = true }
+            )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
@@ -117,33 +137,31 @@ struct RootView: View {
                     IncidentsPage(feed: feed)
                         .navigationTitle("Active Incidents")
                         .inlineNavigationTitle()
-                        .toolbar { toolbar }
+                        .barControls { toolbar }
                 }
             }
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
                     IncidentsMapPage(feed: feed)
-                        // **The map tab has no navigation bar; its title and controls float.**
+                        // **The map tab has no navigation bar.** The band under it was the bar's
+                        // own glass — the build that hid the bar proved it — so the bar stays
+                        // hidden and the page is named by floating text instead.
                         //
-                        // The diagnostic build settled it: no bar, no band — the band was the
-                        // bar's own glass, which `toolbarBackgroundVisibility(.hidden)` does
-                        // not remove on this OS. (The scroll-edge settings were no-ops for a
-                        // plainer reason: those APIs configure scroll views, and this page has
-                        // none.) So this is Apple Maps' pattern rather than Find My's: no bar
-                        // over the map, and the page's name and controls floating in glass
-                        // capsules — `.glassEffect` alone, the app's one glass mechanism.
+                        // The two controls are not here at all. They are drawn once above every
+                        // page by `screenControlsLayer` on the tab view, which is the only
+                        // arrangement that can be identical on a page with a bar and a page
+                        // without one.
                         //
-                        // The title and toolbar below are inert here — there is no bar to hold
-                        // them — but not unused: a detail view pushed from a callout shows its
-                        // own bar, and from these it takes a back button labelled "Map" and
-                        // the same Info and Settings the incidents tab's pushes carry.
+                        // The title and toolbar below are inert on iOS — there is no bar to hold
+                        // them — but not unused elsewhere: `barControls` applies them where the
+                        // platform has no layer above the pages, and a detail view pushed from
+                        // here takes a back button labelled "Map".
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
                         .toolbar(.hidden, for: .navigationBar)
-                        .toolbar { toolbar }
+                        .barControls { toolbar }
                         .overlay(alignment: .top) { mapTitle }
-                        .overlay(alignment: .topTrailing) { mapControls }
                 }
             }
 
@@ -176,7 +194,11 @@ struct RootView: View {
         }
     }
 
-    /// The controls both screens carry, from one definition.
+    /// The controls, where the platform's own bar holds them.
+    ///
+    /// Unused on iOS: the controls are drawn once above every page instead — see
+    /// `screenControlsLayer` — which is the only arrangement that can be identical on a page with
+    /// a bar and a page without one.
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         AppToolbar(
@@ -186,38 +208,14 @@ struct RootView: View {
         )
     }
 
-    /// The map tab's title, floating: the tab has no navigation bar, and this is what carries
-    /// the page's name instead. Plain text, centred, where the bar's inline title used to sit.
-    /// Its first floating version was a glass capsule like the controls', and that read as a
-    /// button — a capsule is a control's shape, and the title is a name, not a control.
+    /// The map tab's name, floating: the tab has no navigation bar, and this is what carries the
+    /// page's name instead. Plain text, centred, where the bar's inline title used to sit. Its
+    /// first floating version was a glass capsule like the controls', and that read as a button —
+    /// a capsule is a control's shape, and the title is a name, not a control.
     private var mapTitle: some View {
         Text("Map")
             .font(.headline)
             .padding(.top, 12)
-    }
-
-    /// The map tab's controls, floating: the same two controls the bars hold, placed here by
-    /// this code because this page has no bar to place them.
-    ///
-    /// **The controls are shared; the capsule is not, and it was tried.** `InfoControl` and
-    /// `SettingsControl` are the same views the bar uses — symbol, size, colour, VoiceOver name
-    /// — so nothing this app decides can drift between the pages. Who draws the capsule around
-    /// them is the part that differs, and inside a bar that is the platform's: hosting this
-    /// whole view as a toolbar item made the items larger and pushed the centred title off
-    /// centre, which is why `AppToolbar` holds the two controls instead. This capsule is the
-    /// map's because the map has no bar to hold them.
-    ///
-    /// **Centred in a bar's height, at a content margin.** These two numbers are the map's half
-    /// of the placement: 44 points puts the capsule's centre where a bar's item centre sits,
-    /// and 12 points off the trailing edge is that item's own margin. They are the two to turn
-    /// if the pages read a little apart — the bar's equivalents belong to the platform.
-    private var mapControls: some View {
-        ScreenControls(
-            onInfo: { isShowingAboutData = true },
-            onSettings: { isShowingSettings = true }
-        )
-        .frame(height: 44, alignment: .center)
-        .padding(.trailing, 12)
     }
 
     /// The button knows nothing about tasks; this is the one place that does.
@@ -245,6 +243,47 @@ struct RootView: View {
 }
 
 private extension View {
+
+    /// The app's controls, drawn once above every page.
+    ///
+    /// **The tab bar's arrangement, at the other end of the screen.** One declaration, one
+    /// position, one rendering, above whichever page is showing — so a page with a navigation bar
+    /// and a page without one cannot differ, which is the whole of what was being chased.
+    ///
+    /// iOS only, because the bar behaviour this exists to avoid is an iOS bar's: on the other
+    /// platforms the window toolbar has the controls already, applied by `barControls`. The `#if`
+    /// is inside the body rather than at each call site, so the tabs cannot end up with different
+    /// chrome.
+    @ViewBuilder
+    func screenControlsLayer(
+        onInfo: @escaping () -> Void,
+        onSettings: @escaping () -> Void
+    ) -> some View {
+        #if os(iOS)
+        overlay(alignment: .topTrailing) {
+            ScreenControls(onInfo: onInfo, onSettings: onSettings)
+                // Centred in a bar's height at a content margin, which is where the bar's own
+                // items sat before this layer replaced them. These two numbers are the placement,
+                // and the only ones in it.
+                .frame(height: 44, alignment: .center)
+                .padding(.trailing, 12)
+        }
+        #else
+        self
+        #endif
+    }
+
+    /// The bar's own controls, on the platforms that have no layer above the pages.
+    @ViewBuilder
+    func barControls<Content: ToolbarContent>(
+        @ToolbarContentBuilder _ content: () -> Content
+    ) -> some View {
+        #if os(iOS)
+        self
+        #else
+        toolbar(content)
+        #endif
+    }
 
     /// Inline on iOS, unchanged elsewhere.
     ///

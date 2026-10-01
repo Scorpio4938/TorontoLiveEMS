@@ -25,13 +25,14 @@ struct RefreshButton: View {
     }
 }
 
-/// The controls every screen carries, declared once.
+/// The controls, where the platform's own bar is the right place for them.
 ///
-/// **Why this type exists.** Each tab in a `TabView` has its own `NavigationStack`, and
-/// therefore its own navigation bar — so a toolbar is no longer a property of the app but of
-/// each screen it appears on. Two screens now need the same controls, and this is the one
-/// definition they both use, so they cannot drift apart in a corner of the screen nobody looks
-/// at until it is wrong.
+/// **Not used on iOS.** There the controls are drawn once above every page by
+/// `screenControlsLayer` — the tab bar's arrangement, at the top of the screen — because two bars
+/// cannot be made to agree with each other, nor one of them with a capsule drawn by hand, and one
+/// layer above both pages cannot disagree with itself. What is left here serves the platforms
+/// whose window toolbar belongs to the window rather than to a page, and which have no tab bar
+/// layer to mirror. The bar behaviour this avoids is an iOS bar's.
 ///
 /// **The refresh control is not here on iOS.** It is a tab at the trailing end of the tab bar —
 /// see `RootView`. A `.bottomBar` toolbar item was tried first and **does not merge**: it draws
