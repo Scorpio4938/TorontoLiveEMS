@@ -32,13 +32,8 @@ extension View {
 //   IncidentLists.swift        both arrangements
 //   IncidentDetailView.swift   the detail view
 //
-// **The map is deliberately not in this list.** It asks for the effect to be hidden instead —
-// `scrollEdgeEffectHidden(true, for: .top)` in `IncidentsMapPage` — because the effect blurs
-// what is behind it, and behind a map that draws the map's own colours as a gradual band under
-// the bar. Over a list it is invisible, because the rows underneath are neutral.
-//
-// The two mistakes this helper's history records are both about asking it to do something it
-// cannot. aadb7c3 added it because only the detail view had asked and the incident list showed
-// the platform's hard edge. Then the map was given it, on the assumption that any bar above any
-// content wanted the soft style — and that is not what it is for: it chooses among styles, and
-// there is no style meaning "none".
+// **The map page is deliberately not in this list.** It carries no edge treatment at all: its
+// content stops below the bar, so there is no boundary to treat and no scroll view to treat it.
+// That was not obvious — the page once ran its map under the bar and tried every setting of the
+// effect against the band that appeared, which was four attempts at an API that configures
+// scroll views on a page that had none.

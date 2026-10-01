@@ -126,24 +126,11 @@ struct RootView: View {
                     IncidentsMapPage(feed: feed)
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
-                        // **The bar draws no background, and the map is the reason it must be asked.**
-                        //
-                        // Apple, on `toolbarBackgroundVisibility`: "In iOS, a value of
-                        // [`.automatic`] makes the visibility of a tab bar or navigation bar
-                        // background depend on **where a scroll view or list settles**." The
-                        // incidents tab is a `List`, so its bar is transparent at the top of the
-                        // scroll and never shows a band. The map is neither a scroll view nor a
-                        // list, so `.automatic` has nothing to settle it and the bar takes its
-                        // visible appearance — the strip under the two buttons.
-                        //
-                        // So this is not a setting the map is missing that the list has: it is
-                        // the same default behaving differently because the content underneath is
-                        // different, and the fix is to stop asking the bar to decide at all.
-                        //
-                        // Applied once before and reverted, on the strength of "it is still
-                        // there" — a report a stale build produces just as readily. It is in the
-                        // tree to stay now, with the reason written down beside it.
-                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+                        // The one tab with nothing scrollable under its bar, so the bar renders
+                        // as a bar — glass, on the page background — and the map stops below it
+                        // rather than running beneath that glass. Hiding the bar's background
+                        // was tried here and the tint survived it; the reasoning, and the other
+                        // three attempts, are recorded in `IncidentsMapPage`.
                         .toolbar { toolbar }
                 }
             }

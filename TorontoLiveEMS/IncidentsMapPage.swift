@@ -82,37 +82,27 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
-        // **The map has to reach under the bar, the way a scroll view does.**
+        // **The map stops below the bar. Nothing runs beneath it.**
         //
-        // A `List` extends beneath the navigation bar — that is why its content scrolls under the
-        // bar at all, and why Apple's rule about a bar's background keys off "a scroll view or
-        // list". A `Map` is an ordinary view and respects the safe area, so its frame stops below
-        // the bar. The gap between them shows whatever is behind it, and that is the strip that
-        // has looked like a tinted band under the two buttons through every attempt aimed at the
-        // bar itself.
+        // This is the one page in the app with no scroll view under its navigation bar, and that
+        // is the whole of the defect that was chased here. Apple, on `toolbarBackgroundVisibility`:
+        // a bar's `.automatic` background "depend[s] on **where a scroll view or list settles**".
+        // The incidents page is a `List`, and the detail page's map is a row inside one, so their
+        // bars defer to the scroll edge effect and stay clear. A map scrolls nothing, so the bar
+        // has nothing to settle against and renders its glass — and glass over a map's own
+        // colours reads as a tinted band hovering above it. Over either page's neutral rows, the
+        // same glass is invisible.
         //
-        // Nothing about the bar was ever wrong, which is why hiding its background, softening the
-        // scroll edge, and moving the age line all left this unchanged.
-        .ignoresSafeArea(edges: .top)
-        #if os(iOS)
-        // **The scroll edge effect, switched off rather than softened.**
+        // Four attempts tried to keep the map under the bar while making the bar not draw:
+        // hiding its background — `toolbarBackgroundVisibility(.hidden)`, and the tint survived
+        // it — and the three scroll-edge settings (`nil`, `.soft`, `scrollEdgeEffectHidden`),
+        // every one of them a no-op because scroll-edge APIs configure scroll views and this
+        // page has none. The bar was never the wrong colour. The map was under the wrong thing.
         //
-        // `softScrollEdge()` picks a *style* — `.hard`, `.soft`, `.automatic` — and the platform
-        // default for a view that never asks is `.automatic`, which Apple describes as letting the
-        // context decide. There is no style meaning "none", so the earlier attempt to pass `nil`
-        // could not have worked; the off switch is a different API, `scrollEdgeEffectHidden`, and
-        // this page never looked for it.
-        //
-        // Why off rather than soft here, when the lists and the detail view ask for soft: the
-        // effect blurs what is behind it, and what is behind this one is a map. Over a list it is
-        // invisible — the rows underneath are neutral — and over a map it draws the map's own
-        // colours as a gradual band under the bar. It is a boundary treatment for content sliding
-        // under a bar, and a map does not slide.
-        //
-        // Guarded because the API is `@available(visionOS, unavailable)` and this target declares
-        // visionOS.
-        .scrollEdgeEffectHidden(true, for: .top)
-        #endif
+        // So the page takes the shape Apple's own apps give a map beside a bar: Find My's, not
+        // Maps'. The bar is a bar, and the map begins at its lower edge. Maps' alternative — no
+        // bar at all, floating glass controls — is the one to revisit if the map is ever wanted
+        // full-bleed, and it costs the title and the two buttons as they are.
         // Bottom-trailing, above the tab bar, as a bare line rather than a boxed strip.
         .overlay(alignment: .bottomTrailing) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
@@ -304,13 +294,11 @@ private extension View {
     IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
 }
 
-// The same page inside a navigation stack, for one reason: a gradual tint appears at the top of
-// the map, and every scroll-edge API has now been tried against it — `.automatic` by default,
-// `nil`, `.soft` through `softScrollEdge()`, and `scrollEdgeEffectHidden` — with the tint
-// surviving all four. So it is not a scroll edge effect, and the remaining candidates are the
-// `Map` itself and the `NavigationStack` around it.
-//
-// Side by side, it takes one look: tint in both -> the map. Tint only in this one -> the stack.
+// The same page in a navigation stack — the shape it ships in. The two, side by side, show what
+// the page's decision costs and buys: bare, the map owns the whole screen; wrapped, the bar takes
+// its height and the map begins below it. Neither shows anything over the map, which is what
+// settled where the band had come from: not the map, and not the bar's colour, but a map running
+// beneath a bar that had nothing scrollable to defer to.
 #Preview("Map — in a navigation stack") {
     NavigationStack {
         IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))

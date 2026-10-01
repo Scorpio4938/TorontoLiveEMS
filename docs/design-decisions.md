@@ -547,6 +547,15 @@ say which of them mattered.
   licence reason above, which is about the app rather than about the table.
 - **Each screen owns its own geocoder** — the detail view and the map page resolve different
   sets, and nothing is threaded through the list types to reach a `NavigationLink`.
+- **The map stops below the bar; nothing runs beneath it.** The band under the map page's header
+  was the bar's own glass, tinting a map that ran beneath it. It appeared on that page alone
+  because a bar's `.automatic` background depends, in Apple's words, on "where a scroll view or
+  list settles" — and the map page is the app's only page with no scroll view under its bar.
+  Hiding the bar's background left the tint; the three scroll-edge settings were no-ops, each
+  configuring scroll views the page does not have. The page now takes the shape Find My gives a
+  map beside a bar: the bar is a bar and the map begins at its lower edge. Maps' alternative — no
+  bar, floating glass controls — is the one to revisit if the map is ever wanted full-bleed, and
+  it costs the title and the two buttons as they are.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
 `.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
