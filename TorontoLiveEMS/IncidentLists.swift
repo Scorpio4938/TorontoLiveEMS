@@ -23,7 +23,6 @@ struct CompactTableList: View {
     let incidents: [Incident]
     let timeFormat: DispatchTimeFormat
     let status: FeedStatus
-    let geocoder: IncidentGeocoder
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -32,7 +31,7 @@ struct CompactTableList: View {
             Section {
                 ForEach(incidents) { incident in
                     NavigationLink {
-                        IncidentDetailView(incident: incident, geocoder: geocoder)
+                        IncidentDetailView(incident: incident)
                     } label: {
                         IncidentRow(incident: incident, timeFormat: timeFormat)
                     }
@@ -85,14 +84,13 @@ struct CardsList: View {
     let incidents: [Incident]
     let timeFormat: DispatchTimeFormat
     let status: FeedStatus
-    let geocoder: IncidentGeocoder
 
     var body: some View {
         List {
             Section {
                 ForEach(incidents) { incident in
                     NavigationLink {
-                        IncidentDetailView(incident: incident, geocoder: geocoder)
+                        IncidentDetailView(incident: incident)
                     } label: {
                         IncidentCardRow(incident: incident, timeFormat: timeFormat)
                     }

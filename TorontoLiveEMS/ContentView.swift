@@ -8,25 +8,15 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The active incidents as a list. One of the app's two screens.
-///
-/// It used to hold the feed as well, when it was the only screen. The state moved to
-/// `IncidentFeedModel` and the controls to `AppToolbar`, because there are two screens now and
-/// both need the same incidents and the same buttons.
 struct ContentView: View {
 
-    let model: IncidentFeedModel
-
-    /// Passed, not read from the environment. An `@Environment(Type.self)` with no value in
-    /// scope is a trap rather than a nil, and the detail view behind a list row was reading one
-    /// that was not there. Four initialisers is a small price for a crash that cannot happen.
-    let geocoder: IncidentGeocoder
-
-    /// The root's, not a second flag. See `RootView.Sheet`.
-    @Binding var sheet: RootView.Sheet?
-
-    /// Which screen is showing, so the switcher in the bottom bar can change it.
-    @Binding var section: RootView.Section
+    @State private var snapshot: LiveCADSnapshot?
+    @State private var failureMessage: String?
+    @State private var isShowingStaleResult = false
+    @State private var isRefreshing = false
+    @State private var isShowingSettings = false
+    @State private var isShowingAboutData = false
+    @State private var isShowingNothingToUpdate = false
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
@@ -39,51 +29,138 @@ struct ContentView: View {
             content
                 .navigationTitle("Active Incidents")
             #if os(iOS)
-            // Inline rather than large. A large title collapses as the list scrolls while the
-            // status line and column header below it stay pinned, so the chrome moves in two
-            // directions at once. It also reserves a band of space above the title that a table
-            // cannot afford. Inline sits on the same bar as the buttons, rather than on a band
-            // above it, and does not move.
+            // Inline rather than large. A large title collapses as the list scrolls while
+            // the status line and column header below it stay pinned, so the chrome moves
+            // in two directions at once. It also reserves a band of space above the title
+            // that a table cannot afford. Inline sits on the same bar as the settings
+            // button, rather than on a band above it, and does not move.
             .navigationBarTitleDisplayMode(.inline)
             #endif
-                .toolbar {
-                    AppToolbar(model: model, sheet: $sheet)
+            .toolbar {
+                // One group, not several items sharing a placement. `ToolbarItemGroup` is the
+                // API for more than one control in the same spot, and the order below is then
+                // the order on screen — which is what keeps settings in the rightmost slot it
+                // has always had. Two separate `ToolbarItem`s would also put them side by side,
+                // but their left-to-right order would be something this code asserted rather
+                // than something it decided, and nothing here can check which it is.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    #if !os(iOS)
+                    // On iOS this is in the bottom bar, where a thumb reaches it.
+                    refreshButton
+                    #endif
+                    infoButton
+                    settingsButton
                 }
+
                 #if os(iOS)
-                // The switcher and refresh, at the bottom of the screen. See `ScreenSwitcherBar`
-                // for why this is an inset rather than a toolbar.
-                .safeAreaInset(edge: .bottom) {
-                    ScreenSwitcherBar(section: $section, model: model)
+                // The same plain toolbar item, in the system's bottom bar rather than the top
+                // one, and pushed to the trailing edge.
+                //
+                // `ToolbarSpacer` rather than a bare `Spacer()`. Both push the button over, but
+                // the first is the API for it — `@available(iOS 26.0, macOS 26.0, *)`, checked
+                // in the SDK's own interface, where a `Spacer` in a toolbar is a view that
+                // happens to have that effect.
+                ToolbarItemGroup(placement: .bottomBar) {
+                    ToolbarSpacer()
+                    refreshButton
                 }
                 #endif
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
+            }
+            .sheet(isPresented: $isShowingAboutData) {
+                AboutThisDataView()
+            }
+            .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(nothingToUpdateMessage)
+            }
         }
-        // The load, on the view that appears. See `IncidentsScreen` for why it is not on the
-        // tab view.
+        // Runs when the view appears. It deliberately does not run again when the app
+        // comes back from the background: the previous result is still in memory, and the
+        // feed cannot have changed more than once in five minutes anyway. The feed is an
+        // undocumented path on the City's server, so the app asks for it only when it has
+        // nothing to show, or when someone taps refresh.
         .task {
-            await model.loadIfEmpty()
+            if snapshot == nil {
+                await load()
+            }
         }
+    }
+
+    /// Unchanged from the original: a plain labelled button inside a toolbar item, with
+    /// no button style, background or padding of its own, so the platform draws it.
+    private var refreshButton: some View {
+        Button {
+            Task { await refresh() }
+        } label: {
+            Label("Refresh", systemImage: "arrow.clockwise")
+        }
+    }
+
+    /// The same shape as the refresh button, in the platform's standard spot for it.
+    private var settingsButton: some View {
+        Button {
+            isShowingSettings = true
+        } label: {
+            Label("Settings", systemImage: "gearshape")
+        }
+    }
+
+    /// What the fields mean, and where the data comes from. Reference material, so it is a
+    /// button of its own rather than a row in Settings — somebody wondering what an Alarm Level
+    /// is should not have to guess that it is filed under preferences.
+    private var infoButton: some View {
+        Button {
+            isShowingAboutData = true
+        } label: {
+            Label("About this Data", systemImage: "info.circle")
+        }
+    }
+
+    /// Refreshes, unless the City provably has not republished since the tick we hold.
+    ///
+    /// The feed is a five-minute snapshot of a source that only changes every five
+    /// minutes, so between two of its boundaries there is nothing to fetch. Asking anyway
+    /// would be a request whose answer we already know, against a server that never
+    /// offered the endpoint in the first place.
+    ///
+    /// The message is an alert rather than a change to the status line, because the whole
+    /// reason this exists is that a tap has to be visibly acknowledged — a silent skip is
+    /// indistinguishable from the dead button reported earlier.
+    private func refresh() async {
+        guard FeedRefresh.mayHaveRefreshed(since: snapshot?.updatedFromDatabaseAt) else {
+            isShowingNothingToUpdate = true
+            return
+        }
+        await load()
+    }
+
+    private var nothingToUpdateMessage: String {
+        let updated = snapshot?.updatedFromDatabaseAt ?? "an unknown time"
+        return "Nothing newer than \(updated)."
     }
 
     @ViewBuilder
     private var content: some View {
-        if let status = model.status() {
+        if let snapshot {
             switch presentation {
             case .compactTable:
                 CompactTableList(
-                    incidents: model.incidents,
+                    incidents: snapshot.incidents,
                     timeFormat: dispatchTimeFormat,
-                    status: status,
-                    geocoder: geocoder
+                    status: status(for: snapshot)
                 )
             case .cards:
                 CardsList(
-                    incidents: model.incidents,
+                    incidents: snapshot.incidents,
                     timeFormat: dispatchTimeFormat,
-                    status: status,
-                    geocoder: geocoder
+                    status: status(for: snapshot)
                 )
             }
-        } else if let failureMessage = model.failureMessage {
+        } else if let failureMessage {
             ContentUnavailableView(
                 "Live feed unavailable",
                 systemImage: "exclamationmark.triangle",
@@ -93,13 +170,59 @@ struct ContentView: View {
             ProgressView("Loading active incidents")
         }
     }
+
+    /// The feed's own timestamp, and whether what is on screen is the last good result.
+    ///
+    /// It is the age of the *data*, not of our request, which is what a reader needs in
+    /// order to judge whether what they are looking at is current. The City shows the same
+    /// value; we add the space after the colon that their page omits.
+    ///
+    /// A refresh in flight says so here rather than in the toolbar, so the button keeps its
+    /// untouched appearance. The feed only changes every five minutes, so a refresh that
+    /// returns exactly what we already had is the normal case and has to be
+    /// distinguishable from a tap that did nothing.
+    ///
+    /// No case for having no snapshot. This used to be drawn outside the list, where it was
+    /// visible while the first fetch was in flight and could say "Fetching…". A section
+    /// header only exists when there is a section, and the list is only built from a
+    /// snapshot — so those states are now said by the `ProgressView` and the
+    /// `ContentUnavailableView` that stand in the list's place, which is where a reader
+    /// looks for them anyway.
+    private func status(for snapshot: LiveCADSnapshot) -> FeedStatus {
+        // "City data as of", not "Last updated". The value is the City's own refresh tick
+        // — update_from_db_time, which lands on a five-minute boundary — and not the moment
+        // we fetched it. "Last updated" left that open to exactly the wrong reading.
+        let updated = snapshot.updatedFromDatabaseAt ?? "unknown"
+        let base = "City data as of \(updated)"
+
+        if isShowingStaleResult {
+            return FeedStatus(text: "\(base) · showing the last result", isStale: true)
+        }
+        if isRefreshing {
+            return FeedStatus(text: "\(base) · checking…", isStale: false)
+        }
+        return FeedStatus(text: base, isStale: false)
+    }
+
+    private func load() async {
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        do {
+            snapshot = try await LiveCADClient().snapshot()
+            failureMessage = nil
+            isShowingStaleResult = false
+        } catch {
+            guard snapshot == nil else {
+                // Keep what we have and say so, rather than emptying the screen.
+                isShowingStaleResult = true
+                return
+            }
+            failureMessage = "The live feed could not be loaded.\n\(error.localizedDescription)"
+        }
+    }
 }
 
 #Preview {
-    ContentView(
-        model: IncidentFeedModel(),
-        geocoder: IncidentGeocoder(),
-        sheet: .constant(nil),
-        section: .constant(.incidents)
-    )
+    ContentView()
 }

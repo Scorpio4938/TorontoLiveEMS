@@ -11,9 +11,7 @@ import SwiftUI
 struct TorontoLiveEMSApp: App {
     var body: some Scene {
         WindowGroup {
-            // The root rather than a screen. It owns the feed and the two sheet flags, because
-            // both tabs show the same incidents and either can open the same sheets.
-            RootView()
+            ContentView()
         }
     }
 }

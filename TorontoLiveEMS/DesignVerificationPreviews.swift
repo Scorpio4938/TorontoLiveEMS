@@ -63,44 +63,44 @@ private let previewStatus = FeedStatus(
 // file did, in both layouts at once.
 
 #Preview("Table — light") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
 }
 
 #Preview("Table — dark") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
 }
 
 #Preview("Cards — dark") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .preferredColorScheme(.dark)
 }
 
 /// Cards are already a stack of two lines, so there is no separate accessibility layout
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
@@ -113,8 +113,7 @@ private let previewStatus = FeedStatus(
         status: FeedStatus(
             text: "City data as of 2026-09-29 20:00:01 · showing the last result",
             isStale: true
-        ),
-        geocoder: IncidentGeocoder()
+        )
     )
 }
 
@@ -125,13 +124,13 @@ private let previewStatus = FeedStatus(
 /// layout got its block from, so it is the reference for that.
 #Preview("Detail — light") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
+        IncidentDetailView(incident: PreviewIncidents.fire)
     }
 }
 
 #Preview("Detail — dark") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
+        IncidentDetailView(incident: PreviewIncidents.fire)
     }
     .preferredColorScheme(.dark)
 }
@@ -139,7 +138,7 @@ private let previewStatus = FeedStatus(
 /// The medical case, whose location is a postal area and whose footer says so.
 #Preview("Detail — withheld location") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.locationWithheld, geocoder: IncidentGeocoder())
+        IncidentDetailView(incident: PreviewIncidents.locationWithheld)
     }
 }
 
@@ -207,29 +206,4 @@ private struct IconPreview: View {
 
 #Preview("Icon — tinted") {
     IconPreview(asset: "IconAppearanceTinted", label: "tinted")
-}
-
-// MARK: - The map
-
-/// The incidents placed on a map, as far as they can be in a canvas.
-///
-/// The circles and pins are the ones the geocoder would produce, and in a preview it produces
-/// none — so this shows what a reader sees in the seconds after opening the tab: the notice
-/// saying how many are still being found. The placement itself needs a network.
-#Preview("Map — with incidents") {
-    IncidentsMap(
-        model: IncidentFeedModel(
-            snapshot: LiveCADSnapshot(
-                updatedFromDatabaseAt: "2026-09-29 20:00:01",
-                incidents: PreviewIncidents.all
-            )
-        ),
-        geocoder: IncidentGeocoder()
-    )
-}
-
-#Preview("Detail — map section") {
-    NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
-    }
 }

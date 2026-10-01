@@ -16,8 +16,14 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
-    /// Passed down rather than read from the environment, where a missing value traps.
-    let geocoder: IncidentGeocoder
+    /// The map's geocoder, owned by this screen.
+    ///
+    /// **One per detail view rather than one shared.** This screen looks up exactly one location,
+    /// so there is nothing to share and nothing to keep warm; the alternative is threading a
+    /// geocoder through two list types and five call sites for no gain. `@State` and not
+    /// `@Environment`: a missing environment value of our own type is a trap rather than a nil,
+    /// which is a lesson already paid for.
+    @State private var geocoder = IncidentGeocoder()
 
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
