@@ -1,25 +1,25 @@
 import SwiftUI
 
-/// The app: two screens over one feed.
+/// **A diagnostic. Not a version of the app.**
 ///
-/// A `TabView`, because that is what the platform calls two peer sections of an app — and a
-/// segmented picker would be the wrong tool twice over: it filters content rather than navigating
-/// between places, and with two tabs the tab bar is what a reader already knows.
+/// The tab bar has never drawn on this machine. Five attempts have tried to explain that, and every
+/// one of them changed the *content* of the tabs or the modifiers around them — a bottom bar, an
+/// accessory, a minimising style, an alert, a safe-area inset — while the tabs themselves were
+/// always the real screens, with a `NavigationStack` and a `List` and a `Map` inside.
 ///
-/// The feed and the geocoder live here rather than in either tab, because both tabs show the same
-/// incidents. A map that fetched separately from the list could disagree with it about what is
-/// happening, and a reader would have no way to tell which one was wrong.
+/// That leaves one thing never tested: **whether a tab bar draws here at all.**
+///
+/// So this file is two `Text` views and nothing else. No model, no feed, no navigation, no toolbar,
+/// no sheet, no modifiers on the tab view. If the bar draws now, the platform is fine and one of
+/// those real screens is suppressing it — and the next step is to bisect between here and there.
+/// If it still does not draw, nothing in the app is responsible and the answer is the toolchain,
+/// the simulator, or the destination.
+///
+/// Either way it is one bit, and it is the bit everything else has been guessing without.
 struct RootView: View {
 
-    @State private var model = IncidentFeedModel()
-    @State private var geocoder = IncidentGeocoder()
-
-    /// Which sheet is open, if any.
-    ///
-    /// One sheet driven by a value rather than two driven by booleans. Two `.sheet` modifiers on
-    /// the same view is a long-standing way to get the first one working and the second silently
-    /// not — and the symptom is exactly "the button does nothing", because the tap lands and the
-    /// presentation does not.
+    /// Kept so that `ContentView` and `AppToolbar` still compile against this. Nothing presents
+    /// them in this build.
     enum Sheet: String, Identifiable {
         case settings
         case aboutData
@@ -27,78 +27,15 @@ struct RootView: View {
         var id: String { rawValue }
     }
 
-    @State private var sheet: Sheet?
-
     var body: some View {
-        // **Nothing on the tab view but the tabs.** This is deliberate and it is temporary.
-        //
-        // Three attempts at putting a control at the bottom of this screen have failed, and each
-        // one changed several things at once — a bottom-bar toolbar, a bottom accessory, a
-        // bar-minimising style — so that when the tab bar did not appear there was no way to say
-        // which of them was responsible. This is the version that answers that: the switcher, and
-        // nothing else, so that if the bar renders now, the platform was never the problem and
-        // whatever suppressed it is one of the things removed here.
-        //
-        // Refresh has moved to the top bar, where it was before any of this, for the same reason —
-        // it is known to work there, so the switcher is the only variable. The bottom accessory
-        // comes back on its own ticket once this is confirmed.
-        tabs
-            .sheet(item: $sheet) { which in
-                switch which {
-                case .settings:
-                    SettingsView()
-                case .aboutData:
-                    AboutThisDataView()
-                }
-            }
-            // No alert. It was here, and an alert that is presented makes the whole window
-            // inert — which is exactly the symptom being chased: every button visible, every
-            // button doing nothing. Until it is known whether that was the cause, the
-            // acknowledgement lives in the status line, where it cannot block anything.
-    }
-
-    private var tabs: some View {
         TabView {
-            Tab("Active Incidents", systemImage: "list.bullet") {
-                ContentView(model: model, geocoder: geocoder, sheet: $sheet)
+            Tab("One", systemImage: "1.circle") {
+                Text("First tab")
             }
 
-            Tab("Map", systemImage: "map") {
-                IncidentsScreen(model: model, geocoder: geocoder, sheet: $sheet)
+            Tab("Two", systemImage: "2.circle") {
+                Text("Second tab")
             }
-        }
-    }
-}
-
-/// The map, as a screen: a title bar, the controls both tabs carry, and the map.
-private struct IncidentsScreen: View {
-
-    let model: IncidentFeedModel
-    let geocoder: IncidentGeocoder
-
-    /// The root's, not a second flag. Two screens each presenting their own would put one sheet
-    /// behind the other, invisible and stuck.
-    @Binding var sheet: RootView.Sheet?
-
-    var body: some View {
-        NavigationStack {
-            IncidentsMap(model: model, geocoder: geocoder)
-                .navigationTitle("Map")
-                #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-                #endif
-                .toolbar {
-                    AppToolbar(model: model, sheet: $sheet)
-                }
-        }
-        // Here rather than on the tab view. A `TabView`'s own `.task` is one task for the whole
-        // container and was not firing — the screens appeared and nothing loaded, while a manual
-        // refresh worked. On the screens it is each view's own appearance, which is the thing
-        // that is actually guaranteed.
-        //
-        // `loadIfEmpty` guards, so the two tabs cannot both fetch and cannot fetch twice.
-        .task {
-            await model.loadIfEmpty()
         }
     }
 }
