@@ -50,7 +50,7 @@ enum PreviewIncidents {
 }
 
 /// What the status line says in the previews. The real value is the City's refresh tick,
-/// which lands on a five-minute boundary — see `ContentView.status(for:)`.
+/// which lands on a five-minute boundary — see `IncidentFeed.status`.
 private let previewStatus = FeedStatus(
     text: "City data as of 2026-09-29 20:00:01",
     isStale: false

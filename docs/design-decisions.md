@@ -327,6 +327,17 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The map
 
+> **Superseded on 2026-10-01.** Everything below describes the design that was built and
+> then abandoned before the reset: refresh in the top bar, the geocoder in `@Environment`,
+> the feed and the geocoder both living at the root. See *The bar and the map page* at the
+> end of this file for what replaced it. It is kept because the reasoning is still worth
+> reading — and because one line of it, the environment, contradicted a rule this project
+> already held: `@Environment(Type.self)` traps when the key is missing rather than
+> degrading.
+>
+> One thing in it was never wrong: a map that fetched on its own could disagree with the
+> list. That survives as the feed model living in one place.
+
 - **Two screens, and a `TabView` between them.** Apple's `Tab` API, not a segmented picker: a
   segmented control filters content rather than navigating between places, and the tab bar is
   what a reader already knows. The app's root is the tab view; the feed and the geocoder live
@@ -465,3 +476,80 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   undocumented endpoint, and the feed's own five-minute cycle — for showing
   `update_from_db_time` at all times: the user needs to see how old the data is
   rather than trust it blindly.
+
+## The bar and the map page
+
+**Decided on 2026-10-01, on `feature/tab-bar-and-map`. Not built yet.** Written down before
+the code, because the last attempt at the bar changed several things at once and could not
+say which of them mattered.
+
+- **iPhone is the only target for this work, and that is the diagnosis rather than a
+  preference.** `sidebarAdaptable`'s own documentation: *"iPadOS displays a top tab bar that
+  can adapt into a sidebar. iOS displays a bottom tab bar. macOS and tvOS always show a
+  sidebar."* The last record of where Xcode was pointed names an **iPad simulator and a Mac**.
+  There was never a bottom bar to find, in any of the six attempts.
+- **The switcher is a `TabView` with two `Tab`s** — Incidents and Map. Not a segmented
+  picker: a segmented control filters content, it does not navigate between places.
+- **Refresh sits in the tab bar's trailing slot, as a `prominent` tab.** The request was for the
+  shape Apple draws in Music and Books — the pages across the bar, one control set apart at its
+  trailing end. That is `TabRole`, and it has **exactly two properties**: `prominent` (iOS 27)
+  and `search` (iOS 18).
+
+  **`search` was tried first and renders as an ordinary third item**, which is not the look: its
+  documentation only promises that a `.search` tab *"may receive the prominent visual treatment
+  by default."* `prominent` is the explicit request for that treatment, and using it is why
+  `IPHONEOS_DEPLOYMENT_TARGET` moved to **27.0** — a `role:` argument cannot sit behind
+  `if #available`, and the app is unreleased, so the cost is a number in the project file.
+  Apple's words for the slot: *"a tab bar can include a dedicated search **tab** at the trailing
+  end."* What *"in supported tab bars"* means is not yet known; the treatment may not apply to
+  every tab bar style.
+
+  **It is a tab, which means it selects, and that is a cost rather than a detail.** No API puts a
+  non-navigating control in that bar. So the tab sets the selection, `RootView` puts it straight
+  back, and the refresh happens in between: the bar's selection is seen to move on every tap,
+  and VoiceOver is told it is a tab. Kept because the alternative looked worse — a `.bottomBar`
+  toolbar item **does not merge** with the tab bar and draws as a second bar, of its own height,
+  above it. That was tried on an iPhone and looked at, which is the only reason it can be stated.
+
+- **The accessory is not used, and is the documented alternative.** Apple: the accessory can be
+  *"moved inline with the tab bar"* when the bar is minimized on scroll — the Music MiniPlayer —
+  and that remains the documented way to put a control in the same bar as the tabs. It was tried
+  first, holding one button on a full-width strip, and read as a stray control on a blank band.
+  If it is revisited it should carry the status line too, so that it has something to say.
+- **The alert stays.** Kept deliberately, against the recommendation to remove it: it makes
+  the window inert, and the code's own comment already calls that *"indistinguishable from
+  the dead button reported earlier"*. Kept so that the first test of the bar changes one
+  fewer thing. The consequence is recorded rather than hidden — if the window goes dead,
+  there are two candidates and not one.
+- **The first build is the bar alone** — the incidents tab real, the map tab a placeholder.
+  Two real pages at once is how the earlier attempts became undiagnosable.
+- **Info and Settings sit on both tabs**, declared once and applied by each. They are about
+  the app and the data, not about the list, and a button that exists on one tab and vanishes
+  on the other reads as a bug.
+- **The feed state moves into the package** as an `@Observable` type, passed explicitly and
+  never through `@Environment`. In the package because `swift test` cannot reach the app
+  target, and the refresh flow is logic that deserves tests. `IncidentGeocoder` is the
+  pattern already used here.
+- **The root is `RootView`; `ContentView` becomes the incidents page.** The tab view, the
+  accessory, the toolbar, the sheets and the alert are the app, not the content.
+- **Every incident with a location is drawn** — a pin for a precise one, the same 1,200 m
+  circle for a postal area, reused unchanged from the detail map.
+- **One mark per place, not per incident.** The live capture holds fifteen incidents in
+  thirteen places, with two postal areas holding two each. A mark per incident would stack
+  two identical circles and leave one incident unreachable from the map.
+- **The card is a callout anchored above the pin, and above the circle's top edge** — never
+  at a circle's centre, which is the claim ADR-0004 exists to refuse. Liquid Glass through
+  `.glassEffect(_:in:)` alone; mixing it with `.buttonStyle(.glass)` produces two materials,
+  which is what made the last bar look wrong.
+- **Nothing published means nothing drawn, and no notice about it.** "Finding N more…"
+  stays, because that is a loading indicator rather than a completeness notice.
+- **The map tab shows the data's age.** Decided twice; the second time after reading the
+  licence reason above, which is about the app rather than about the table.
+- **Each screen owns its own geocoder** — the detail view and the map page resolve different
+  sets, and nothing is threaded through the list types to reach a `NavigationLink`.
+
+**Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
+`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
+`MapCompass` are evidenced only by code that has already compiled in this project. For the
+same reason selection is done with `.onTapGesture` on the annotation content — plain
+SwiftUI — rather than `MapSelection`.
