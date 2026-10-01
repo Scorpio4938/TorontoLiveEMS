@@ -29,6 +29,35 @@ struct IncidentsMap: View {
         }
     }
 
+    /// What has happened to each incident's location, which is what the notice has to distinguish.
+    ///
+    /// Counted per **incident**, not per location, so the numbers add up against the list. Several
+    /// incidents at one corner share a location and a reader counting rows will not know that.
+    private struct Tally {
+        var pending = 0
+        var nothingFound = 0
+        var failed = 0
+    }
+
+    private var tally: Tally {
+        var counted = Tally()
+        for incident in model.incidents {
+            let location = IncidentLocation.from(incident)
+            // Nothing was published, so there is nothing to look up and nothing to report.
+            // Counting it would blame the geocoder for a value the feed never sent.
+            guard location.query != nil else {
+                continue
+            }
+            switch geocoder.outcome(of: location) {
+            case .placed: continue
+            case .pending: counted.pending += 1
+            case .nothingFound: counted.nothingFound += 1
+            case .failed: counted.failed += 1
+            }
+        }
+        return counted
+    }
+
     var body: some View {
         Map(position: $position) {
             ForEach(placed, id: \.incident.incidentNumber) { entry in
@@ -66,24 +95,41 @@ struct IncidentsMap: View {
         }
     }
 
-    /// How many are still being looked up, and how many have nowhere to go.
+    /// What is still being looked up, and what will never be placed.
     ///
     /// Worth saying out loud: with postal areas drawn as circles and some incidents carrying no
     /// location at all, a reader counting dots and comparing them to the list would otherwise
     /// find a discrepancy and no explanation.
+    ///
+    /// **And the three states are said differently, because they are different.** This used to be
+    /// one line reading "Finding N more…" with a spinner, for any incident not yet drawn —
+    /// including the ones the geocoder had already finished with. A count that never reaches zero
+    /// under a spinner that never stops is the app saying "wait" forever about something that is
+    /// never coming. "Still looking", "asked and there is no match", and "the request failed, and
+    /// will be tried again" are three different things to tell a reader.
     @ViewBuilder
     private var resolvingNotice: some View {
-        let unresolved = model.incidents.count - placed.count
-        if unresolved > 0 {
-            HStack(spacing: 6) {
-                ProgressView().controlSize(.small)
-                Text("Finding \(unresolved) more…")
-            }
-            .font(.footnote)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(.regularMaterial, in: Capsule())
-            .padding(.top, 8)
+        let counts = tally
+        if counts.pending > 0 {
+            notice("Finding \(counts.pending) more…", isWaiting: true)
+        } else if counts.failed > 0 {
+            notice("\(counts.failed) couldn't be looked up", isWaiting: false)
+        } else if counts.nothingFound > 0 {
+            notice("\(counts.nothingFound) had no match", isWaiting: false)
         }
+    }
+
+    private func notice(_ text: String, isWaiting: Bool) -> some View {
+        HStack(spacing: 6) {
+            if isWaiting {
+                ProgressView().controlSize(.small)
+            }
+            Text(text)
+        }
+        .font(.footnote)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.regularMaterial, in: Capsule())
+        .padding(.top, 8)
     }
 }

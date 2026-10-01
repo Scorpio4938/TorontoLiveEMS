@@ -39,9 +39,12 @@ final class IncidentFeedModel {
     /// A refresh returning exactly what we already have is the common outcome, because the feed
     /// only changes every five minutes — so it has to be tellable apart from a tap that did
     /// nothing at all.
-    /// Set when a refresh was skipped because the City cannot have republished. Bound to an
-    /// alert, so it clears itself when the reader dismisses it — `@Observable` gives no
-    /// `private(set)` for something a binding has to write.
+    /// Set when a refresh was skipped because the City cannot have republished.
+    ///
+    /// Not bound to anything any more — the alert it drove made the whole window inert, and it is
+    /// shown in the status line instead. Which means it has to take itself back: the next thing to
+    /// clear it might be five minutes away, and "already up to date" left standing for five
+    /// minutes becomes a claim about a feed that has since moved on.
     var isUpToDate = false
 
     /// The status line's text and whether it is warning.
@@ -83,6 +86,14 @@ final class IncidentFeedModel {
     func refresh() async {
         guard FeedRefresh.mayHaveRefreshed(since: snapshot?.updatedFromDatabaseAt) else {
             isUpToDate = true
+            // Said, then taken back. Four seconds is long enough to be read by someone who just
+            // tapped the button and short enough that it is gone before it can be mistaken for the
+            // normal state of things. `Task {}` inside a `@MainActor` method inherits the actor,
+            // so this writes on the main actor without saying so.
+            Task {
+                try? await Task.sleep(for: .seconds(4))
+                isUpToDate = false
+            }
             return
         }
         await load()

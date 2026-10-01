@@ -37,7 +37,7 @@ public enum IncidentLocation: Hashable, Sendable {
     public var query: String? {
         switch self {
         case .intersection(let streets):
-            return "\(streets), Toronto, Ontario"
+            return "\(Self.intersectionPhrase(streets)), Toronto, Ontario"
         case .street(let name):
             return "\(name), Toronto, Ontario"
         case .postalArea(let code):
@@ -45,6 +45,33 @@ public enum IncidentLocation: Hashable, Sendable {
         case .unpublished:
             return nil
         }
+    }
+
+    /// The published intersection, as a geocoder wants to read it.
+    ///
+    /// The feed writes two street names separated by a slash — `WOODBINE AVE / KINGSTON RD` — and
+    /// that form was being handed to Apple's geocoder unchanged. A geocoder reads `&` between two
+    /// street names as an intersection; a slash is a separator in a path, and there is no reason
+    /// to expect it to mean anything at all.
+    ///
+    /// **The published form is what the app shows. This is what it asks.** They were the same
+    /// string until the map had nothing on it, and the assumption that they could stay the same
+    /// was never checked against a geocoder — only against the feed.
+    ///
+    /// Anything that does not split into exactly two non-empty parts is left alone. A guess at
+    /// what a three-part value meant is worse than the value itself, because it fails silently
+    /// in a different place.
+    ///
+    /// `private`, and the tests go through `query`. What the app asks a geocoder is the part worth
+    /// promising; how the string is assembled is not a second thing to keep true.
+    private static func intersectionPhrase(_ streets: String) -> String {
+        let parts = streets
+            .split(separator: "/")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+        guard parts.count == 2, parts.allSatisfy({ !$0.isEmpty }) else {
+            return streets
+        }
+        return parts.joined(separator: " & ")
     }
 
     /// Whether this names a point or an extent.

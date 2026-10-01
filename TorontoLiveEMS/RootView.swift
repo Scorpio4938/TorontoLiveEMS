@@ -30,22 +30,19 @@ struct RootView: View {
     @State private var sheet: Sheet?
 
     var body: some View {
+        // **Nothing on the tab view but the tabs.** This is deliberate and it is temporary.
+        //
+        // Three attempts at putting a control at the bottom of this screen have failed, and each
+        // one changed several things at once — a bottom-bar toolbar, a bottom accessory, a
+        // bar-minimising style — so that when the tab bar did not appear there was no way to say
+        // which of them was responsible. This is the version that answers that: the switcher, and
+        // nothing else, so that if the bar renders now, the platform was never the problem and
+        // whatever suppressed it is one of the things removed here.
+        //
+        // Refresh has moved to the top bar, where it was before any of this, for the same reason —
+        // it is known to work there, so the switcher is the only variable. The bottom accessory
+        // comes back on its own ticket once this is confirmed.
         tabs
-            // The tab bar is told never to minimise. It does so by default — `.automatic` — and
-            // a bar that hides itself on scroll is a bar a reader has to rediscover.
-            #if os(iOS)
-            .tabBarMinimizeBehavior(.never)
-            // Refresh in the accessory: the one bar iOS 26 provides *beside* the tab bar, for a
-            // control belonging to the app rather than to a tab.
-            //
-            // Just the button. The first version wrapped it in an `HStack` with a `Spacer`, which
-            // is a view asking for as much width as it can get inside a bar that sizes itself to
-            // its content — and it did not appear at all. A bar that reports no height is a bar
-            // that is not there.
-            .tabViewBottomAccessory {
-                RefreshButton(model: model)
-            }
-            #endif
             .sheet(item: $sheet) { which in
                 switch which {
                 case .settings:

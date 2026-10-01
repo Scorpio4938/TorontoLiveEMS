@@ -12,18 +12,16 @@ struct AppToolbar: ToolbarContent {
     @Binding var sheet: RootView.Sheet?
 
     var body: some ToolbarContent {
-        // The top bar, which is where the two buttons that open something live. One group, not
-        // several items sharing a placement: `ToolbarItemGroup` is the API for more than one
-        // control in the same spot, and the order below is then the order on screen — which is
-        // what keeps settings in the rightmost slot it has always had.
+        // Refresh is in the top bar on every platform, for now.
         //
-        // Refresh is deliberately not here on iOS. It is in the tab view's bottom accessory,
-        // beside the tab bar, which is where a thumb reaches and what was asked for.
+        // It was moved to a bottom-bar toolbar on iOS, to a thumb's reach. That bar took the tab
+        // bar's place — two things claiming the bottom of the screen — so it moved to the tab
+        // view's bottom accessory, which is the API for exactly this. It is going back there. But
+        // not in the same build as the bare tab view that has to prove the bar renders at all: one
+        // change at a time is the whole lesson of the last three attempts, and refresh is known to
+        // work here.
         ToolbarItemGroup(placement: .primaryAction) {
-            #if !os(iOS)
-            // macOS has no tab-view accessory, so there it is an ordinary toolbar item.
             RefreshButton(model: model)
-            #endif
             infoButton
             settingsButton
         }

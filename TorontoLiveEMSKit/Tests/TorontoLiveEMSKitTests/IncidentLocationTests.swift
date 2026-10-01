@@ -134,9 +134,42 @@ struct IncidentPlacementTests {
     func queriesAreLocalised() {
         // The feed is Toronto-only. A bare `QUEEN ST W` geocodes confidently to the wrong
         // continent, and a geocoder that answers wrongly is worse than one that does not answer.
-        #expect(IncidentLocation.intersection("A ST / B ST").query == "A ST / B ST, Toronto, Ontario")
+        #expect(IncidentLocation.intersection("A ST / B ST").query == "A ST & B ST, Toronto, Ontario")
         #expect(IncidentLocation.street("QUEEN ST W").query == "QUEEN ST W, Toronto, Ontario")
         #expect(IncidentLocation.postalArea("M6K").query == "M6K, Toronto, Ontario")
+    }
+
+    @Test("asks for an intersection the way a geocoder reads one")
+    func intersectionsAreAskedWithAnAmpersand() {
+        // The feed's own separator is a slash — `WOODBINE AVE / KINGSTON RD` is what the City
+        // publishes. It was being passed through unchanged, which is the published form and not a
+        // question any geocoder was ever asked to answer.
+        //
+        // Through `query`, not through the helper that builds it: what the app asks is the part
+        // worth promising.
+        #expect(IncidentLocation.intersection("WOODBINE AVE / KINGSTON RD").query
+            == "WOODBINE AVE & KINGSTON RD, Toronto, Ontario")
+        // The real intersections in the live capture, which is where the spacing actually varies.
+        #expect(IncidentLocation.intersection("ARDAGH ST / JANE ST").query
+            == "ARDAGH ST & JANE ST, Toronto, Ontario")
+        #expect(IncidentLocation.intersection("A ST/B ST").query == "A ST & B ST, Toronto, Ontario")
+        #expect(IncidentLocation.intersection("A ST  /  B ST").query == "A ST & B ST, Toronto, Ontario")
+        // House numbers on both sides of a corner are still two street names.
+        #expect(IncidentLocation.intersection("3950 LAWRENCE AVE E / 3967 LAWRENCE AVE E").query
+            == "3950 LAWRENCE AVE E & 3967 LAWRENCE AVE E, Toronto, Ontario")
+    }
+
+    @Test("leaves an intersection it cannot parse exactly as published")
+    func unparseableIntersectionsAreLeftAlone() {
+        // Guessing at a value that does not have the shape is worse than passing it through: a
+        // wrong guess fails somewhere else, silently.
+        #expect(IncidentLocation.intersection("A ST / B ST / C ST").query
+            == "A ST / B ST / C ST, Toronto, Ontario")
+        #expect(IncidentLocation.intersection("JANE ST").query == "JANE ST, Toronto, Ontario")
+        #expect(IncidentLocation.intersection("A ST / ").query == "A ST / , Toronto, Ontario")
+        #expect(IncidentLocation.intersection("/ B ST").query == "/ B ST, Toronto, Ontario")
+        // Two separators with nothing between them is not two streets.
+        #expect(IncidentLocation.intersection(" / ").query == " / , Toronto, Ontario")
     }
 
     @Test("calls only a postal area an area")
