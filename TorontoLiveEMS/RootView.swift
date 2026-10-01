@@ -109,14 +109,6 @@ struct RootView: View {
                     IncidentsMapPage(feed: feed)
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
-                        // **No background under the title.** The bar keeps its two buttons and its
-                        // title, but stops drawing a material band between them and the map, so
-                        // the map runs to the top edge and the controls sit on it. A band of
-                        // chrome above a full-bleed map is the one place in this app where the
-                        // platform's default reads as a stray strip rather than as structure.
-                        //
-                        // The lists keep theirs: a table under a bar wants the separation.
-                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                         .toolbar { toolbar }
                 }
             }

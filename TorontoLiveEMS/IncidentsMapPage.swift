@@ -82,6 +82,18 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
+        #if os(iOS)
+        // **No scroll-edge effect.** `scrollEdgeEffectStyle` blurs and *tints* whatever is behind
+        // it, which over a map is a coloured band under the bar — and the map was getting the
+        // platform default because it is not a scroll view and so never received
+        // `softScrollEdge()` the way the lists and the detail view did.
+        //
+        // The style is optional, so `nil` is how it is removed: `ScrollEdgeEffectStyle` offers
+        // `.automatic`, `.hard` and `.soft`, and none of them is "none". Passing `nil` is
+        // deliberate, not an omission — the app's own bar-to-content boundary is wanted over a
+        // list and is not wanted over a full-bleed map.
+        .scrollEdgeEffectStyle(nil, for: .top)
+        #endif
         .overlay(alignment: .top) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
