@@ -558,16 +558,22 @@ say which of them mattered.
   `.glassEffect` alone, per the callout decision above — and the page's name sits centred
   above the map as plain text, where the bar's inline title used to. Its first floating
   version was a capsule too, and that read as a button: the title is a name, not a control.
-- **The floating capsule is the reference for the bars' controls.** Decided by looking at
-  both, and against the first reading of this: `AppToolbar` carries the map capsule's own
-  metrics — `.title3` icons in 34-point slots, in the label colour, icon-only — so
-  the top-right controls on the two pages read as one thing. The space between the icons was
-  then opened from 8 to 16: the bar's items read further apart, the platform does not publish
-  its own item spacing, and the distance inside this capsule is the only one of the two that
-  can be adjusted. The bar still draws its own
-  capsule around its own items, so the two are matched rather than identical; if the platform
-  clamps a toolbar icon's size, the remaining exact fix is to float the controls on both
-  pages.
+- **One definition for the top-right controls, on both pages.** They had been two
+  implementations of the same two buttons — a toolbar item drawn by the platform on the
+  incidents page, a hand-drawn capsule on the map — and no numbers reconcile two renderers: the
+  bar decides its own capsule, padding, item spacing and placement, and clamps what it likes,
+  so the two read a little apart however the metrics were set. `ScreenControls` is that one
+  definition now. The bar hosts it as a toolbar item with `sharedBackgroundVisibility(.hidden)`
+  — iOS 26, and Apple's words are "hiding the effect will cause the item to be placed in its
+  own grouping" — so the platform places the item while this code draws the material. The map
+  floats the same view, because it has no bar to hold it. Only the placement differs now: the
+  map's half of it is two numbers in `RootView`, and the bar's belongs to the platform.
+- **A note on how that was reached**, because the order matters more than the result. First the
+  bar's items were assumed to be the reference and the capsule was shrunk to match it — wrong,
+  and reverted. Then the capsule was taken as the reference and the bar's items were given its
+  metrics — closer, and still visibly apart, because a toolbar item's size, spacing and
+  placement are the platform's to decide and it clamps what it likes. Taking `ScreenControls`
+  out of both pages is what made them the same thing rather than two things tuned alike.
   What that
   costs is written here too: floating controls are not toolbar items, so they are declared in
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its

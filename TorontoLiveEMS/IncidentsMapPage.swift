@@ -219,7 +219,7 @@ struct IncidentsMapPage: View {
         }
         .padding(10)
         .frame(maxWidth: 280, alignment: .leading)
-        .mapSurface(cornerRadius: 12)
+        .glassSurface(cornerRadius: 12)
     }
 
     /// One incident inside a place's card.

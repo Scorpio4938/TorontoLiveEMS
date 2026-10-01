@@ -45,43 +45,46 @@ struct AppToolbar: ToolbarContent {
 
     @ToolbarContentBuilder
     var body: some ToolbarContent {
-        // One group, not several items sharing a placement. `ToolbarItemGroup` is the API for
-        // more than one control in the same spot, and the order below is then the order on
-        // screen — which is what keeps settings in the rightmost slot it has always had. Two
-        // separate `ToolbarItem`s would also put them side by side, but their left-to-right
-        // order would be something this code asserted rather than something it decided, and
-        // nothing here can check which it is.
-        ToolbarItemGroup(placement: .primaryAction) {
-            // On iOS the refresh control is at the trailing end of the tab bar instead. Where
-            // there is no tab bar to hold it, this is where it stays.
-            #if !os(iOS)
+        // On iOS the refresh control is at the trailing end of the tab bar instead. Where there
+        // is no tab bar to hold it, this is where it stays.
+        #if !os(iOS)
+        ToolbarItem(placement: .primaryAction) {
             RefreshButton(onTap: onRefresh)
-            #endif
+        }
+        #endif
 
-            // What the fields mean, and where the data comes from. Reference material, so it is
-            // a button of its own rather than a row in Settings — somebody wondering what an
-            // Alarm Level is should not have to guess that it is filed under preferences.
-            // **The same content metrics as the map tab's floating capsule**, which is the
-            // reference by decision: `.title3` icons in 34-point slots, in the label colour,
-            // icon-only with the name kept for VoiceOver. The platform draws the bar's capsule
-            // and this code cannot — these are the levers that exist inside a toolbar item.
-            // If the icons still read smaller here, the platform is clamping them, and the
-            // only exact fix left is to float the controls on both pages.
+        // **The same view the map tab floats, held by the bar instead.**
+        //
+        // `sharedBackgroundVisibility(.hidden)` is what makes one definition possible. Apple:
+        // "Controls the visibility of the glass background effect on items in the toolbar…
+        // toolbar items will be given a glass background effect that is shared with other items
+        // in the same logical grouping", and hiding it "will cause the item to be placed in its
+        // own grouping". So the bar places the item and `ScreenControls` draws the material —
+        // the same material, the same shape, the same size, on both pages.
+        //
+        // What this replaced, and why it matters: the bar used to hold two `Button`s and draw
+        // its own capsule around them. The map page drew its own capsule by hand. Two
+        // implementations of the same two buttons, and no metric reconciles two renderers —
+        // the bar decides its padding, its item spacing and its placement, and clamps what it
+        // likes — which is why they still read a little apart however the numbers were set.
+        //
+        // `sharedBackgroundVisibility` is iOS 26 and macOS 26, and unavailable on visionOS,
+        // which this target also declares. That branch keeps the platform's own buttons.
+        #if os(iOS) || os(macOS)
+        ToolbarItem(placement: .primaryAction) {
+            ScreenControls(onInfo: onInfo, onSettings: onSettings)
+        }
+        .sharedBackgroundVisibility(.hidden)
+        #else
+        ToolbarItemGroup(placement: .primaryAction) {
             Button(action: onInfo) {
                 Label("About this Data", systemImage: "info.circle")
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(Color.primary)
-                    .font(.title3)
-                    .frame(width: 34, height: 34)
             }
 
             Button(action: onSettings) {
                 Label("Settings", systemImage: "gearshape")
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(Color.primary)
-                    .font(.title3)
-                    .frame(width: 34, height: 34)
             }
         }
+        #endif
     }
 }
