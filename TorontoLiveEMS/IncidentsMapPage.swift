@@ -94,17 +94,25 @@ struct IncidentsMapPage: View {
         // Nothing about the bar was ever wrong, which is why hiding its background, softening the
         // scroll edge, and moving the age line all left this unchanged.
         .ignoresSafeArea(edges: .top)
-        // **The app's own bar boundary, which the map was missing.** `docs/design-decisions.md`:
-        // "The boundary under the bar is the soft scroll edge effect, everywhere" — Apple's
-        // `hard` style is "a linear, nearly opaque boundary", `soft` is a subtle blur, and
-        // `automatic` lets the context decide. The map never asked, so it took the default, which
-        // is how this exact defect was fixed once before: commit aadb7c3, "the incident list had
-        // a hard edge under its bar, the detail view did not".
+        #if os(iOS)
+        // **The scroll edge effect, switched off rather than softened.**
         //
-        // The same modifier the lists and the detail view use, rather than a second copy of it.
-        // "One definition, applied wherever there is a scroll view under a bar" is what that
-        // helper is for, and a map under a bar is that case — whether or not it is a scroll view.
-        .softScrollEdge()
+        // `softScrollEdge()` picks a *style* — `.hard`, `.soft`, `.automatic` — and the platform
+        // default for a view that never asks is `.automatic`, which Apple describes as letting the
+        // context decide. There is no style meaning "none", so the earlier attempt to pass `nil`
+        // could not have worked; the off switch is a different API, `scrollEdgeEffectHidden`, and
+        // this page never looked for it.
+        //
+        // Why off rather than soft here, when the lists and the detail view ask for soft: the
+        // effect blurs what is behind it, and what is behind this one is a map. Over a list it is
+        // invisible — the rows underneath are neutral — and over a map it draws the map's own
+        // colours as a gradual band under the bar. It is a boundary treatment for content sliding
+        // under a bar, and a map does not slide.
+        //
+        // Guarded because the API is `@available(visionOS, unavailable)` and this target declares
+        // visionOS.
+        .scrollEdgeEffectHidden(true, for: .top)
+        #endif
         // Bottom-trailing, above the tab bar, as a bare line rather than a boxed strip.
         .overlay(alignment: .bottomTrailing) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
