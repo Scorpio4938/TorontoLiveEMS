@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TorontoLiveEMSKit
 
 @main
 struct TorontoLiveEMSApp: App {
