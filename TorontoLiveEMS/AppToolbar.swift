@@ -12,16 +12,12 @@ struct AppToolbar: ToolbarContent {
     @Binding var sheet: RootView.Sheet?
 
     var body: some ToolbarContent {
-        // Refresh is in the top bar on every platform, for now.
-        //
-        // It was moved to a bottom-bar toolbar on iOS, to a thumb's reach. That bar took the tab
-        // bar's place — two things claiming the bottom of the screen — so it moved to the tab
-        // view's bottom accessory, which is the API for exactly this. It is going back there. But
-        // not in the same build as the bare tab view that has to prove the bar renders at all: one
-        // change at a time is the whole lesson of the last three attempts, and refresh is known to
-        // work here.
+        // Refresh is not here on iOS. It is in the bar at the bottom of the screen, which is where
+        // it belongs and where it was asked for.
         ToolbarItemGroup(placement: .primaryAction) {
+            #if !os(iOS)
             RefreshButton(model: model)
+            #endif
             infoButton
             settingsButton
         }
@@ -44,6 +40,31 @@ struct AppToolbar: ToolbarContent {
         } label: {
             Label("Settings", systemImage: "gearshape")
         }
+    }
+}
+
+/// Refresh at the bottom right of a screen.
+///
+/// **`safeAreaInset`, not a toolbar and not the tab view's accessory.** Both of those claim the
+/// bottom of the screen alongside the tab bar, and the bottom bar built that way took the tab
+/// bar's place outright. This does not touch the tab bar at all: it insets the *content*, which is
+/// the one way to put something at the bottom of the screen that cannot compete for the same
+/// space.
+///
+/// It is a stopgap. `tabViewBottomAccessory` is the API meant for this — a control belonging to the
+/// app rather than to a tab, drawn beside the tab bar — and it goes back there once the tab bar is
+/// drawing at all, because until then there is nothing for it to sit beside.
+struct RefreshBar: View {
+
+    let model: IncidentFeedModel
+
+    var body: some View {
+        HStack {
+            Spacer()
+            RefreshButton(model: model)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 }
 

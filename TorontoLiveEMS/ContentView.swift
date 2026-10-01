@@ -46,6 +46,15 @@ struct ContentView: View {
                 .toolbar {
                     AppToolbar(model: model, sheet: $sheet)
                 }
+                // The bottom-right refresh. On the content, not on the navigation stack, so it
+                // insets the list rather than the whole screen — and so it cannot compete with the
+                // tab bar for the bottom of the screen. That competition is what removed the tab
+                // bar, twice.
+                #if os(iOS)
+                .safeAreaInset(edge: .bottom) {
+                    RefreshBar(model: model)
+                }
+                #endif
         }
         // The load, on the view that appears. See `IncidentsScreen` for why it is not on the
         // tab view.
