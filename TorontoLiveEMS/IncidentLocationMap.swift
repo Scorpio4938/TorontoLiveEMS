@@ -34,6 +34,28 @@ enum IncidentMapScale {
             span: MKCoordinateSpan(latitudeDelta: span, longitudeDelta: span)
         )
     }
+
+    /// The point on an area's **northern rim**, which is where its callout hangs from.
+    ///
+    /// A callout has to be anchored to something, and the only point a circle offers is its
+    /// centre — which is exactly the claim ADR-0004 refuses when it refuses a pin. Hanging the
+    /// card off the rim instead keeps the circle meaning *somewhere in here* while still putting
+    /// the card next to the thing that was touched.
+    ///
+    /// Metres to degrees of latitude, at 111,320 to the degree. The longitude is untouched,
+    /// because the rim directly above the centre shares it and Mercator puts north up — so this
+    /// is the top edge on screen as well as on the globe. Across 1,200 m the projection's own
+    /// distortion is far below a pixel, and the anchor is a place to put a card rather than a
+    /// position anything is measured against.
+    static func northernRim(
+        of centre: CLLocationCoordinate2D,
+        radius: CLLocationDistance
+    ) -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(
+            latitude: centre.latitude + radius / 111_320,
+            longitude: centre.longitude
+        )
+    }
 }
 
 /// One incident's location, on a map.

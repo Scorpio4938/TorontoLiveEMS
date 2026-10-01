@@ -106,7 +106,7 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage()
+                    IncidentsMapPage(feed: feed)
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
                         .toolbar { toolbar }
@@ -128,13 +128,16 @@ struct RootView: View {
             }
             #endif
         }
-        .onChange(of: screen) { _, selected in
+        .onChange(of: screen) { previous, selected in
             guard selected == .refresh else { return }
 
-            // Put the selection back **first**. Without this the refresh would work exactly
-            // once: the second tap would not change the selection, so nothing would change and
-            // nothing would fire. It is also why the bar's selection is seen to move.
-            screen = .incidents
+            // Back to the tab they were on, **not** to Incidents. This read `.incidents` until
+            // the map became a real page: refreshing while looking at the map would have moved
+            // the reader somewhere else entirely. Put back first, because otherwise the refresh
+            // would work exactly once — the second tap would not change the selection, so
+            // nothing would change and nothing would fire. It is also why the bar's selection is
+            // seen to move.
+            screen = previous
             Task { await refresh() }
         }
     }
