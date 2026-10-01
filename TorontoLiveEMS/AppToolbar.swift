@@ -58,8 +58,8 @@ struct AppToolbar: ToolbarContent {
             // **The same two controls the map tab floats, in the platform's own material.**
             //
             // `InfoControl` and `SettingsControl` are shared with the map capsule exactly —
-            // symbol, colour, spacing and VoiceOver name — so nothing this app owns can drift
-            // between the pages.
+            // symbol, size, colour, spacing and VoiceOver name — so nothing this app owns can
+            // drift between the pages.
             //
             // The capsule around them is not shared, and hosting it here was tried and
             // reverted: a custom toolbar item is padded by the platform on top of whatever the
@@ -68,18 +68,8 @@ struct AppToolbar: ToolbarContent {
             // what this was for. So the bar draws its own material around these same controls,
             // and the difference that keeps the two pages from being identical is who draws the
             // capsule — which is the platform's decision inside a bar, and not a number.
-            //
-            // **`.imageScale(.small)` is the one host-specific number here, and deliberately.**
-            // A bar renders a toolbar symbol at the platform's size, which is a little larger
-            // than a bare `Image` drawn in a view of our own — reported from the two pages side
-            // by side, with the bar's being the larger of the two. One step down is the
-            // correction. A scale cannot widen the item, so the title's centre is not at risk
-            // from it; if it oversteps, `.font` on the item is the next knob, in the other
-            // direction.
             InfoControl(action: onInfo)
-                .imageScale(.small)
             SettingsControl(action: onSettings)
-                .imageScale(.small)
         }
     }
 }

@@ -577,11 +577,7 @@ say which of them mattered.
   trailing item pushes a centred inline title off centre. The same measurements had been copied
   into the bar from the floating capsule, which is the mistake in miniature — the capsule's size
   is the capsule's, and it is made by its padding, not by the icons. The controls now carry no
-  size at all: the bar sizes them, and the map's capsule is as chunky as its padding says. One
-  correction is host-specific and written beside it: a bar renders a toolbar symbol a little
-  larger than a bare `Image` does in a view of our own, so the bar's two items carry
-  `.imageScale(.small)` — the bar's being the larger of the two, reported from the pages side by
-  side — and a scale cannot widen an item, so the title's centre is not at risk from it.
+  size at all: the bar sizes them, and the map's capsule is as chunky as its padding says.
   What that
   costs is written here too: floating controls are not toolbar items, so they are declared in
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
