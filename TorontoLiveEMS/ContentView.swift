@@ -17,6 +17,11 @@ struct ContentView: View {
 
     let model: IncidentFeedModel
 
+    /// Passed, not read from the environment. An `@Environment(Type.self)` with no value in
+    /// scope is a trap rather than a nil, and the detail view behind a list row was reading one
+    /// that was not there. Four initialisers is a small price for a crash that cannot happen.
+    let geocoder: IncidentGeocoder
+
     /// The root's flags, not a second pair. Two screens each presenting their own Settings sheet
     /// would put one behind the other, invisible and stuck.
     @Binding var isShowingSettings: Bool
@@ -48,6 +53,11 @@ struct ContentView: View {
                     )
                 }
         }
+        // The load, on the view that appears. See `IncidentsScreen` for why it is not on the
+        // tab view.
+        .task {
+            await model.loadIfEmpty()
+        }
     }
 
     @ViewBuilder
@@ -58,13 +68,15 @@ struct ContentView: View {
                 CompactTableList(
                     incidents: model.incidents,
                     timeFormat: dispatchTimeFormat,
-                    status: status
+                    status: status,
+                    geocoder: geocoder
                 )
             case .cards:
                 CardsList(
                     incidents: model.incidents,
                     timeFormat: dispatchTimeFormat,
-                    status: status
+                    status: status,
+                    geocoder: geocoder
                 )
             }
         } else if let failureMessage = model.failureMessage {
@@ -82,6 +94,7 @@ struct ContentView: View {
 #Preview {
     ContentView(
         model: IncidentFeedModel(),
+        geocoder: IncidentGeocoder(),
         isShowingSettings: .constant(false),
         isShowingAboutData: .constant(false)
     )

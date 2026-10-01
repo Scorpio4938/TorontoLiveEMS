@@ -21,19 +21,12 @@ struct AppToolbar: ToolbarContent {
         // more than one control in the same spot, and the order below is then the order on
         // screen — which is what keeps settings in the rightmost slot it has always had.
         ToolbarItemGroup(placement: .primaryAction) {
-            refreshButton
+            #if !os(iOS)
+            // On iOS this is in the tab view's bottom accessory, where a thumb reaches it.
+            RefreshButton(model: model)
+            #endif
             infoButton
             settingsButton
-        }
-    }
-
-    /// A plain labelled button, with no button style, background or padding of its own, so the
-    /// platform draws it.
-    private var refreshButton: some View {
-        Button {
-            Task { await model.refresh() }
-        } label: {
-            Label("Refresh", systemImage: "arrow.clockwise")
         }
     }
 
@@ -53,6 +46,27 @@ struct AppToolbar: ToolbarContent {
             isShowingSettings = true
         } label: {
             Label("Settings", systemImage: "gearshape")
+        }
+    }
+}
+
+/// Refresh, as a view of its own.
+///
+/// Three places ask for it: the toolbar on macOS, the tab view's bottom accessory on iOS, and
+/// nothing else — but the first two have to agree about what it looks like, and a button written
+/// twice is a button that drifts.
+///
+/// A plain labelled button, with no button style, background or padding of its own, so the
+/// platform draws it.
+struct RefreshButton: View {
+
+    let model: IncidentFeedModel
+
+    var body: some View {
+        Button {
+            Task { await model.refresh() }
+        } label: {
+            Label("Refresh", systemImage: "arrow.clockwise")
         }
     }
 }

@@ -15,8 +15,7 @@ import TorontoLiveEMSKit
 struct IncidentsMap: View {
 
     let model: IncidentFeedModel
-
-    @Environment(IncidentGeocoder.self) private var geocoder
+    let geocoder: IncidentGeocoder
 
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
 

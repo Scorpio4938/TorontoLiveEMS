@@ -43,8 +43,7 @@ enum IncidentMapScale {
 struct IncidentLocationMap: View {
 
     let incident: Incident
-
-    @Environment(IncidentGeocoder.self) private var geocoder
+    let geocoder: IncidentGeocoder
 
     private var location: IncidentLocation {
         IncidentLocation.from(incident)

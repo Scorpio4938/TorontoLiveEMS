@@ -16,6 +16,9 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
+    /// Passed down rather than read from the environment, where a missing value traps.
+    let geocoder: IncidentGeocoder
+
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
     }
@@ -50,7 +53,7 @@ struct IncidentDetailView: View {
 
                 // A row of its own rather than inside one of the two above, because it is drawn
                 // from whichever of them the feed did publish — see `IncidentLocation`.
-                IncidentLocationMap(incident: incident)
+                IncidentLocationMap(incident: incident, geocoder: geocoder)
             } header: {
                 Text("Location")
             } footer: {

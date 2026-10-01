@@ -18,10 +18,41 @@ struct RootView: View {
     @State private var isShowingAboutData = false
 
     var body: some View {
+        tabs
+            // Refresh in the tab view's own bottom accessory, not in the top bar. On iOS 26 that
+            // is the bar that sits *beside* the tab bar — the place Apple puts a control that
+            // belongs to the whole app rather than to one tab, and the place this one was asked
+            // for. It is a separate bar from the tabs, so the two do not compete for the bottom.
+            #if os(iOS)
+            .tabViewBottomAccessory {
+                HStack {
+                    Spacer()
+                    RefreshButton(model: model)
+                }
+            }
+            #endif
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
+            }
+            .sheet(isPresented: $isShowingAboutData) {
+                AboutThisDataView()
+            }
+            // A refresh the City provably cannot have changed is acknowledged rather than
+            // silently skipped. A silent skip is indistinguishable from a dead button, which is
+            // the fault this exists to answer.
+            .alert("Up to Date", isPresented: $model.isUpToDate) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(model.upToDateMessage)
+            }
+    }
+
+    private var tabs: some View {
         TabView {
             Tab("Active Incidents", systemImage: "list.bullet") {
                 ContentView(
                     model: model,
+                    geocoder: geocoder,
                     isShowingSettings: $isShowingSettings,
                     isShowingAboutData: $isShowingAboutData
                 )
@@ -30,37 +61,11 @@ struct RootView: View {
             Tab("Map", systemImage: "map") {
                 IncidentsScreen(
                     model: model,
+                    geocoder: geocoder,
                     isShowingSettings: $isShowingSettings,
                     isShowingAboutData: $isShowingAboutData
                 )
             }
-        }
-        // One load for both tabs. It deliberately does not run again when the app comes back from
-        // the background: the previous result is still in memory, and the feed cannot have changed
-        // more than once in five minutes anyway. The feed is an undocumented path on the City's
-        // server, so the app asks for it only when it has nothing to show, or when someone taps
-        // refresh.
-        // In the environment rather than passed down. Three views use it and they are four
-        // levels apart; threading it through the ones in between would give four chances to
-        // forget, and it is app-wide state in any case — an incident looked up on one screen
-        // should be known on the other.
-        .environment(geocoder)
-        .task {
-            await model.loadIfEmpty()
-        }
-        .sheet(isPresented: $isShowingSettings) {
-            SettingsView()
-        }
-        .sheet(isPresented: $isShowingAboutData) {
-            AboutThisDataView()
-        }
-        // A refresh that the City provably cannot have changed is acknowledged rather than
-        // silently skipped. A silent skip is indistinguishable from a dead button, which is the
-        // fault this exists to answer.
-        .alert("Up to Date", isPresented: $model.isUpToDate) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(model.upToDateMessage)
         }
     }
 }
@@ -69,6 +74,7 @@ struct RootView: View {
 private struct IncidentsScreen: View {
 
     let model: IncidentFeedModel
+    let geocoder: IncidentGeocoder
 
     /// The root's flags, not a second pair. Two screens each owning their own would present the
     /// same sheet twice, and the one behind would be invisible and stuck.
@@ -77,7 +83,7 @@ private struct IncidentsScreen: View {
 
     var body: some View {
         NavigationStack {
-            IncidentsMap(model: model)
+            IncidentsMap(model: model, geocoder: geocoder)
                 .navigationTitle("Map")
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
@@ -89,6 +95,15 @@ private struct IncidentsScreen: View {
                         isShowingAboutData: $isShowingAboutData
                     )
                 }
+        }
+        // Here rather than on the tab view. A `TabView`'s own `.task` is one task for the whole
+        // container and was not firing — the screens appeared and nothing loaded, while a manual
+        // refresh worked. On the screens it is each view's own appearance, which is the thing
+        // that is actually guaranteed.
+        //
+        // `loadIfEmpty` guards, so the two tabs cannot both fetch and cannot fetch twice.
+        .task {
+            await model.loadIfEmpty()
         }
     }
 }

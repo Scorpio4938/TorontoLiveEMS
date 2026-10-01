@@ -63,52 +63,44 @@ private let previewStatus = FeedStatus(
 // file did, in both layouts at once.
 
 #Preview("Table — light") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
 }
 
 #Preview("Table — dark") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus, geocoder: IncidentGeocoder())
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
 }
 
 #Preview("Cards — dark") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
         .preferredColorScheme(.dark)
 }
 
 /// Cards are already a stack of two lines, so there is no separate accessibility layout
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
-        .environment(IncidentGeocoder())
+    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus, geocoder: IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
@@ -121,9 +113,9 @@ private let previewStatus = FeedStatus(
         status: FeedStatus(
             text: "City data as of 2026-09-29 20:00:01 · showing the last result",
             isStale: true
-        )
+        ),
+        geocoder: IncidentGeocoder()
     )
-    .environment(IncidentGeocoder())
 }
 
 // MARK: - The detail view, where the system's chrome is
@@ -133,25 +125,22 @@ private let previewStatus = FeedStatus(
 /// layout got its block from, so it is the reference for that.
 #Preview("Detail — light") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
+        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
     }
-    .environment(IncidentGeocoder())
 }
 
 #Preview("Detail — dark") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
+        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
     }
-    .environment(IncidentGeocoder())
     .preferredColorScheme(.dark)
 }
 
 /// The medical case, whose location is a postal area and whose footer says so.
 #Preview("Detail — withheld location") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.locationWithheld)
+        IncidentDetailView(incident: PreviewIncidents.locationWithheld, geocoder: IncidentGeocoder())
     }
-    .environment(IncidentGeocoder())
 }
 
 // MARK: - Settings
@@ -234,14 +223,13 @@ private struct IconPreview: View {
                 updatedFromDatabaseAt: "2026-09-29 20:00:01",
                 incidents: PreviewIncidents.all
             )
-        )
+        ),
+        geocoder: IncidentGeocoder()
     )
-    .environment(IncidentGeocoder())
 }
 
 #Preview("Detail — map section") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
+        IncidentDetailView(incident: PreviewIncidents.fire, geocoder: IncidentGeocoder())
     }
-    .environment(IncidentGeocoder())
 }
