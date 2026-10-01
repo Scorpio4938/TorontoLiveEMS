@@ -327,6 +327,17 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 
 ## The map
 
+> **Superseded on 2026-10-01.** Everything below describes the design that was built and
+> then abandoned before the reset: refresh in the top bar, the geocoder in `@Environment`,
+> the feed and the geocoder both living at the root. See *The bar and the map page* at the
+> end of this file for what replaced it. It is kept because the reasoning is still worth
+> reading — and because one line of it, the environment, contradicted a rule this project
+> already held: `@Environment(Type.self)` traps when the key is missing rather than
+> degrading.
+>
+> One thing in it was never wrong: a map that fetched on its own could disagree with the
+> list. That survives as the feed model living in one place.
+
 - **Two screens, and a `TabView` between them.** Apple's `Tab` API, not a segmented picker: a
   segmented control filters content rather than navigating between places, and the tab bar is
   what a reader already knows. The app's root is the tab view; the feed and the geocoder live
@@ -465,3 +476,58 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   undocumented endpoint, and the feed's own five-minute cycle — for showing
   `update_from_db_time` at all times: the user needs to see how old the data is
   rather than trust it blindly.
+
+## The bar and the map page
+
+**Decided on 2026-10-01, on `feature/tab-bar-and-map`. Not built yet.** Written down before
+the code, because the last attempt at the bar changed several things at once and could not
+say which of them mattered.
+
+- **iPhone is the only target for this work, and that is the diagnosis rather than a
+  preference.** `sidebarAdaptable`'s own documentation: *"iPadOS displays a top tab bar that
+  can adapt into a sidebar. iOS displays a bottom tab bar. macOS and tvOS always show a
+  sidebar."* The last record of where Xcode was pointed names an **iPad simulator and a Mac**.
+  There was never a bottom bar to find, in any of the six attempts.
+- **The switcher is a `TabView` with two `Tab`s** — Incidents and Map. Not a segmented
+  picker: a segmented control filters content, it does not navigate between places.
+- **Refresh lives in `tabViewBottomAccessory`** — the slot Apple's HIG names for the Music
+  MiniPlayer, and the pattern the request was modelled on. The separate control at the
+  trailing end of a tab bar is reserved for `TabRole.search`, the only role Apple defines,
+  so a refresh button cannot stand there without the mark being a lie.
+- **The alert stays.** Kept deliberately, against the recommendation to remove it: it makes
+  the window inert, and the code's own comment already calls that *"indistinguishable from
+  the dead button reported earlier"*. Kept so that the first test of the bar changes one
+  fewer thing. The consequence is recorded rather than hidden — if the window goes dead,
+  there are two candidates and not one.
+- **The first build is the bar alone** — the incidents tab real, the map tab a placeholder.
+  Two real pages at once is how the earlier attempts became undiagnosable.
+- **Info and Settings sit on both tabs**, declared once and applied by each. They are about
+  the app and the data, not about the list, and a button that exists on one tab and vanishes
+  on the other reads as a bug.
+- **The feed state moves into the package** as an `@Observable` type, passed explicitly and
+  never through `@Environment`. In the package because `swift test` cannot reach the app
+  target, and the refresh flow is logic that deserves tests. `IncidentGeocoder` is the
+  pattern already used here.
+- **The root is `RootView`; `ContentView` becomes the incidents page.** The tab view, the
+  accessory, the toolbar, the sheets and the alert are the app, not the content.
+- **Every incident with a location is drawn** — a pin for a precise one, the same 1,200 m
+  circle for a postal area, reused unchanged from the detail map.
+- **One mark per place, not per incident.** The live capture holds fifteen incidents in
+  thirteen places, with two postal areas holding two each. A mark per incident would stack
+  two identical circles and leave one incident unreachable from the map.
+- **The card is a callout anchored above the pin, and above the circle's top edge** — never
+  at a circle's centre, which is the claim ADR-0004 exists to refuse. Liquid Glass through
+  `.glassEffect(_:in:)` alone; mixing it with `.buttonStyle(.glass)` produces two materials,
+  which is what made the last bar look wrong.
+- **Nothing published means nothing drawn, and no notice about it.** "Finding N more…"
+  stays, because that is a loading indicator rather than a completeness notice.
+- **The map tab shows the data's age.** Decided twice; the second time after reading the
+  licence reason above, which is about the app rather than about the table.
+- **Each screen owns its own geocoder** — the detail view and the map page resolve different
+  sets, and nothing is threaded through the list types to reach a `NavigationLink`.
+
+**Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
+`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
+`MapCompass` are evidenced only by code that has already compiled in this project. For the
+same reason selection is done with `.onTapGesture` on the annotation content — plain
+SwiftUI — rather than `MapSelection`.
