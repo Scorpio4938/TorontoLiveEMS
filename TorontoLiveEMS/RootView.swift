@@ -58,12 +58,23 @@ struct RootView: View {
         case refresh
     }
 
-    @State private var feed = IncidentFeed()
+    @State private var feed: IncidentFeed
     @State private var screen: Screen = .incidents
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
+
+    /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
+    /// never touch the City's server.
+    ///
+    /// **This is what makes the whole app previewable.** Without it, `#Preview` could only ever
+    /// build a live feed and sit on "Loading active incidents" — which meant every look at the
+    /// chrome above these screens, and every experiment on it, cost a full build and a device.
+    /// The default keeps the real app's behaviour identical.
+    init(feed: IncidentFeed = IncidentFeed()) {
+        _feed = State(initialValue: feed)
+    }
 
     var body: some View {
         tabs
@@ -215,6 +226,6 @@ private extension View {
     }
 }
 
-#Preview {
-    RootView()
+#Preview("App — sample data") {
+    RootView(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
 }
