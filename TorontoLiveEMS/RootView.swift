@@ -205,30 +205,36 @@ struct RootView: View {
     /// label colour, so that is asked for here, on the icons: a style on the content is what
     /// overrides a button's tint, not one on the container.
     ///
+    /// **Matched to the platform's toolbar, which is the reference.** The incidents page's
+    /// capsule is drawn by the system; this one is drawn by this code, so this is the one that
+    /// can drift — and did: `.title3` icons in 34-point slots made it wider than the toolbar's
+    /// own items. Body-sized icons in 32-point slots, 4 apart in 6 points of padding, restore
+    /// the toolbar's proportions. Every number is named because every one is an imitation of
+    /// something the platform measures for itself; if it is still a point off against the
+    /// incidents page, these are the numbers to turn.
+    ///
     /// **Centred in a bar's height.** A floating capsule otherwise hugs the safe area's top
     /// corner; in 44 points and a content margin it sits where the incidents page's bar items
     /// sit — and level with the centred title, whose own padding puts its centre at the same
     /// height.
     private var mapControls: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 4) {
             Button(action: { isShowingAboutData = true }) {
                 Image(systemName: "info.circle")
                     .foregroundStyle(Color.primary)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 32, height: 32)
             }
             .accessibilityLabel("About this Data")
 
             Button(action: { isShowingSettings = true }) {
                 Image(systemName: "gearshape")
                     .foregroundStyle(Color.primary)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 32, height: 32)
             }
             .accessibilityLabel("Settings")
         }
-        .font(.title3)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .mapSurface(cornerRadius: 21)
+        .padding(6)
+        .mapSurface(cornerRadius: 17)
         .frame(height: 44, alignment: .center)
         .padding(.trailing, 12)
     }
