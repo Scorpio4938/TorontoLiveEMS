@@ -90,13 +90,6 @@ private struct IncidentsScreen: View {
                 .toolbar {
                     AppToolbar(model: model, sheet: $sheet)
                 }
-                // The same bottom-right refresh the list has. See `RefreshBar` for why it is a
-                // safe-area inset rather than a bar.
-                #if os(iOS)
-                .safeAreaInset(edge: .bottom) {
-                    RefreshBar(model: model)
-                }
-                #endif
         }
         // Here rather than on the tab view. A `TabView`'s own `.task` is one task for the whole
         // container and was not firing — the screens appeared and nothing loaded, while a manual

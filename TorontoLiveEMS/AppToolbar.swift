@@ -12,15 +12,35 @@ struct AppToolbar: ToolbarContent {
     @Binding var sheet: RootView.Sheet?
 
     var body: some ToolbarContent {
-        // Refresh is not here on iOS. It is in the bar at the bottom of the screen, which is where
-        // it belongs and where it was asked for.
         ToolbarItemGroup(placement: .primaryAction) {
             #if !os(iOS)
+            // On iOS this is in the bottom bar, where a thumb reaches it.
             RefreshButton(model: model)
             #endif
             infoButton
             settingsButton
         }
+
+        #if os(iOS)
+        // A bottom bar of its own. This is where refresh was from the beginning and how it
+        // rendered — a circular button at the bottom right — and it is restored after a detour.
+        //
+        // The detour was mine and it was badly reasoned. I removed this because I decided it was
+        // what had taken the tab bar's place, on the strength of it being plausible and the two
+        // sharing a region. The tab bar did it not appearing before this existed, in the build
+        // that used the tab view's bottom accessory instead — so this was never shown to be the
+        // cause of anything, and I removed the one that worked.
+        //
+        // `ToolbarSpacer` is a sibling of the group, not a child of it. It conforms to
+        // `ToolbarContent` and not to `View`, so inside a `ToolbarItemGroup` — whose content is a
+        // `ViewBuilder` — it does not compile. It is a toolbar item in its own right, which is
+        // what makes it the API for this and a bare `Spacer` only a view that has the effect.
+        ToolbarSpacer(placement: .bottomBar)
+
+        ToolbarItem(placement: .bottomBar) {
+            RefreshButton(model: model)
+        }
+        #endif
     }
 
     /// What the fields mean, and where the data comes from. Reference material, so it is a button
@@ -40,31 +60,6 @@ struct AppToolbar: ToolbarContent {
         } label: {
             Label("Settings", systemImage: "gearshape")
         }
-    }
-}
-
-/// Refresh at the bottom right of a screen.
-///
-/// **`safeAreaInset`, not a toolbar and not the tab view's accessory.** Both of those claim the
-/// bottom of the screen alongside the tab bar, and the bottom bar built that way took the tab
-/// bar's place outright. This does not touch the tab bar at all: it insets the *content*, which is
-/// the one way to put something at the bottom of the screen that cannot compete for the same
-/// space.
-///
-/// It is a stopgap. `tabViewBottomAccessory` is the API meant for this — a control belonging to the
-/// app rather than to a tab, drawn beside the tab bar — and it goes back there once the tab bar is
-/// drawing at all, because until then there is nothing for it to sit beside.
-struct RefreshBar: View {
-
-    let model: IncidentFeedModel
-
-    var body: some View {
-        HStack {
-            Spacer()
-            RefreshButton(model: model)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
     }
 }
 
