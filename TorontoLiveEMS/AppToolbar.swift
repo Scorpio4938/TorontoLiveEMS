@@ -3,12 +3,8 @@ import SwiftUI
 /// The controls both screens carry, in one place.
 ///
 /// `ToolbarContent` rather than a view, because a toolbar takes toolbar content — and one
-/// definition because two screens with the same three buttons would otherwise be two chances to
+/// definition because two screens with the same buttons would otherwise be two chances to
 /// disagree about their order, their placement, or whether refresh is among them.
-///
-/// **Refresh is in the top bar on every platform now.** It used to be a bottom-bar item on iOS,
-/// chosen when a thumb reaching it was the argument. The bottom belongs to the tab bar, and two
-/// things claiming it is what "shouldn't conflict with the refresh button" was about.
 struct AppToolbar: ToolbarContent {
 
     let model: IncidentFeedModel
@@ -16,26 +12,47 @@ struct AppToolbar: ToolbarContent {
     @Binding var sheet: RootView.Sheet?
 
     var body: some ToolbarContent {
-        // One group, not several items sharing a placement. `ToolbarItemGroup` is the API for
-        // more than one control in the same spot, and the order below is then the order on
-        // screen — which is what keeps settings in the rightmost slot it has always had.
+        // The top bar, which is where the two buttons that open something live. One group, not
+        // several items sharing a placement: `ToolbarItemGroup` is the API for more than one
+        // control in the same spot, and the order below is then the order on screen — which is
+        // what keeps settings in the rightmost slot it has always had.
+        //
+        // Refresh is deliberately not here on iOS. It is in the tab view's bottom accessory,
+        // beside the tab bar, which is where a thumb reaches and what was asked for.
         ToolbarItemGroup(placement: .primaryAction) {
             #if !os(iOS)
-            // On iOS this is in the tab view's bottom accessory. macOS has no accessory, so
-            // there it is an ordinary toolbar item.
+            // macOS has no tab-view accessory, so there it is an ordinary toolbar item.
             RefreshButton(model: model)
             #endif
             infoButton
             settingsButton
         }
     }
+
+    /// What the fields mean, and where the data comes from. Reference material, so it is a button
+    /// of its own rather than a row in Settings — somebody wondering what an Alarm Level is
+    /// should not have to guess that it is filed under preferences.
+    private var infoButton: some View {
+        Button {
+            sheet = .aboutData
+        } label: {
+            Label("About this Data", systemImage: "info.circle")
+        }
+    }
+
+    private var settingsButton: some View {
+        Button {
+            sheet = .settings
+        } label: {
+            Label("Settings", systemImage: "gearshape")
+        }
+    }
 }
 
 /// Refresh, as a view of its own.
 ///
-/// Three places ask for it: the toolbar on macOS, the tab view's bottom accessory on iOS, and
-/// nothing else — but the first two have to agree about what it looks like, and a button written
-/// twice is a button that drifts.
+/// Two places ask for it — the toolbar on macOS and the bottom accessory on iOS — and they have
+/// to agree about what it looks like. A button written twice is a button that drifts.
 ///
 /// A plain labelled button, with no button style, background or padding of its own, so the
 /// platform draws it.
