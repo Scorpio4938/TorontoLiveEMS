@@ -9,6 +9,13 @@ produces and that nothing else here can:
   3. a reference to a member that does not exist on one of our own types;
   4. a file that names a public package type without importing the package.
 
+The fourth is here because it caught nothing when it mattered. `IncidentFeed` is declared
+`public final class`, and the pattern that collects package types allowed `public class` but
+not the `final` between them — so the type was never collected, and the import check could
+not fire on a file that used it. It went to a build as "cannot find 'IncidentFeed' in scope".
+A check that cannot fail is worse than no check, because it looks like one; this file already
+said that, two checks further down.
+
 Multi-line literals are exempt from (2), because a newline in one is the point.
 
 The third is here because of a real one. Renaming `CompactTable.outgrowsTheGrid`
@@ -178,7 +185,7 @@ def main():
     for path, code, _ in scanned:
         if "/Sources/" in path.as_posix():
             package_types |= set(re.findall(
-                r"^public (?:enum|struct|class|actor|protocol)\s+(\w+)", code, re.M))
+                r"^public (?:final )?(?:enum|struct|class|actor|protocol)\s+(\w+)", code, re.M))
 
     problems = 0
     for path, code, bodies in scanned:
