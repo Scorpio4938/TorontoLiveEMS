@@ -13,12 +13,17 @@ import TorontoLiveEMSKit
 /// had been pointed named an iPad simulator and a Mac, where a bottom tab bar has no reason to
 /// exist. See `docs/design-decisions.md`, *The bar and the map page*.
 ///
-/// **Refresh is in the accessory, not the bottom bar.** `tabViewBottomAccessory` is the slot
-/// Apple's own guidance names for the Music MiniPlayer, which is the pattern this was asked
-/// for. The separate control at the trailing end of a tab bar belongs to `TabRole.search` —
-/// the only role Apple defines — so a refresh button could not stand there without the mark
-/// being a lie. On iOS this is the only refresh control; elsewhere the accessory does not exist
-/// and `AppToolbar` keeps its copy in the top bar.
+/// **Refresh is a bottom-bar toolbar item, and whether that is right is unproven.** The request
+/// is for the newer shape — the pages on one side of the bottom bar and a separate control at
+/// the trailing edge of the same bar. `TabRole.prominent` is the API for that shape, new in
+/// iOS 27, but the slot holds a **tab** and tapping it navigates; Music and Books put a search
+/// *tab* there. A refresh cannot occupy it without becoming a page.
+///
+/// So the refresh control is a `.bottomBar` toolbar item instead, declared in `AppToolbar`.
+/// Whether a bottom-bar toolbar renders as part of the tab bar or stacks above it **has never
+/// been seen on an iPhone** — every earlier attempt used this arrangement and was run against
+/// an iPad simulator, where a tab bar is at the top of the screen and none of it applied. That
+/// is the thing to look at first.
 ///
 /// **The feed is owned here, once.** Both screens read the same incidents and the same age for
 /// them. A feed per screen could let them disagree about what is happening, which a reader
@@ -79,20 +84,6 @@ struct RootView: View {
                 }
             }
         }
-        #if os(iOS)
-        .tabViewBottomAccessory {
-            // Pushed to the trailing edge, which is where the request put it: the pages are
-            // chosen in the bar below, and this is the one control beside them.
-            //
-            // No padding of its own. The accessory is the platform's bar and it insets its
-            // content; if this sits hard against the edge on a real screen, that is where the
-            // inset belongs, and it should be added having seen it.
-            HStack {
-                Spacer()
-                RefreshButton(onTap: refreshTapped)
-            }
-        }
-        #endif
     }
 
     /// The controls both screens carry, from one definition.
