@@ -45,7 +45,19 @@ struct IncidentsMapPage: View {
     }
 
     var body: some View {
-        Map(position: $position, selection: $selected) {
+        ZStack {
+            // ============ TEMPORARY DIAGNOSTIC, ONE BUILD — delete this whole ZStack after ============
+            // A red sheet behind the map, filling the safe area too. The satellite flag proved
+            // the build is live; now the colour localises the band:
+            //
+            //   the band turns RED   -> the map's frame does not reach there: a margin, and
+            //                           `.ignoresSafeArea(edges: .top)` did not fix it.
+            //   the band stays MAP   -> the map is already underneath, and the band is a surface
+            //                           painted over it (the bar's glass, or the map's own
+            //                           treatment), not a gap.
+            Color.red.ignoresSafeArea()
+
+            Map(position: $position, selection: $selected) {
             ForEach(places) { place in
                 if place.resolved.isArea {
                     // An FSA. Drawing it as a pin would put a medical incident at the centre of a
@@ -82,18 +94,6 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
-        // ============================ TEMPORARY, ONE BUILD ============================
-        // A satellite map. Delete this line once it has been looked at.
-        //
-        // Four changes to this page's chrome have produced no observable difference, which is
-        // not what four wrong guesses look like — it is what a stale binary looks like, and this
-        // project has paid for that confusion once already. So this is not a fix, it is a flag:
-        //
-        //   The map turns satellite  -> the code is live, and the band is a real question again.
-        //   The map stays a map      -> nothing since f399a77 is running, and every band
-        //                               conclusion drawn so far is about an older binary.
-        .mapStyle(.imagery)
-        // ================================================================================
         // **The map has to reach under the bar, the way a scroll view does.**
         //
         // A `List` extends beneath the navigation bar — that is why its content scrolls under the
@@ -122,6 +122,7 @@ struct IncidentsMapPage: View {
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
             await geocoder.resolve(lookedUp)
+        }
         }
     }
 
