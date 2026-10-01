@@ -25,6 +25,9 @@ struct ContentView: View {
     /// The root's, not a second flag. See `RootView.Sheet`.
     @Binding var sheet: RootView.Sheet?
 
+    /// Which screen is showing, so the switcher in the bottom bar can change it.
+    @Binding var section: RootView.Section
+
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
@@ -46,6 +49,13 @@ struct ContentView: View {
                 .toolbar {
                     AppToolbar(model: model, sheet: $sheet)
                 }
+                #if os(iOS)
+                // The switcher and refresh, at the bottom of the screen. See `ScreenSwitcherBar`
+                // for why this is an inset rather than a toolbar.
+                .safeAreaInset(edge: .bottom) {
+                    ScreenSwitcherBar(section: $section, model: model)
+                }
+                #endif
         }
         // The load, on the view that appears. See `IncidentsScreen` for why it is not on the
         // tab view.
@@ -89,6 +99,7 @@ struct ContentView: View {
     ContentView(
         model: IncidentFeedModel(),
         geocoder: IncidentGeocoder(),
-        sheet: .constant(nil)
+        sheet: .constant(nil),
+        section: .constant(.incidents)
     )
 }

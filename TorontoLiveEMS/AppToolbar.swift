@@ -20,27 +20,6 @@ struct AppToolbar: ToolbarContent {
             infoButton
             settingsButton
         }
-
-        #if os(iOS)
-        // A bottom bar of its own. This is where refresh was from the beginning and how it
-        // rendered — a circular button at the bottom right — and it is restored after a detour.
-        //
-        // The detour was mine and it was badly reasoned. I removed this because I decided it was
-        // what had taken the tab bar's place, on the strength of it being plausible and the two
-        // sharing a region. The tab bar did it not appearing before this existed, in the build
-        // that used the tab view's bottom accessory instead — so this was never shown to be the
-        // cause of anything, and I removed the one that worked.
-        //
-        // `ToolbarSpacer` is a sibling of the group, not a child of it. It conforms to
-        // `ToolbarContent` and not to `View`, so inside a `ToolbarItemGroup` — whose content is a
-        // `ViewBuilder` — it does not compile. It is a toolbar item in its own right, which is
-        // what makes it the API for this and a bare `Spacer` only a view that has the effect.
-        ToolbarSpacer(placement: .bottomBar)
-
-        ToolbarItem(placement: .bottomBar) {
-            RefreshButton(model: model)
-        }
-        #endif
     }
 
     /// What the fields mean, and where the data comes from. Reference material, so it is a button
@@ -63,13 +42,58 @@ struct AppToolbar: ToolbarContent {
     }
 }
 
+/// The bar at the bottom of both screens: the switcher, and refresh.
+///
+/// **A safe-area inset rather than a toolbar**, and that is the whole point. Every bar this app
+/// asked the platform for — a bottom-bar toolbar, the tab view's bottom accessory, a tab bar — has
+/// either failed to draw or drawn and refused to respond. This one is *content*: it insets the
+/// screen rather than claiming a placement, so it renders for the same reason the list renders.
+///
+/// It cannot collide with the tab bar either, which is what the last three attempts at this were
+/// really about. When the tab bar draws, this bar stops being the only way to switch, and the
+/// switcher can go back to being one.
+///
+/// A segmented `Picker` for the switch, not two buttons: the two screens are alternatives, and a
+/// segmented control is what the platform uses to say so. Refresh stays bottom right, and keeps
+/// its own definition — see `RefreshButton` for why it is now built rather than left to a bar.
+struct ScreenSwitcherBar: View {
+
+    @Binding var section: RootView.Section
+
+    let model: IncidentFeedModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Picker("Screen", selection: $section) {
+                ForEach(RootView.Section.allCases) { section in
+                    Label(section.title, systemImage: section.systemImage)
+                        .tag(section)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            RefreshButton(model: model)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.bar)
+    }
+}
+
 /// Refresh, as a view of its own.
 ///
-/// Two places ask for it — the toolbar on macOS and the bottom accessory on iOS — and they have
+/// Two places ask for it — the toolbar on macOS and the bar at the bottom on iOS — and they have
 /// to agree about what it looks like. A button written twice is a button that drifts.
 ///
-/// A plain labelled button, with no button style, background or padding of its own, so the
-/// platform draws it.
+/// **Icon only, in a bordered button.** It used to be a plain labelled button inside a toolbar
+/// item, and iOS 26 drew that as a circle; outside a toolbar, a plain labelled button is a word in
+/// the accent colour, which is a red "Refresh" and not a button anybody recognised. So it is built
+/// explicitly instead of relying on a bar to draw it.
+///
+/// `.bordered` with a square icon-only label is the circle, without naming a border shape —
+/// `ButtonBorderShape.circle` is not in the SDK interface files I can check against, and a shape
+/// guessed at is a build failed.
 struct RefreshButton: View {
 
     let model: IncidentFeedModel
@@ -79,6 +103,11 @@ struct RefreshButton: View {
             Task { await model.refresh() }
         } label: {
             Label("Refresh", systemImage: "arrow.clockwise")
+                .labelStyle(.iconOnly)
         }
+        .buttonStyle(.bordered)
+        // Not the accent. The accent is fire red, and a red button reads as an alarm about the
+        // feed rather than as a control over it.
+        .tint(.secondary)
     }
 }
