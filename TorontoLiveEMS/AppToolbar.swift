@@ -32,8 +32,14 @@ struct AppToolbar: ToolbarContent {
         // A bottom bar of its own, above the tab bar. This is where refresh was before the map
         // existed and where it rendered; the tab view's bottom *accessory* was the tidier API
         // for it and did not appear at all.
-        ToolbarItemGroup(placement: .bottomBar) {
-            ToolbarSpacer()
+        //
+        // `ToolbarSpacer` is a sibling of the group, not a child of it. It conforms to
+        // `ToolbarContent` and not to `View`, so inside a `ToolbarItemGroup` — whose content is a
+        // `ViewBuilder` — it does not compile. It is a toolbar item in its own right, which is
+        // what makes it the API for this and a bare `Spacer` only a view that has the effect.
+        ToolbarSpacer(placement: .bottomBar)
+
+        ToolbarItem(placement: .bottomBar) {
             RefreshButton(model: model)
         }
         #endif
