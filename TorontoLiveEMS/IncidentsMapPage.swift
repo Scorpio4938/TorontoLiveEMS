@@ -93,10 +93,8 @@ struct IncidentsMapPage: View {
         // "One definition, applied wherever there is a scroll view under a bar" is what that
         // helper is for, and a map under a bar is that case — whether or not it is a scroll view.
         .softScrollEdge()
-        // Bottom-leading, where Apple Maps keeps its attribution, rather than across the top.
-        // The top of a map is where the chrome lives — the title and the two buttons — and a
-        // strip of glass underneath it read as a second bar rather than as a caption.
-        .overlay(alignment: .bottomLeading) { notice }
+        // Bottom-trailing, above the tab bar, as a bare line rather than a boxed strip.
+        .overlay(alignment: .bottomTrailing) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
             await geocoder.resolve(lookedUp)
@@ -161,9 +159,16 @@ struct IncidentsMapPage: View {
     /// and a map with circles on it reads as more authoritative than a table, not less. This tab
     /// has no list, so without this line it would be the one screen with no idea how old it is.
     ///
-    /// **Bottom-leading, like a map's attribution.** It sat across the top, which put a strip of
-    /// glass directly under the navigation bar — a second bar, in the one place a reader is
-    /// already looking at chrome. Down here it is a caption on the map instead.
+    /// **A line of text, not an element.** It was a full-width glass capsule at the top, which
+    /// put a strip of the app's own chrome directly under the navigation bar — a second bar, in
+    /// the one place a reader is already looking at bar. Then it was the same capsule at the
+    /// bottom, which was the same mistake lower down. It is a caption, so it is drawn like one:
+    /// no surface, bottom-trailing, above the tab bar, where a map keeps its small print.
+    ///
+    /// What that costs is legibility: text over a map has no surface holding it up. Small and
+    /// `.secondary` is what Apple's own map attribution does, and it is enough over most of a
+    /// map and not over all of one. If it proves unreadable, a shadow is the next thing to try
+    /// rather than the box coming back.
     private var notice: some View {
         HStack(spacing: 6) {
             if feed.status.isStale {
@@ -176,10 +181,7 @@ struct IncidentsMapPage: View {
         }
         .font(.caption2)
         .foregroundStyle(feed.status.isStale ? Color.orange : Color.secondary)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .mapSurface(cornerRadius: 10)
-        .padding(.leading, 12)
+        .padding(.trailing, 12)
         .padding(.bottom, 10)
     }
 
