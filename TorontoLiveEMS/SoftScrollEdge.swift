@@ -26,3 +26,16 @@ extension View {
         #endif
     }
 }
+
+// Where it is applied, written down because the list is the point of the helper:
+//
+//   IncidentLists.swift        both arrangements
+//   IncidentDetailView.swift   the detail view
+//   IncidentsMapPage.swift     the map
+//
+// **The map was the omission, and it was the same omission twice.** aadb7c3 fixed this defect
+// when only the detail view had it and the incident list showed a hard edge under its bar. The
+// map then arrived without it and showed the same hard edge, because a map is not a scroll view
+// and it does not occur to anyone to apply a *scroll edge* modifier to one. The rule the helper
+// states — everywhere there is a bar above content — is the rule that was being applied by hand,
+// one screen at a time, which is why it was missed.

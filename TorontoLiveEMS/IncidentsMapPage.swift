@@ -82,18 +82,17 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
-        #if os(iOS)
-        // **No scroll-edge effect.** `scrollEdgeEffectStyle` blurs and *tints* whatever is behind
-        // it, which over a map is a coloured band under the bar — and the map was getting the
-        // platform default because it is not a scroll view and so never received
-        // `softScrollEdge()` the way the lists and the detail view did.
+        // **The app's own bar boundary, which the map was missing.** `docs/design-decisions.md`:
+        // "The boundary under the bar is the soft scroll edge effect, everywhere" — Apple's
+        // `hard` style is "a linear, nearly opaque boundary", `soft` is a subtle blur, and
+        // `automatic` lets the context decide. The map never asked, so it took the default, which
+        // is how this exact defect was fixed once before: commit aadb7c3, "the incident list had
+        // a hard edge under its bar, the detail view did not".
         //
-        // The style is optional, so `nil` is how it is removed: `ScrollEdgeEffectStyle` offers
-        // `.automatic`, `.hard` and `.soft`, and none of them is "none". Passing `nil` is
-        // deliberate, not an omission — the app's own bar-to-content boundary is wanted over a
-        // list and is not wanted over a full-bleed map.
-        .scrollEdgeEffectStyle(nil, for: .top)
-        #endif
+        // The same modifier the lists and the detail view use, rather than a second copy of it.
+        // "One definition, applied wherever there is a scroll view under a bar" is what that
+        // helper is for, and a map under a bar is that case — whether or not it is a scroll view.
+        .softScrollEdge()
         .overlay(alignment: .top) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
