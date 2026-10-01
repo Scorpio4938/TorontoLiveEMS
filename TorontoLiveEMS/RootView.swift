@@ -196,14 +196,16 @@ struct RootView: View {
             .padding(.top, 12)
     }
 
-    /// The map tab's controls, floating: the same `ScreenControls` the bars hold, placed here
-    /// by this code because this page has no bar to place them.
+    /// The map tab's controls, floating: the same two controls the bars hold, placed here by
+    /// this code because this page has no bar to place them.
     ///
-    /// **Only the placement differs between the two pages now.** The capsule itself — its
-    /// material, its icons, their spacing, their colour — is one definition, shared with the
-    /// toolbar item in `AppToolbar`. It was not before: two implementations of the same two
-    /// buttons could be brought close by numbers but never made equal, because the bar owns its
-    /// material, its padding, its item spacing and its placement outright.
+    /// **The controls are shared; the capsule is not, and it was tried.** `InfoControl` and
+    /// `SettingsControl` are the same views the bar uses — symbol, size, colour, VoiceOver name
+    /// — so nothing this app decides can drift between the pages. Who draws the capsule around
+    /// them is the part that differs, and inside a bar that is the platform's: hosting this
+    /// whole view as a toolbar item made the items larger and pushed the centred title off
+    /// centre, which is why `AppToolbar` holds the two controls instead. This capsule is the
+    /// map's because the map has no bar to hold them.
     ///
     /// **Centred in a bar's height, at a content margin.** These two numbers are the map's half
     /// of the placement: 44 points puts the capsule's centre where a bar's item centre sits,

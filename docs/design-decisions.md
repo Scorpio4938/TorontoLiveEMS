@@ -558,22 +558,19 @@ say which of them mattered.
   `.glassEffect` alone, per the callout decision above — and the page's name sits centred
   above the map as plain text, where the bar's inline title used to. Its first floating
   version was a capsule too, and that read as a button: the title is a name, not a control.
-- **One definition for the top-right controls, on both pages.** They had been two
-  implementations of the same two buttons — a toolbar item drawn by the platform on the
-  incidents page, a hand-drawn capsule on the map — and no numbers reconcile two renderers: the
-  bar decides its own capsule, padding, item spacing and placement, and clamps what it likes,
-  so the two read a little apart however the metrics were set. `ScreenControls` is that one
-  definition now. The bar hosts it as a toolbar item with `sharedBackgroundVisibility(.hidden)`
-  — iOS 26, and Apple's words are "hiding the effect will cause the item to be placed in its
-  own grouping" — so the platform places the item while this code draws the material. The map
-  floats the same view, because it has no bar to hold it. Only the placement differs now: the
-  map's half of it is two numbers in `RootView`, and the bar's belongs to the platform.
-- **A note on how that was reached**, because the order matters more than the result. First the
-  bar's items were assumed to be the reference and the capsule was shrunk to match it — wrong,
-  and reverted. Then the capsule was taken as the reference and the bar's items were given its
-  metrics — closer, and still visibly apart, because a toolbar item's size, spacing and
-  placement are the platform's to decide and it clamps what it likes. Taking `ScreenControls`
-  out of both pages is what made them the same thing rather than two things tuned alike.
+- **One definition for the top-right controls — and the capsule is deliberately not it.** The
+  two pages had two implementations of the same two buttons, and the obvious fix, one shared
+  capsule, was tried and made them *less* alike. Hosted as a toolbar item — even with
+  `sharedBackgroundVisibility(.hidden)`, which exists and does suppress the platform's glass —
+  the items came out larger, because the platform pads a custom item on top of what the view
+  already carries, and the wide item pushed the centred inline title off centre. Which of those
+  is the cause is not established; that a bar and a hand-drawn capsule cannot be made to agree
+  is. So what is shared is the *controls* — `InfoControl` and `SettingsControl`: symbol, size,
+  colour, VoiceOver name — and the bar draws its own material around them while the map draws
+  the capsule. Everything that was drifting between the pages is in those two types, and the
+  only thing left differing is who draws the material, which is the platform's decision inside
+  a bar and not a number either page can set. The header text is untouched by all of this, by
+  requirement: it is the bar's, and the bar stays.
   What that
   costs is written here too: floating controls are not toolbar items, so they are declared in
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
