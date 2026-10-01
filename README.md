@@ -68,15 +68,26 @@ Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.
 ### The one Xcode gotcha
 
 The app folder is a synchronized group, and **Xcode scans it when the project opens**. A
-file that a `git pull` adds or removes while the project is open will not be seen —
-`import` will fail with *cannot find in scope* even though the file is on disk. Close and
-reopen the project. To find out whether a pull needs it:
+file that a `git pull` adds or removes while the project is open will not be seen — the build
+fails with `cannot find type 'X' in scope`, naming the type rather than the reason, and the
+errors around it are usually cascades of the same missing file.
+
+**Ask, rather than remembering:**
 
 ```bash
-git diff --name-status ORIG_HEAD HEAD | grep -E '^[AD]'
+python3 scripts/xcode_needs.py          # since the newest tag
+python3 scripts/xcode_needs.py v0.0.2   # since a particular one
 ```
 
-Any `A` or `D` means reopen. Nothing printed means you are fine, and a rebuild is enough.
+It names the files and says whether a reopen is needed. Tags mark points that have been built,
+so the newest one is the right thing to compare against.
+
+Two things worth knowing about it. A **clean build does not rescan the folder** — only reopening
+the project does, so ⇧⌘K will not save you. And it only looks at `TorontoLiveEMS/`: the package's
+sources and tests are found by path, so adding files there needs nothing.
+
+This has caught this project three times. The first two were noticed late enough to cost a build
+each, which is why it is a command now and no longer a paragraph.
 
 ## Status
 
