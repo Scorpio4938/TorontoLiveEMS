@@ -547,15 +547,17 @@ say which of them mattered.
   licence reason above, which is about the app rather than about the table.
 - **Each screen owns its own geocoder** — the detail view and the map page resolve different
   sets, and nothing is threaded through the list types to reach a `NavigationLink`.
-- **The map stops below the bar; nothing runs beneath it.** The band under the map page's header
-  was the bar's own glass, tinting a map that ran beneath it. It appeared on that page alone
-  because a bar's `.automatic` background depends, in Apple's words, on "where a scroll view or
-  list settles" — and the map page is the app's only page with no scroll view under its bar.
-  Hiding the bar's background left the tint; the three scroll-edge settings were no-ops, each
-  configuring scroll views the page does not have. The page now takes the shape Find My gives a
-  map beside a bar: the bar is a bar and the map begins at its lower edge. Maps' alternative — no
-  bar, floating glass controls — is the one to revisit if the map is ever wanted full-bleed, and
-  it costs the title and the two buttons as they are.
+- **The map tab has no navigation bar; its title and controls float.** The band under the map
+  page's header was the bar's own glass. An earlier fix made the map stop below the bar, and
+  the report came back that nothing visible had changed. The build that then hid the bar
+  entirely settled it: no bar, no band — and `toolbarBackgroundVisibility(.hidden)` does not
+  remove that glass on this OS. The scroll-edge settings were no-ops for a plainer reason:
+  those APIs configure scroll views, and the map page has none. The tab now takes Apple Maps'
+  shape rather than Find My's: no bar over the map, and the page's name and its two controls
+  floating in glass capsules — `.glassEffect` alone, per the callout decision above. What that
+  costs is written here too: floating controls are not toolbar items, so they are declared in
+  `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
+  own bar — which is also what carries that view's back button.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
 `.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and

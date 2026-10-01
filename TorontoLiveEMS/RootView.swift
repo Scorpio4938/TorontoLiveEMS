@@ -124,23 +124,26 @@ struct RootView: View {
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
                     IncidentsMapPage(feed: feed)
+                        // **The map tab has no navigation bar; its title and controls float.**
+                        //
+                        // The diagnostic build settled it: no bar, no band — the band was the
+                        // bar's own glass, which `toolbarBackgroundVisibility(.hidden)` does
+                        // not remove on this OS. (The scroll-edge settings were no-ops for a
+                        // plainer reason: those APIs configure scroll views, and this page has
+                        // none.) So this is Apple Maps' pattern rather than Find My's: no bar
+                        // over the map, and the page's name and controls floating in glass
+                        // capsules — `.glassEffect` alone, the app's one glass mechanism.
+                        //
+                        // The title and toolbar below are inert here — there is no bar to hold
+                        // them — but not unused: a detail view pushed from a callout shows its
+                        // own bar, and from these it takes a back button labelled "Map" and
+                        // the same Info and Settings the incidents tab's pushes carry.
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
-                        // **A diagnostic build, not a design.** The band survived hiding the
-                        // bar's background, all three scroll-edge settings, and — reported
-                        // 2026-10-02 — the map stopping below the bar altogether, which leaves
-                        // exactly two possible drawers of it: the bar itself, or the page
-                        // beneath. Hiding the whole bar separates them in one look, and is its
-                        // own liveness flag: a build that still shows a title and two buttons
-                        // here is a build without this change.
-                        //
-                        //   band gone    -> the bar draws it, and `toolbarBackgroundVisibility`
-                        //                    cannot remove it on this OS. The resolution is then
-                        //                    Maps' pattern: no bar, floating glass controls.
-                        //   band there   -> the page or the `Map` draws it, no bar modifier was
-                        //                    ever going to, and the next place to look is MapKit.
                         .toolbar(.hidden, for: .navigationBar)
                         .toolbar { toolbar }
+                        .overlay(alignment: .topLeading) { mapTitle }
+                        .overlay(alignment: .topTrailing) { mapControls }
                 }
             }
 
@@ -181,6 +184,40 @@ struct RootView: View {
             onInfo: { isShowingAboutData = true },
             onSettings: { isShowingSettings = true }
         )
+    }
+
+    /// The map tab's title, floating: the tab has no navigation bar, and this is what carries
+    /// the page's name instead. A glass capsule, matching the controls beside it, because text
+    /// alone over a map has nothing holding it up.
+    private var mapTitle: some View {
+        Text("Map")
+            .font(.headline)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .mapSurface(cornerRadius: 19)
+    }
+
+    /// The map tab's two controls, floating: the same Info and Settings the other pages carry
+    /// in their bars, as one capsule. Icons only — a capsule is a button's shape, not a
+    /// label's — with their names kept for VoiceOver.
+    private var mapControls: some View {
+        HStack(spacing: 8) {
+            Button(action: { isShowingAboutData = true }) {
+                Image(systemName: "info.circle")
+                    .frame(width: 34, height: 34)
+            }
+            .accessibilityLabel("About this Data")
+
+            Button(action: { isShowingSettings = true }) {
+                Image(systemName: "gearshape")
+                    .frame(width: 34, height: 34)
+            }
+            .accessibilityLabel("Settings")
+        }
+        .font(.title3)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .mapSurface(cornerRadius: 21)
     }
 
     /// The button knows nothing about tasks; this is the one place that does.

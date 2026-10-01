@@ -82,27 +82,15 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
-        // **The map stops below the bar. Nothing runs beneath it.**
+        // **This page sits under no bar; its title and controls float, from `RootView`.**
         //
-        // This is the one page in the app with no scroll view under its navigation bar, and that
-        // is the whole of the defect that was chased here. Apple, on `toolbarBackgroundVisibility`:
-        // a bar's `.automatic` background "depend[s] on **where a scroll view or list settles**".
-        // The incidents page is a `List`, and the detail page's map is a row inside one, so their
-        // bars defer to the scroll edge effect and stay clear. A map scrolls nothing, so the bar
-        // has nothing to settle against and renders its glass — and glass over a map's own
-        // colours reads as a tinted band hovering above it. Over either page's neutral rows, the
-        // same glass is invisible.
-        //
-        // Four attempts tried to keep the map under the bar while making the bar not draw:
-        // hiding its background — `toolbarBackgroundVisibility(.hidden)`, and the tint survived
-        // it — and the three scroll-edge settings (`nil`, `.soft`, `scrollEdgeEffectHidden`),
-        // every one of them a no-op because scroll-edge APIs configure scroll views and this
-        // page has none. The bar was never the wrong colour. The map was under the wrong thing.
-        //
-        // So the page takes the shape Apple's own apps give a map beside a bar: Find My's, not
-        // Maps'. The bar is a bar, and the map begins at its lower edge. Maps' alternative — no
-        // bar at all, floating glass controls — is the one to revisit if the map is ever wanted
-        // full-bleed, and it costs the title and the two buttons as they are.
+        // The band chased through seven attempts was the navigation bar's own glass, and the
+        // build that hid the bar proved it: no bar, no band. `toolbarBackgroundVisibility`
+        // cannot remove that glass on this OS, and the scroll-edge settings were no-ops — those
+        // APIs configure scroll views, and a map page has none. So the map tab ships with no
+        // navigation bar at all, Apple Maps' pattern, and the page's name and its two controls
+        // float over the map in glass capsules. The full record is in
+        // `docs/design-decisions.md`, *The bar and the map page*.
         // Bottom-trailing, above the tab bar, as a bare line rather than a boxed strip.
         .overlay(alignment: .bottomTrailing) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
@@ -269,36 +257,14 @@ struct IncidentsMapPage: View {
     }
 }
 
-private extension View {
-
-    /// The surface a card or notice floats on over the map.
-    ///
-    /// **One mechanism, not two.** `.glassEffect` and `.buttonStyle(.glass)` render differently,
-    /// and mixing them in one surface is what made an earlier bar look like two materials stuck
-    /// together. This is the only one used here.
-    ///
-    /// Guarded because `glassEffect` is `@available(visionOS, unavailable)` while this target
-    /// declares visionOS, and because the map tab exists on every platform rather than being
-    /// iOS-only.
-    @ViewBuilder
-    func mapSurface(cornerRadius: CGFloat) -> some View {
-        #if os(iOS)
-        glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        #else
-        background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        #endif
-    }
-}
-
 #Preview("Map — bare") {
     IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
 }
 
-// The same page in a navigation stack — the shape it ships in. The two, side by side, show what
-// the page's decision costs and buys: bare, the map owns the whole screen; wrapped, the bar takes
-// its height and the map begins below it. Neither shows anything over the map, which is what
-// settled where the band had come from: not the map, and not the bar's colour, but a map running
-// beneath a bar that had nothing scrollable to defer to.
+// The same page in a navigation stack, to see what a default bar over it would do. The app
+// ships neither of these exactly: `RootView` hides the bar on the map tab and floats the title
+// and the controls instead, so the shipped shape is the bare one plus floating chrome — and the
+// `RootView` preview shows it whole, header and all.
 #Preview("Map — in a navigation stack") {
     NavigationStack {
         IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
