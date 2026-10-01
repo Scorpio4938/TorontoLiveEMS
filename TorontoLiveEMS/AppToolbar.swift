@@ -125,14 +125,15 @@ struct ScreenSwitcherBar: View {
 /// Two places ask for it — the toolbar on macOS and the bar at the bottom on iOS — and they have
 /// to agree about what it looks like. A button written twice is a button that drifts.
 ///
-/// **Icon only, in a bordered button.** It used to be a plain labelled button inside a toolbar
-/// item, and iOS 26 drew that as a circle; outside a toolbar, a plain labelled button is a word in
-/// the accent colour, which is a red "Refresh" and not a button anybody recognised. So it is built
+/// **Icon only, in a glass button.** It used to be a plain labelled button inside a toolbar item,
+/// and iOS 26 drew that as a circle; outside a toolbar, a plain labelled button is a word in the
+/// accent colour, which is a red "Refresh" and not a button anybody recognised. So it is built
 /// explicitly instead of relying on a bar to draw it.
 ///
-/// `.bordered` with a square icon-only label is the circle, without naming a border shape —
-/// `ButtonBorderShape.circle` is not in the SDK interface files I can check against, and a shape
-/// guessed at is a build failed.
+/// Glass, because that is the material of the separate circular button in every one of the apps
+/// this design is taken from — Books, App Store, Music. An icon-only label inside a glass button
+/// is the circle, without naming a border shape: `ButtonBorderShape.circle` is not in the SDK
+/// interface files available here, and a shape guessed at is a build failed.
 struct RefreshButton: View {
 
     let model: IncidentFeedModel
