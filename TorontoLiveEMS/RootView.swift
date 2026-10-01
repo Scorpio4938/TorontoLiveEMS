@@ -142,7 +142,7 @@ struct RootView: View {
                         .inlineNavigationTitle()
                         .toolbar(.hidden, for: .navigationBar)
                         .toolbar { toolbar }
-                        .overlay(alignment: .topLeading) { mapTitle }
+                        .overlay(alignment: .top) { mapTitle }
                         .overlay(alignment: .topTrailing) { mapControls }
                 }
             }
@@ -187,14 +187,13 @@ struct RootView: View {
     }
 
     /// The map tab's title, floating: the tab has no navigation bar, and this is what carries
-    /// the page's name instead. A glass capsule, matching the controls beside it, because text
-    /// alone over a map has nothing holding it up.
+    /// the page's name instead. Plain text, centred, where the bar's inline title used to sit.
+    /// Its first floating version was a glass capsule like the controls', and that read as a
+    /// button — a capsule is a control's shape, and the title is a name, not a control.
     private var mapTitle: some View {
         Text("Map")
             .font(.headline)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .mapSurface(cornerRadius: 19)
+            .padding(.top, 12)
     }
 
     /// The map tab's two controls, floating: the same Info and Settings the other pages carry
