@@ -82,6 +82,18 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
+        // ============================ TEMPORARY, ONE BUILD ============================
+        // A satellite map. Delete this line once it has been looked at.
+        //
+        // Four changes to this page's chrome have produced no observable difference, which is
+        // not what four wrong guesses look like — it is what a stale binary looks like, and this
+        // project has paid for that confusion once already. So this is not a fix, it is a flag:
+        //
+        //   The map turns satellite  -> the code is live, and the band is a real question again.
+        //   The map stays a map      -> nothing since f399a77 is running, and every band
+        //                               conclusion drawn so far is about an older binary.
+        .mapStyle(.imagery)
+        // ================================================================================
         // **The map has to reach under the bar, the way a scroll view does.**
         //
         // A `List` extends beneath the navigation bar — that is why its content scrolls under the
