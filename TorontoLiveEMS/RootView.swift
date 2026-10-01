@@ -70,9 +70,15 @@ struct RootView: View {
     ///
     /// **This is what makes the whole app previewable.** Without it, `#Preview` could only ever
     /// build a live feed and sit on "Loading active incidents" — which meant every look at the
-    /// chrome above these screens, and every experiment on it, cost a full build and a device.
-    /// The default keeps the real app's behaviour identical.
-    init(feed: IncidentFeed = IncidentFeed()) {
+    /// chrome above these two screens, and every experiment on it, cost a full build and a
+    /// device.
+    ///
+    /// **No default value, deliberately.** `IncidentFeed` is `@MainActor`, and a default
+    /// argument is evaluated in a nonisolated context, so `= IncidentFeed()` does not compile:
+    /// "call to main actor-isolated initializer 'init(fetch:now:)' in a synchronous nonisolated
+    /// context". Every caller here — the app entry point and the preview — is already a main
+    /// actor context, so they can pass it themselves. Found by the compiler, not by thinking.
+    init(feed: IncidentFeed) {
         _feed = State(initialValue: feed)
     }
 
