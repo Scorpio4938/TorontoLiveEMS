@@ -82,6 +82,18 @@ struct IncidentsMapPage: View {
             // between them — it reads as the natural call and is not one.
             MapScaleView(alignment: .leading)
         }
+        // **The map has to reach under the bar, the way a scroll view does.**
+        //
+        // A `List` extends beneath the navigation bar — that is why its content scrolls under the
+        // bar at all, and why Apple's rule about a bar's background keys off "a scroll view or
+        // list". A `Map` is an ordinary view and respects the safe area, so its frame stops below
+        // the bar. The gap between them shows whatever is behind it, and that is the strip that
+        // has looked like a tinted band under the two buttons through every attempt aimed at the
+        // bar itself.
+        //
+        // Nothing about the bar was ever wrong, which is why hiding its background, softening the
+        // scroll edge, and moving the age line all left this unchanged.
+        .ignoresSafeArea(edges: .top)
         // **The app's own bar boundary, which the map was missing.** `docs/design-decisions.md`:
         // "The boundary under the bar is the soft scroll edge effect, everywhere" — Apple's
         // `hard` style is "a linear, nearly opaque boundary", `soft` is a subtle blur, and
