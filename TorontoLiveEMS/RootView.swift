@@ -199,16 +199,28 @@ struct RootView: View {
     /// The map tab's two controls, floating: the same Info and Settings the other pages carry
     /// in their bars, as one capsule. Icons only — a capsule is a button's shape, not a
     /// label's — with their names kept for VoiceOver.
+    ///
+    /// **Label colour, not the tint.** A plain button's icon takes the app's accent — fire red
+    /// — and two red icons over a map read as alarms. The platform draws toolbar icons in the
+    /// label colour, so that is asked for here, on the icons: a style on the content is what
+    /// overrides a button's tint, not one on the container.
+    ///
+    /// **Centred in a bar's height.** A floating capsule otherwise hugs the safe area's top
+    /// corner; in 44 points and a content margin it sits where the incidents page's bar items
+    /// sit — and level with the centred title, whose own padding puts its centre at the same
+    /// height.
     private var mapControls: some View {
         HStack(spacing: 8) {
             Button(action: { isShowingAboutData = true }) {
                 Image(systemName: "info.circle")
+                    .foregroundStyle(Color.primary)
                     .frame(width: 34, height: 34)
             }
             .accessibilityLabel("About this Data")
 
             Button(action: { isShowingSettings = true }) {
                 Image(systemName: "gearshape")
+                    .foregroundStyle(Color.primary)
                     .frame(width: 34, height: 34)
             }
             .accessibilityLabel("Settings")
@@ -217,6 +229,8 @@ struct RootView: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .mapSurface(cornerRadius: 21)
+        .frame(height: 44, alignment: .center)
+        .padding(.trailing, 12)
     }
 
     /// The button knows nothing about tasks; this is the one place that does.

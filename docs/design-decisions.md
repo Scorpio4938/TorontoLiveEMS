@@ -553,8 +553,9 @@ say which of them mattered.
   entirely settled it: no bar, no band — and `toolbarBackgroundVisibility(.hidden)` does not
   remove that glass on this OS. The scroll-edge settings were no-ops for a plainer reason:
   those APIs configure scroll views, and the map page has none. The tab now takes Apple Maps'
-  shape rather than Find My's: no bar over the map; the two controls float in a glass capsule
-  — `.glassEffect` alone, per the callout decision above — and the page's name sits centred
+  shape rather than Find My's: no bar over the map; the two controls float in a glass capsule,
+  in label colour and centred in a bar's height so they sit where bar items sit —
+  `.glassEffect` alone, per the callout decision above — and the page's name sits centred
   above the map as plain text, where the bar's inline title used to. Its first floating
   version was a capsule too, and that read as a button: the title is a name, not a control.
   What that
