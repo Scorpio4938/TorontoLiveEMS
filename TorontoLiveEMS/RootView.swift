@@ -109,6 +109,19 @@ struct RootView: View {
                     IncidentsMapPage(feed: feed)
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
+                        // **The bar draws no background, so the map shows through it.** On iOS 26 a
+                        // navigation bar's background is Liquid Glass, which blurs and *tints*
+                        // whatever is behind it — and behind this one is a map, so the tint takes
+                        // the map's own colours. That is the band that was showing under the two
+                        // buttons.
+                        //
+                        // The bar keeps its title and its buttons; only its surface goes. The two
+                        // lists keep theirs, because a table under a bar wants the separation.
+                        //
+                        // This was applied once and then reverted on the strength of "it is still
+                        // there", which is what a stale build looks like. It is the right API for
+                        // this bar either way.
+                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                         .toolbar { toolbar }
                 }
             }
