@@ -46,10 +46,12 @@ struct IncidentFeedTests {
     /// codebase rather than derived the way `FeedRefresh` derives it, so a test and an
     /// implementation cannot be wrong together.
     ///
-    /// Both helpers are `nonisolated` so that the `@Sendable` fetch closures below can call
-    /// them. The suite is `@MainActor`, and members inherit that unless told otherwise.
-    private static let tickEpoch: TimeInterval = 1_790_740_802
-    private static let tick = "2026-09-30 00:00:02"
+    /// Both helpers and both constants are `nonisolated` so that the `@Sendable` fetch closures
+    /// below can reach them. The suite is `@MainActor`, and members inherit that unless told
+    /// otherwise — including static stored properties, which is easy to miss because a `String`
+    /// constant looks like it belongs to no actor at all.
+    private nonisolated static let tickEpoch: TimeInterval = 1_790_740_802
+    private nonisolated static let tick = "2026-09-30 00:00:02"
 
     private nonisolated static func at(_ secondsAfterTick: TimeInterval) -> Date {
         Date(timeIntervalSince1970: tickEpoch + secondsAfterTick)
