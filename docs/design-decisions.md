@@ -490,10 +490,26 @@ say which of them mattered.
   There was never a bottom bar to find, in any of the six attempts.
 - **The switcher is a `TabView` with two `Tab`s** — Incidents and Map. Not a segmented
   picker: a segmented control filters content, it does not navigate between places.
-- **Refresh lives in `tabViewBottomAccessory`** — the slot Apple's HIG names for the Music
-  MiniPlayer, and the pattern the request was modelled on. The separate control at the
-  trailing end of a tab bar is reserved for `TabRole.search`, the only role Apple defines,
-  so a refresh button cannot stand there without the mark being a lie.
+- **Refresh sits in the tab bar's trailing slot, as a tab.** The request was for the shape Apple
+  draws in Music and Books — the pages across the bar, one control set apart at its trailing
+  end. That is `TabRole`, and it has **exactly two properties**: `prominent` (iOS 27) and
+  `search` (iOS 18). `prominent`'s own documentation says a `.search` tab receives the
+  prominent visual treatment by default, so `.search` is used here and the deployment target
+  stays at 26.6. Apple's words for the slot: *"a tab bar can include a dedicated search **tab**
+  at the trailing end."*
+
+  **Which means it selects, and that is a cost rather than a detail.** No API puts a
+  non-navigating control in that bar. So the tab sets the selection, `RootView` puts it straight
+  back, and the refresh happens in between: the bar's selection is seen to move on every tap,
+  and VoiceOver is told it is a tab. Kept because the alternative looked worse — a `.bottomBar`
+  toolbar item **does not merge** with the tab bar and draws as a second bar, of its own height,
+  above it. That was tried on an iPhone and looked at, which is the only reason it can be stated.
+
+- **The accessory is not used, and is the documented alternative.** Apple: the accessory can be
+  *"moved inline with the tab bar"* when the bar is minimized on scroll — the Music MiniPlayer —
+  and that remains the documented way to put a control in the same bar as the tabs. It was tried
+  first, holding one button on a full-width strip, and read as a stray control on a blank band.
+  If it is revisited it should carry the status line too, so that it has something to say.
 - **The alert stays.** Kept deliberately, against the recommendation to remove it: it makes
   the window inert, and the code's own comment already calls that *"indistinguishable from
   the dead button reported earlier"*. Kept so that the first test of the bar changes one

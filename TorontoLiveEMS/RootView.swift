@@ -13,24 +13,42 @@ import TorontoLiveEMSKit
 /// had been pointed named an iPad simulator and a Mac, where a bottom tab bar has no reason to
 /// exist. See `docs/design-decisions.md`, *The bar and the map page*.
 ///
-/// **Refresh is a bottom-bar toolbar item, and whether that is right is unproven.** The request
-/// is for the newer shape — the pages on one side of the bottom bar and a separate control at
-/// the trailing edge of the same bar. `TabRole.prominent` is the API for that shape, new in
-/// iOS 27, but the slot holds a **tab** and tapping it navigates; Music and Books put a search
-/// *tab* there. A refresh cannot occupy it without becoming a page.
+/// **Refresh occupies the tab bar's trailing slot, which is a tab.** The request was for the
+/// shape Apple draws in Music and Books — the pages across the bar, and one control set apart at
+/// its trailing end. That is `TabRole`, and `TabRole` has exactly two properties: `prominent`
+/// (iOS 27) and `search` (iOS 18). The docs for `prominent` say a `.search` tab receives the
+/// prominent visual treatment by default, so `.search` is used here and the deployment target can
+/// stay where it is. Apple's own words for the slot: *"a tab bar can include a dedicated search
+/// **tab** at the trailing end."*
 ///
-/// So the refresh control is a `.bottomBar` toolbar item instead, declared in `AppToolbar`.
-/// Whether a bottom-bar toolbar renders as part of the tab bar or stacks above it **has never
-/// been seen on an iPhone** — every earlier attempt used this arrangement and was run against
-/// an iPad simulator, where a tab bar is at the top of the screen and none of it applied. That
-/// is the thing to look at first.
+/// **Which means it selects.** There is no action role, and no API for a tab-bar item that does
+/// anything but navigate. So the tab sets the selection to `.refresh`, this code puts it back,
+/// and the refresh happens in between. Two costs are real and are not being hidden: **the bar's
+/// selection moves to the refresh tab and back on every tap**, and **VoiceOver is told it is a
+/// tab** — true of the control, false of what it does. What that buys is one coherent bar,
+/// instead of two bars of different heights, which is what the alternative actually looked like
+/// on screen.
+///
+/// A `.bottomBar` toolbar item was tried first and **does not merge**: it draws as a second bar,
+/// of its own height, above the tab bar. That is now known from looking rather than assumed.
 ///
 /// **The feed is owned here, once.** Both screens read the same incidents and the same age for
 /// them. A feed per screen could let them disagree about what is happening, which a reader
 /// would never think to check — and the map's own author said so before this was rewritten.
 struct RootView: View {
 
+    /// Which page the bar is showing.
+    ///
+    /// Named `Screen` rather than `Section`, which is a SwiftUI type.
+    private enum Screen: Hashable {
+        case incidents
+        case map
+        /// Not a page. See the refresh tab, which is put back the moment it is chosen.
+        case refresh
+    }
+
     @State private var feed = IncidentFeed()
+    @State private var screen: Screen = .incidents
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
@@ -62,8 +80,8 @@ struct RootView: View {
     }
 
     private var tabs: some View {
-        TabView {
-            Tab("Incidents", systemImage: "list.bullet") {
+        TabView(selection: $screen) {
+            Tab("Incidents", systemImage: "list.bullet", value: Screen.incidents) {
                 // Each tab carries its own `NavigationStack`, which is what gives it its own
                 // title and its own navigation bar. That is the reason the toolbar is applied
                 // here rather than once around the whole `TabView`.
@@ -75,7 +93,7 @@ struct RootView: View {
                 }
             }
 
-            Tab("Map", systemImage: "map") {
+            Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
                     IncidentsMapPage()
                         .navigationTitle("Map")
@@ -83,6 +101,30 @@ struct RootView: View {
                         .toolbar { toolbar }
                 }
             }
+
+            #if os(iOS)
+            // The trailing control, set apart from the other two by the platform. It is a tab,
+            // because a tab is the only thing this slot can hold.
+            Tab("Refresh", systemImage: "arrow.clockwise", value: Screen.refresh, role: .search) {
+                // Never meant to be seen: the selection is put back the instant it changes. It
+                // has to have *some* content, and the incidents again is the honest choice — if
+                // this ever is on screen, it does not claim to be a page of its own.
+                NavigationStack {
+                    IncidentsPage(feed: feed)
+                        .navigationTitle("Active Incidents")
+                        .inlineNavigationTitle()
+                }
+            }
+            #endif
+        }
+        .onChange(of: screen) { _, selected in
+            guard selected == .refresh else { return }
+
+            // Put the selection back **first**. Without this the refresh would work exactly
+            // once: the second tap would not change the selection, so nothing would change and
+            // nothing would fire. It is also why the bar's selection is seen to move.
+            screen = .incidents
+            Task { await refresh() }
         }
     }
 
