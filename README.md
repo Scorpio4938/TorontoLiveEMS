@@ -26,7 +26,7 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 
 ```
 TorontoLiveEMS/         the app — the views, and the table's measurements
-TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 68 tests
+TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 104 tests
 scripts/check_swift.py  a structural check, see below
 docs/                   the decisions
 ```
@@ -39,9 +39,9 @@ the app target by a local package reference.
 
 **`scripts/check_swift.py`** exists because this repo is partly developed on a machine with
 no Swift toolchain — no `swift`, no `xcodebuild`, no container to borrow one. It checks the
-three things that blind authoring gets wrong: balanced delimiters, raw newlines inside
-single-line string literals, and references to a member that does not exist on one of our
-own types.
+four things that blind authoring gets wrong: balanced delimiters, raw newlines inside
+single-line string literals, references to a member that does not exist on one of our own
+types, and files that name a package type without importing the package.
 
 The third was added after a real one. Renaming `CompactTable.outgrowsTheGrid` to
 `needsLabelledRows` updated every reference but one, in a file my own hand-written check had
@@ -60,7 +60,7 @@ cross-reference check only sees types declared in the roots it was given.
 ## Building and testing
 
 ```bash
-cd TorontoLiveEMSKit && swift test        # the 68 tests
+cd TorontoLiveEMSKit && swift test        # the 104 tests
 ```
 
 Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.
@@ -89,20 +89,40 @@ sources and tests are found by path, so adding files there needs nothing.
 This has caught this project three times. The first two were noticed late enough to cost a build
 each, which is why it is a command now and no longer a paragraph.
 
+## Versions and tags
+
+**Tags are checkpoints, not promises.** One of them is known not to build, so the list is
+worth reading rather than trusting.
+
+| | | |
+|---|---|---|
+| `v0.0.1` | `e98d13d` | **The last tag that builds.** From before the design work, so it is rougher than what is on `master` — but it is a working point, and the only one that is. |
+| `v0.0.2` | `d1ea109` | **Does not build.** `d1ea109` put `ToolbarSpacer()` inside a `ToolbarItemGroup`, whose content is a `ViewBuilder`; `ToolbarSpacer` conforms to `ToolbarContent` and not to `View`. Every commit through `065e326` inherits the fault; `1732bd5` fixes it. |
+| `v0.0.3-bar-and-cards` | `3cb40f2` | The design work after `v0.0.2` — the bottom bar, the switcher, the cards arrangement, the general map page. Kept on `archive/everything-since-v0.0.2`, not on `master`. |
+
+`master` is `v0.0.2` plus the `ToolbarSpacer` fix plus the map in the detail view's Location
+section, and nothing else.
+
+Why this is written down: for seven commits nothing could build, and Xcode kept running the
+last binary it had. Reports made during that window described an app older than the code
+being changed, and fixes were tested against it. Believing a tag was good when it was not is
+the specific mistake this table exists to prevent.
+
 ## Status
 
-**The app builds and runs in the iOS Simulator, and `swift test` passes in the package.**
-The four APIs that were the main compile risk — `LabeledContent` in the detail view,
+**The app built and ran in the iOS Simulator at `3cb40f2`, and `swift test` passes in the
+package.** Four APIs that were the main compile risk — `LabeledContent` in the detail view,
 `@AppStorage` over a `RawRepresentable` in Settings, `AttributedString(markdown:)` in the
 attribution, and `scrollEdgeEffectStyle` — are therefore known to build.
+
+The current `master` has not been built since the reset, so its status is unverified rather
+than known. Nothing in it is new work: it is `v0.0.2`'s code, plus a fix to a line that never
+compiled, plus a map that did.
 
 "It builds" is not the same as "it has been looked at under every setting", and the
 difference is tracked rather than assumed. The system's appearance and accessibility
 settings — dark mode, Reduce Transparency, Increase Contrast, Reduce Motion — have not been
 exercised; that is #11 in the tracker.
-
-Tag `v0.0.1` marks an earlier, rougher checkpoint from before the design work. It is a
-fallback, not a good state.
 
 ## Documentation
 
@@ -124,11 +144,16 @@ why, so the reasoning survives rather than the outcome alone.
 ## Known gaps
 
 - **iPad and Mac** have no design. Apple's own answer is a `Table` at regular width and a
-  `NavigationSplitView`, which `docs/adr/0005` anticipates but nothing implements.
-- **No app icon and no accent colour.** The asset catalogue is empty and the app is system
-  blue.
+  `NavigationSplitView`, which `docs/adr/0005` anticipates but nothing implements. The target
+  also declares visionOS, which has never been built — which matters, because the Liquid Glass
+  APIs are `@available(visionOS, unavailable)`.
+- **App icon and accent colour are in place** — a beacon, and fire red. This section listed
+  them as gaps; the assets are in the catalogue.
 - The compact table is hand-built, deliberately — Apple's `Table` collapses to one column
   on a phone. See `docs/adr/0005` before "fixing" it.
+- **The map is the one thing kept from the work after `v0.0.2`.** It lives in the detail view's
+  Location section, and needs `IncidentLocation` in the package plus `IncidentGeocoder` and
+  `IncidentLocationMap` in the app. There is no map *page* — that went back with the rest.
 - **A per-column width breaks the header alignment**, for reasons not established. It was
   tried and reverted (`fb43ac1`). The helper sized the header and the rows through the same
   call with the same bounds, so it should not have been able to misalign them; the suspicion
