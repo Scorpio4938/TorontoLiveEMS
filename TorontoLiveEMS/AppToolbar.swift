@@ -61,12 +61,26 @@ struct AppToolbar: ToolbarContent {
             // What the fields mean, and where the data comes from. Reference material, so it is
             // a button of its own rather than a row in Settings — somebody wondering what an
             // Alarm Level is should not have to guess that it is filed under preferences.
+            // **The same content metrics as the map tab's floating capsule**, which is the
+            // reference by decision: `.title3` icons in 34-point slots, in the label colour,
+            // icon-only with the name kept for VoiceOver. The platform draws the bar's capsule
+            // and this code cannot — these are the levers that exist inside a toolbar item.
+            // If the icons still read smaller here, the platform is clamping them, and the
+            // only exact fix left is to float the controls on both pages.
             Button(action: onInfo) {
                 Label("About this Data", systemImage: "info.circle")
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(Color.primary)
+                    .font(.title3)
+                    .frame(width: 34, height: 34)
             }
 
             Button(action: onSettings) {
                 Label("Settings", systemImage: "gearshape")
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(Color.primary)
+                    .font(.title3)
+                    .frame(width: 34, height: 34)
             }
         }
     }

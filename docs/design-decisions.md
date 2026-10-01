@@ -558,6 +558,13 @@ say which of them mattered.
   `.glassEffect` alone, per the callout decision above — and the page's name sits centred
   above the map as plain text, where the bar's inline title used to. Its first floating
   version was a capsule too, and that read as a button: the title is a name, not a control.
+- **The floating capsule is the reference for the bars' controls.** Decided by looking at
+  both, and against the first reading of this: `AppToolbar` carries the map capsule's own
+  metrics — `.title3` icons in 34-point slots, 8 apart, in the label colour, icon-only — so
+  the top-right controls on the two pages read as one thing. The bar still draws its own
+  capsule around its own items, so the two are matched rather than identical; if the platform
+  clamps a toolbar icon's size, the remaining exact fix is to float the controls on both
+  pages.
   What that
   costs is written here too: floating controls are not toolbar items, so they are declared in
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
