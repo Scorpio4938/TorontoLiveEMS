@@ -560,8 +560,11 @@ say which of them mattered.
   version was a capsule too, and that read as a button: the title is a name, not a control.
 - **The floating capsule is the reference for the bars' controls.** Decided by looking at
   both, and against the first reading of this: `AppToolbar` carries the map capsule's own
-  metrics — `.title3` icons in 34-point slots, 8 apart, in the label colour, icon-only — so
-  the top-right controls on the two pages read as one thing. The bar still draws its own
+  metrics — `.title3` icons in 34-point slots, in the label colour, icon-only — so
+  the top-right controls on the two pages read as one thing. The space between the icons was
+  then opened from 8 to 16: the bar's items read further apart, the platform does not publish
+  its own item spacing, and the distance inside this capsule is the only one of the two that
+  can be adjusted. The bar still draws its own
   capsule around its own items, so the two are matched rather than identical; if the platform
   clamps a toolbar icon's size, the remaining exact fix is to float the controls on both
   pages.

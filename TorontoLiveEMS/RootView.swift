@@ -207,17 +207,24 @@ struct RootView: View {
     ///
     /// **This is the reference the bars' items are matched to.** Decided by looking at both,
     /// and against this file's earlier reading: the floating capsule is the one whose numbers
-    /// are known, because they are written here, and `AppToolbar` now carries the same ones —
-    /// `.title3` icons in 34-point slots, 8 apart, in the label colour, icon-only. The bar
-    /// still draws its own capsule around its own items, so the two are matched rather than
-    /// identical: the platform keeps its own padding.
+    /// are known, because they are written here, and `AppToolbar` carries the same ones —
+    /// `.title3` icons in 34-point slots, in the label colour, icon-only. The bar still draws
+    /// its own capsule around its own items, so the two are matched rather than identical: the
+    /// platform keeps its own padding and its own spacing between items.
+    ///
+    /// **16 between the icons, not 8.** Reported from the two pages side by side: the bar's
+    /// items read further apart than this capsule's did. The platform does not publish its item
+    /// spacing, so the distance here is the only one of the two that can be adjusted, and this
+    /// is that number. The capsule's outer padding is the neighbouring knob, and it trades
+    /// against the total width: more space between the icons and a wider capsule are the same
+    /// 16 points seen from two directions.
     ///
     /// **Centred in a bar's height.** A floating capsule otherwise hugs the safe area's top
     /// corner; in 44 points and a content margin it sits where the incidents page's bar items
     /// sit — and level with the centred title, whose own padding puts its centre at the same
     /// height.
     private var mapControls: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 16) {
             Button(action: { isShowingAboutData = true }) {
                 Image(systemName: "info.circle")
                     .foregroundStyle(Color.primary)
