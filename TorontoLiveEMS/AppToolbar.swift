@@ -42,23 +42,32 @@ struct AppToolbar: ToolbarContent {
     }
 }
 
-/// The bar at the bottom of both screens: the switcher, and refresh beside it.
+/// The bar at the bottom of both screens: the sections, and refresh beside them.
 ///
-/// **Shaped like the iOS 26 bottom bar, because that is what was asked for.** The reference is
-/// Books, App Store and Find My: one floating bar of glass holding the sections, and a separate
-/// circular button to its right. Checked against Apple's own interface rather than remembered —
-/// `glassEffect(_:in:)`, `ButtonStyle.glass` and `ButtonStyle.glassProminent` all read out of the
-/// SDK's SwiftUI interface, which is the material those apps are built from.
+/// **Shaped like the iOS 26 bottom bar — Books, App Store, Music.** One floating capsule of glass
+/// holding the sections, and a separate circular glass button to its right. Same material, separate
+/// containers, which is the part that took two attempts to get right.
 ///
-/// **A safe-area inset rather than a toolbar**, and that is still the point. Every bar this app
-/// asked the platform to draw — a bottom-bar toolbar, the tab view's bottom accessory, a tab bar —
-/// either failed to appear or appeared and refused to respond. This one is *content*: it insets the
-/// screen rather than claiming a placement, so it renders for the same reason the list renders.
-/// When a tab bar draws, this becomes a `TabView` and the design stops being imitated.
+/// **The first attempt built two different glasses.** The sections sat in an `HStack` with
+/// `glassEffect` applied by hand, and refresh was a `Button` with `buttonStyle(.glass)` — two
+/// separate effects, rendered separately, and they came out looking like two different materials.
+/// The screenshot said so before I could work it out from the code.
 ///
-/// **Buttons, not a `Picker`.** It was a segmented control, and the Map segment could not be
-/// selected — the control drew and did not take. A pair of buttons with the selection drawn into
-/// them is the same thing the platform does and leaves nothing to bind.
+/// Apple's own description of `GlassEffectContainer` is the fix: *"a view that combines multiple
+/// Liquid Glass shapes into a single shape… as shapes near one another, their paths start to blend
+/// into one another"*, and the container's `spacing` sets how soon that begins. So every element in
+/// this bar is a `.glass` button — one mechanism, not two — and they all live in one container. The
+/// sections sit 8 points apart inside a container spaced at 24, so their shapes blend into the
+/// single capsule a tab bar is. Refresh is pushed to the far side by a `Spacer`, so it stays its
+/// own circle — which is what the reference apps do.
+///
+/// **Still a safe-area inset rather than a toolbar.** Every bar this app asked the platform to draw
+/// — a bottom-bar toolbar, the tab view's bottom accessory, a tab bar — either failed to appear or
+/// appeared and refused to respond. This one is *content*: it insets the screen rather than claiming
+/// a placement, so it renders for the same reason the list renders.
+///
+/// Glass is `@available(…, visionOS unavailable)`, and this target builds for `xros`, so the
+/// container and the styles are guarded and everything else falls back to ordinary buttons.
 struct ScreenSwitcherBar: View {
 
     @Binding var section: RootView.Section
@@ -66,37 +75,35 @@ struct ScreenSwitcherBar: View {
     let model: IncidentFeedModel
 
     var body: some View {
-        HStack(spacing: 10) {
-            // The bar itself: one capsule of glass, holding the sections.
-            HStack(spacing: 2) {
-                ForEach(RootView.Section.allCases) { candidate in
-                    sectionButton(for: candidate)
-                }
+        #if os(iOS) || os(macOS)
+        // One container for the whole bar. This is what makes the pieces one material.
+        GlassEffectContainer(spacing: 24) {
+            bar
+        }
+        #else
+        bar
+        #endif
+    }
+
+    /// The bar's contents. `spacing: 8` between the sections is inside the container's 24, which is
+    /// the ratio that lets their glass merge into one capsule rather than sitting as two blobs.
+    private var bar: some View {
+        HStack(spacing: 8) {
+            ForEach(RootView.Section.allCases) { candidate in
+                sectionButton(for: candidate)
             }
-            .padding(4)
-            // Glass where it exists. `glassEffect` is `@available(iOS 26.0, macOS 26.0, …)` and
-            // explicitly **unavailable on visionOS** — and this target declares `xros` in
-            // `SUPPORTED_PLATFORMS` with `TARGETED_DEVICE_FAMILY = "1,2,7"`, so that is a
-            // destination Xcode will happily build for and fail on. Read out of the SDK interface;
-            // the material is the fallback everywhere glass is not.
-            #if os(iOS) || os(macOS)
-            .glassEffect(.regular, in: Capsule())
-            #else
-            .background(.regularMaterial, in: Capsule())
-            #endif
 
             Spacer(minLength: 0)
 
-            // Beside it rather than inside it — a control belonging to the app, not to the
-            // sections. This is the part of the reference layout that reads as a separate button.
             RefreshButton(model: model)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }
 
-    /// The selected section is the prominent one. `buttonStyle` takes a concrete type, so this
-    /// cannot be a ternary over two styles — it has to branch.
+    /// Both states are the same glass, at two weights — prominent for the section being shown. That
+    /// is what the platform does with a selected tab, and it is why the selected one takes the
+    /// app's tint while its neighbours do not.
     @ViewBuilder
     private func sectionButton(for candidate: RootView.Section) -> some View {
         if candidate == section {
@@ -116,7 +123,11 @@ struct ScreenSwitcherBar: View {
             } label: {
                 label(for: candidate)
             }
-            .buttonStyle(.plain)
+            #if os(iOS) || os(macOS)
+            .buttonStyle(.glass)
+            #else
+            .buttonStyle(.bordered)
+            #endif
         }
     }
 
