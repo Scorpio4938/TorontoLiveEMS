@@ -42,20 +42,23 @@ struct AppToolbar: ToolbarContent {
     }
 }
 
-/// The bar at the bottom of both screens: the switcher, and refresh.
+/// The bar at the bottom of both screens: the switcher, and refresh beside it.
 ///
-/// **A safe-area inset rather than a toolbar**, and that is the whole point. Every bar this app
-/// asked the platform for — a bottom-bar toolbar, the tab view's bottom accessory, a tab bar — has
-/// either failed to draw or drawn and refused to respond. This one is *content*: it insets the
+/// **Shaped like the iOS 26 bottom bar, because that is what was asked for.** The reference is
+/// Books, App Store and Find My: one floating bar of glass holding the sections, and a separate
+/// circular button to its right. Checked against Apple's own interface rather than remembered —
+/// `glassEffect(_:in:)`, `ButtonStyle.glass` and `ButtonStyle.glassProminent` all read out of the
+/// SDK's SwiftUI interface, which is the material those apps are built from.
+///
+/// **A safe-area inset rather than a toolbar**, and that is still the point. Every bar this app
+/// asked the platform to draw — a bottom-bar toolbar, the tab view's bottom accessory, a tab bar —
+/// either failed to appear or appeared and refused to respond. This one is *content*: it insets the
 /// screen rather than claiming a placement, so it renders for the same reason the list renders.
+/// When a tab bar draws, this becomes a `TabView` and the design stops being imitated.
 ///
-/// It cannot collide with the tab bar either, which is what the last three attempts at this were
-/// really about. When the tab bar draws, this bar stops being the only way to switch, and the
-/// switcher can go back to being one.
-///
-/// A segmented `Picker` for the switch, not two buttons: the two screens are alternatives, and a
-/// segmented control is what the platform uses to say so. Refresh stays bottom right, and keeps
-/// its own definition — see `RefreshButton` for why it is now built rather than left to a bar.
+/// **Buttons, not a `Picker`.** It was a segmented control, and the Map segment could not be
+/// selected — the control drew and did not take. A pair of buttons with the selection drawn into
+/// them is the same thing the platform does and leaves nothing to bind.
 struct ScreenSwitcherBar: View {
 
     @Binding var section: RootView.Section
@@ -63,21 +66,57 @@ struct ScreenSwitcherBar: View {
     let model: IncidentFeedModel
 
     var body: some View {
-        HStack(spacing: 12) {
-            Picker("Screen", selection: $section) {
-                ForEach(RootView.Section.allCases) { section in
-                    Label(section.title, systemImage: section.systemImage)
-                        .tag(section)
+        HStack(spacing: 10) {
+            // The bar itself: one capsule of glass, holding the sections.
+            HStack(spacing: 2) {
+                ForEach(RootView.Section.allCases) { candidate in
+                    sectionButton(for: candidate)
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            .padding(4)
+            .glassEffect(.regular, in: Capsule())
 
+            Spacer(minLength: 0)
+
+            // Beside it rather than inside it — a control belonging to the app, not to the
+            // sections. This is the part of the reference layout that reads as a separate button.
             RefreshButton(model: model)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(.bar)
+    }
+
+    /// The selected section is the prominent one. `buttonStyle` takes a concrete type, so this
+    /// cannot be a ternary over two styles — it has to branch.
+    @ViewBuilder
+    private func sectionButton(for candidate: RootView.Section) -> some View {
+        if candidate == section {
+            Button {
+                section = candidate
+            } label: {
+                label(for: candidate)
+            }
+            .buttonStyle(.glassProminent)
+        } else {
+            Button {
+                section = candidate
+            } label: {
+                label(for: candidate)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// Icon over title, which is how the platform lays out a tab.
+    private func label(for candidate: RootView.Section) -> some View {
+        VStack(spacing: 2) {
+            Image(systemName: candidate.systemImage)
+            Text(candidate.title)
+                .font(.caption2)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 5)
+        .frame(minWidth: 68)
     }
 }
 
@@ -105,7 +144,13 @@ struct RefreshButton: View {
             Label("Refresh", systemImage: "arrow.clockwise")
                 .labelStyle(.iconOnly)
         }
+        // Glass on iOS, which is the circular button beside the bar in every one of the apps this
+        // is modelled on. `.bordered` was the closest thing before the material was checked.
+        #if os(iOS)
+        .buttonStyle(.glass)
+        #else
         .buttonStyle(.bordered)
+        #endif
         // Not the accent. The accent is fire red, and a red button reads as an alarm about the
         // feed rather than as a control over it.
         .tint(.secondary)
