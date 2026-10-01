@@ -64,36 +64,43 @@ private let previewStatus = FeedStatus(
 
 #Preview("Table — light") {
     CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
 }
 
 #Preview("Table — dark") {
     CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
     CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
+        .environment(IncidentGeocoder())
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
     CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
     CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
     CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
 }
 
 #Preview("Cards — dark") {
     CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
         .preferredColorScheme(.dark)
 }
 
@@ -101,6 +108,7 @@ private let previewStatus = FeedStatus(
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
     CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+        .environment(IncidentGeocoder())
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
@@ -115,6 +123,7 @@ private let previewStatus = FeedStatus(
             isStale: true
         )
     )
+    .environment(IncidentGeocoder())
 }
 
 // MARK: - The detail view, where the system's chrome is

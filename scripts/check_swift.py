@@ -6,7 +6,8 @@ produces and that nothing else here can:
 
   1. unbalanced delimiters;
   2. a raw newline inside a single-line string literal;
-  3. a reference to a member that does not exist on one of our own types.
+  3. a reference to a member that does not exist on one of our own types;
+  4. a file that names a public package type without importing the package.
 
 Multi-line literals are exempt from (2), because a newline in one is the point.
 
@@ -166,6 +167,19 @@ def main():
         for name, members in declarations(code).items():
             declared.setdefault(name, set()).update(members)
 
+    # A file outside the package that names one of its public types has to import it. Swift
+    # does not infer that, and the error it gives — "cannot find type 'Incident' in scope" —
+    # names the type rather than the missing import, which reads like a typo.
+    #
+    # Comments and strings are already blanked out of `code`, which matters: a doc comment
+    # mentioning a type by name is prose, and this is the third check here whose first draft
+    # would have flagged one.
+    package_types = set()
+    for path, code, _ in scanned:
+        if "/Sources/" in path.as_posix():
+            package_types |= set(re.findall(
+                r"^public (?:enum|struct|class|actor|protocol)\s+(\w+)", code, re.M))
+
     problems = 0
     for path, code, bodies in scanned:
         src = path.read_text()
@@ -182,6 +196,15 @@ def main():
             if RAW_NEWLINE in body:
                 notes.append("raw newline inside a single-line string literal")
                 break
+
+        # Its own pass, after `code` is settled. The first version of this smuggled the finding
+        # into `bodies` above the re-scan a few lines up, which silently overwrote it — so the
+        # check ran, found the file, and reported nothing. A check that cannot fail is worse than
+        # no check, because it looks like one.
+        if "/Sources/" not in path.as_posix() and "import TorontoLiveEMSKit" not in code:
+            used = sorted(t for t in package_types if re.search(rf"\b{t}\b", code))
+            if used:
+                notes.append(f"names {', '.join(used)} without importing TorontoLiveEMSKit")
 
         for line, name in unresolved(code, declared):
             notes.append(f"line {line}: {name} is not declared on that type")
@@ -200,6 +223,7 @@ def main():
         return 1
     print(f"  {len(files)} file(s) clean")
     print(f"  {len(declared)} type(s) cross-referenced")
+    print(f"  {len(package_types)} package type(s) checked for imports")
     return 0
 
 
