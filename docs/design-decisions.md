@@ -571,6 +571,13 @@ say which of them mattered.
   only thing left differing is who draws the material, which is the platform's decision inside
   a bar and not a number either page can set. The header text is untouched by all of this, by
   requirement: it is the bar's, and the bar stays.
+- **A toolbar item's content must not size itself.** The title came to sit to the left because
+  the shared controls carried a `.frame(width: 34, height: 34)` and a `.font(.title3)`: a content
+  view larger than the platform's own makes the platform's toolbar item larger too, and a wide
+  trailing item pushes a centred inline title off centre. The same measurements had been copied
+  into the bar from the floating capsule, which is the mistake in miniature — the capsule's size
+  is the capsule's, and it is made by its padding, not by the icons. The controls now carry no
+  size at all: the bar sizes them, and the map's capsule is as chunky as its padding says.
   What that
   costs is written here too: floating controls are not toolbar items, so they are declared in
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
