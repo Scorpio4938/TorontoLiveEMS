@@ -32,10 +32,19 @@ struct RootView: View {
     var body: some View {
         tabs
             // The tab bar is told never to minimise. It does so by default — `.automatic` — and
-            // a bar that hides itself on scroll is a bar a reader has to rediscover, which is
-            // the complaint this answers.
+            // a bar that hides itself on scroll is a bar a reader has to rediscover.
             #if os(iOS)
             .tabBarMinimizeBehavior(.never)
+            // Refresh in the accessory: the one bar iOS 26 provides *beside* the tab bar, for a
+            // control belonging to the app rather than to a tab.
+            //
+            // Just the button. The first version wrapped it in an `HStack` with a `Spacer`, which
+            // is a view asking for as much width as it can get inside a bar that sizes itself to
+            // its content — and it did not appear at all. A bar that reports no height is a bar
+            // that is not there.
+            .tabViewBottomAccessory {
+                RefreshButton(model: model)
+            }
             #endif
             .sheet(item: $sheet) { which in
                 switch which {
@@ -45,14 +54,10 @@ struct RootView: View {
                     AboutThisDataView()
                 }
             }
-            // A refresh the City provably cannot have changed is acknowledged rather than
-            // silently skipped. A silent skip is indistinguishable from a dead button, which is
-            // the fault this exists to answer.
-            .alert("Up to Date", isPresented: $model.isUpToDate) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(model.upToDateMessage)
-            }
+            // No alert. It was here, and an alert that is presented makes the whole window
+            // inert — which is exactly the symptom being chased: every button visible, every
+            // button doing nothing. Until it is known whether that was the cause, the
+            // acknowledgement lives in the status line, where it cannot block anything.
     }
 
     private var tabs: some View {

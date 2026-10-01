@@ -44,11 +44,6 @@ final class IncidentFeedModel {
     /// `private(set)` for something a binding has to write.
     var isUpToDate = false
 
-    /// What the skipped-refresh alert says.
-    var upToDateMessage: String {
-        "Nothing newer than \(snapshot?.updatedFromDatabaseAt ?? "an unknown time")."
-    }
-
     /// The status line's text and whether it is warning.
     ///
     /// No case for having no snapshot. The line is a section header now, and a section header
@@ -64,6 +59,12 @@ final class IncidentFeedModel {
         let updated = snapshot.updatedFromDatabaseAt ?? "unknown"
         let base = "City data as of \(updated)"
 
+        // A refresh the City provably cannot have changed is said here rather than skipped in
+        // silence. A silent skip is indistinguishable from a dead button, which is the fault this
+        // exists to answer.
+        if isUpToDate {
+            return FeedStatus(text: "\(base) · already up to date", isStale: false)
+        }
         if isShowingStaleResult {
             return FeedStatus(text: "\(base) · showing the last result", isStale: true)
         }
@@ -96,6 +97,7 @@ final class IncidentFeedModel {
     }
 
     private func load() async {
+        isUpToDate = false
         isRefreshing = true
         defer { isRefreshing = false }
 

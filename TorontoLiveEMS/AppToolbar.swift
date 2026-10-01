@@ -21,46 +21,12 @@ struct AppToolbar: ToolbarContent {
         // screen — which is what keeps settings in the rightmost slot it has always had.
         ToolbarItemGroup(placement: .primaryAction) {
             #if !os(iOS)
-            // On iOS this is in the bottom bar, where a thumb reaches it.
+            // On iOS this is in the tab view's bottom accessory. macOS has no accessory, so
+            // there it is an ordinary toolbar item.
             RefreshButton(model: model)
             #endif
             infoButton
             settingsButton
-        }
-
-        #if os(iOS)
-        // A bottom bar of its own, above the tab bar. This is where refresh was before the map
-        // existed and where it rendered; the tab view's bottom *accessory* was the tidier API
-        // for it and did not appear at all.
-        //
-        // `ToolbarSpacer` is a sibling of the group, not a child of it. It conforms to
-        // `ToolbarContent` and not to `View`, so inside a `ToolbarItemGroup` — whose content is a
-        // `ViewBuilder` — it does not compile. It is a toolbar item in its own right, which is
-        // what makes it the API for this and a bare `Spacer` only a view that has the effect.
-        ToolbarSpacer(placement: .bottomBar)
-
-        ToolbarItem(placement: .bottomBar) {
-            RefreshButton(model: model)
-        }
-        #endif
-    }
-
-    /// What the fields mean, and where the data comes from. Reference material, so it is a button
-    /// of its own rather than a row in Settings — somebody wondering what an Alarm Level is
-    /// should not have to guess that it is filed under preferences.
-    private var infoButton: some View {
-        Button {
-            sheet = .aboutData
-        } label: {
-            Label("About this Data", systemImage: "info.circle")
-        }
-    }
-
-    private var settingsButton: some View {
-        Button {
-            sheet = .settings
-        } label: {
-            Label("Settings", systemImage: "gearshape")
         }
     }
 }
