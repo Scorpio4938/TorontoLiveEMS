@@ -490,15 +490,21 @@ say which of them mattered.
   There was never a bottom bar to find, in any of the six attempts.
 - **The switcher is a `TabView` with two `Tab`s** — Incidents and Map. Not a segmented
   picker: a segmented control filters content, it does not navigate between places.
-- **Refresh sits in the tab bar's trailing slot, as a tab.** The request was for the shape Apple
-  draws in Music and Books — the pages across the bar, one control set apart at its trailing
-  end. That is `TabRole`, and it has **exactly two properties**: `prominent` (iOS 27) and
-  `search` (iOS 18). `prominent`'s own documentation says a `.search` tab receives the
-  prominent visual treatment by default, so `.search` is used here and the deployment target
-  stays at 26.6. Apple's words for the slot: *"a tab bar can include a dedicated search **tab**
-  at the trailing end."*
+- **Refresh sits in the tab bar's trailing slot, as a `prominent` tab.** The request was for the
+  shape Apple draws in Music and Books — the pages across the bar, one control set apart at its
+  trailing end. That is `TabRole`, and it has **exactly two properties**: `prominent` (iOS 27)
+  and `search` (iOS 18).
 
-  **Which means it selects, and that is a cost rather than a detail.** No API puts a
+  **`search` was tried first and renders as an ordinary third item**, which is not the look: its
+  documentation only promises that a `.search` tab *"may receive the prominent visual treatment
+  by default."* `prominent` is the explicit request for that treatment, and using it is why
+  `IPHONEOS_DEPLOYMENT_TARGET` moved to **27.0** — a `role:` argument cannot sit behind
+  `if #available`, and the app is unreleased, so the cost is a number in the project file.
+  Apple's words for the slot: *"a tab bar can include a dedicated search **tab** at the trailing
+  end."* What *"in supported tab bars"* means is not yet known; the treatment may not apply to
+  every tab bar style.
+
+  **It is a tab, which means it selects, and that is a cost rather than a detail.** No API puts a
   non-navigating control in that bar. So the tab sets the selection, `RootView` puts it straight
   back, and the refresh happens in between: the bar's selection is seen to move on every tap,
   and VoiceOver is told it is a tab. Kept because the alternative looked worse — a `.bottomBar`

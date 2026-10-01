@@ -13,13 +13,23 @@ import TorontoLiveEMSKit
 /// had been pointed named an iPad simulator and a Mac, where a bottom tab bar has no reason to
 /// exist. See `docs/design-decisions.md`, *The bar and the map page*.
 ///
-/// **Refresh occupies the tab bar's trailing slot, which is a tab.** The request was for the
+/// **Refresh occupies the tab bar's trailing slot, as a prominent tab.** The request was for the
 /// shape Apple draws in Music and Books — the pages across the bar, and one control set apart at
-/// its trailing end. That is `TabRole`, and `TabRole` has exactly two properties: `prominent`
-/// (iOS 27) and `search` (iOS 18). The docs for `prominent` say a `.search` tab receives the
-/// prominent visual treatment by default, so `.search` is used here and the deployment target can
-/// stay where it is. Apple's own words for the slot: *"a tab bar can include a dedicated search
-/// **tab** at the trailing end."*
+/// its trailing end. That is `TabRole`, and `TabRole` has **exactly two properties**: `prominent`
+/// (iOS 27) and `search` (iOS 18).
+///
+/// **`search` was tried first and renders as an ordinary third item.** Its documentation only
+/// ever promised that a `.search` tab *"may receive the prominent visual treatment by default"*
+/// — *may* — and `prominent` is the explicit request for it. That is the whole of the difference
+/// between a third tab sitting flush in the bar and a control set apart at the end.
+///
+/// It is why `IPHONEOS_DEPLOYMENT_TARGET` is **27.0**: a `role:` argument cannot sit behind
+/// `if #available`. The app is unreleased, so the cost is a number in the project file. The one
+/// thing not yet known is what Apple means by *"in supported tab bars"* — the treatment may not
+/// apply to every tab bar style, and on iPhone it may or may not break out the way Music's does.
+///
+/// Apple's own words for the slot: *"a tab bar can include a dedicated search **tab** at the
+/// trailing end."*
 ///
 /// **Which means it selects.** There is no action role, and no API for a tab-bar item that does
 /// anything but navigate. So the tab sets the selection to `.refresh`, this code puts it back,
@@ -29,8 +39,9 @@ import TorontoLiveEMSKit
 /// instead of two bars of different heights, which is what the alternative actually looked like
 /// on screen.
 ///
-/// A `.bottomBar` toolbar item was tried first and **does not merge**: it draws as a second bar,
-/// of its own height, above the tab bar. That is now known from looking rather than assumed.
+/// A `.bottomBar` toolbar item was tried before either of those and **does not merge**: it draws
+/// as a second bar, of its own height, above the tab bar. That is now known from looking rather
+/// than assumed.
 ///
 /// **The feed is owned here, once.** Both screens read the same incidents and the same age for
 /// them. A feed per screen could let them disagree about what is happening, which a reader
@@ -105,7 +116,7 @@ struct RootView: View {
             #if os(iOS)
             // The trailing control, set apart from the other two by the platform. It is a tab,
             // because a tab is the only thing this slot can hold.
-            Tab("Refresh", systemImage: "arrow.clockwise", value: Screen.refresh, role: .search) {
+            Tab("Refresh", systemImage: "arrow.clockwise", value: Screen.refresh, role: .prominent) {
                 // Never meant to be seen: the selection is put back the instant it changes. It
                 // has to have *some* content, and the incidents again is the honest choice — if
                 // this ever is on screen, it does not claim to be a page of its own.
