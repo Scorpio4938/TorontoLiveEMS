@@ -60,8 +60,16 @@ struct ContentView: View {
                 // the first is the API for it — `@available(iOS 26.0, macOS 26.0, *)`, checked
                 // in the SDK's own interface, where a `Spacer` in a toolbar is a view that
                 // happens to have that effect.
-                ToolbarItemGroup(placement: .bottomBar) {
-                    ToolbarSpacer()
+                //
+                // **A sibling of the group, not a child of it.** `ToolbarSpacer` conforms to
+                // `ToolbarContent` and not to `View`, and `ToolbarItemGroup`'s content is a
+                // `ViewBuilder` — so `ToolbarSpacer()` inside the braces does not compile:
+                // "generic struct 'ToolbarItemGroup' requires that 'ToolbarSpacer' conform to
+                // 'View'". It is a toolbar item in its own right, which is what makes it the API
+                // for this. The button needs a `ToolbarItem` of its own to go with it.
+                ToolbarSpacer(placement: .bottomBar)
+
+                ToolbarItem(placement: .bottomBar) {
                     refreshButton
                 }
                 #endif
