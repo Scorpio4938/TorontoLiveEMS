@@ -126,11 +126,20 @@ struct RootView: View {
                     IncidentsMapPage(feed: feed)
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
-                        // The one tab with nothing scrollable under its bar, so the bar renders
-                        // as a bar — glass, on the page background — and the map stops below it
-                        // rather than running beneath that glass. Hiding the bar's background
-                        // was tried here and the tint survived it; the reasoning, and the other
-                        // three attempts, are recorded in `IncidentsMapPage`.
+                        // **A diagnostic build, not a design.** The band survived hiding the
+                        // bar's background, all three scroll-edge settings, and — reported
+                        // 2026-10-02 — the map stopping below the bar altogether, which leaves
+                        // exactly two possible drawers of it: the bar itself, or the page
+                        // beneath. Hiding the whole bar separates them in one look, and is its
+                        // own liveness flag: a build that still shows a title and two buttons
+                        // here is a build without this change.
+                        //
+                        //   band gone    -> the bar draws it, and `toolbarBackgroundVisibility`
+                        //                    cannot remove it on this OS. The resolution is then
+                        //                    Maps' pattern: no bar, floating glass controls.
+                        //   band there   -> the page or the `Map` draws it, no bar modifier was
+                        //                    ever going to, and the next place to look is MapKit.
+                        .toolbar(.hidden, for: .navigationBar)
                         .toolbar { toolbar }
                 }
             }
