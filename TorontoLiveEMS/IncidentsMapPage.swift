@@ -300,7 +300,18 @@ private extension View {
     }
 }
 
-#Preview {
+#Preview("Map — bare") {
+    IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
+}
+
+// The same page inside a navigation stack, for one reason: a gradual tint appears at the top of
+// the map, and every scroll-edge API has now been tried against it — `.automatic` by default,
+// `nil`, `.soft` through `softScrollEdge()`, and `scrollEdgeEffectHidden` — with the tint
+// surviving all four. So it is not a scroll edge effect, and the remaining candidates are the
+// `Map` itself and the `NavigationStack` around it.
+//
+// Side by side, it takes one look: tint in both -> the map. Tint only in this one -> the stack.
+#Preview("Map — in a navigation stack") {
     NavigationStack {
         IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
     }
