@@ -45,19 +45,7 @@ struct IncidentsMapPage: View {
     }
 
     var body: some View {
-        ZStack {
-            // ============ TEMPORARY DIAGNOSTIC, ONE BUILD — delete this whole ZStack after ============
-            // A red sheet behind the map, filling the safe area too. The satellite flag proved
-            // the build is live; now the colour localises the band:
-            //
-            //   the band turns RED   -> the map's frame does not reach there: a margin, and
-            //                           `.ignoresSafeArea(edges: .top)` did not fix it.
-            //   the band stays MAP   -> the map is already underneath, and the band is a surface
-            //                           painted over it (the bar's glass, or the map's own
-            //                           treatment), not a gap.
-            Color.red.ignoresSafeArea()
-
-            Map(position: $position, selection: $selected) {
+        Map(position: $position, selection: $selected) {
             ForEach(places) { place in
                 if place.resolved.isArea {
                     // An FSA. Drawing it as a pin would put a medical incident at the centre of a
@@ -122,7 +110,6 @@ struct IncidentsMapPage: View {
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
             await geocoder.resolve(lookedUp)
-        }
         }
     }
 
