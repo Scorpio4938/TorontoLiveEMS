@@ -22,10 +22,8 @@ struct ContentView: View {
     /// that was not there. Four initialisers is a small price for a crash that cannot happen.
     let geocoder: IncidentGeocoder
 
-    /// The root's flags, not a second pair. Two screens each presenting their own Settings sheet
-    /// would put one behind the other, invisible and stuck.
-    @Binding var isShowingSettings: Bool
-    @Binding var isShowingAboutData: Bool
+    /// The root's, not a second flag. See `RootView.Sheet`.
+    @Binding var sheet: RootView.Sheet?
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
@@ -46,11 +44,7 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
                 .toolbar {
-                    AppToolbar(
-                        model: model,
-                        isShowingSettings: $isShowingSettings,
-                        isShowingAboutData: $isShowingAboutData
-                    )
+                    AppToolbar(model: model, sheet: $sheet)
                 }
         }
         // The load, on the view that appears. See `IncidentsScreen` for why it is not on the
@@ -95,7 +89,6 @@ struct ContentView: View {
     ContentView(
         model: IncidentFeedModel(),
         geocoder: IncidentGeocoder(),
-        isShowingSettings: .constant(false),
-        isShowingAboutData: .constant(false)
+        sheet: .constant(nil)
     )
 }

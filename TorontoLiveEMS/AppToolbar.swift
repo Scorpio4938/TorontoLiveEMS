@@ -13,8 +13,7 @@ struct AppToolbar: ToolbarContent {
 
     let model: IncidentFeedModel
 
-    @Binding var isShowingSettings: Bool
-    @Binding var isShowingAboutData: Bool
+    @Binding var sheet: RootView.Sheet?
 
     var body: some ToolbarContent {
         // One group, not several items sharing a placement. `ToolbarItemGroup` is the API for
@@ -22,12 +21,22 @@ struct AppToolbar: ToolbarContent {
         // screen — which is what keeps settings in the rightmost slot it has always had.
         ToolbarItemGroup(placement: .primaryAction) {
             #if !os(iOS)
-            // On iOS this is in the tab view's bottom accessory, where a thumb reaches it.
+            // On iOS this is in the bottom bar, where a thumb reaches it.
             RefreshButton(model: model)
             #endif
             infoButton
             settingsButton
         }
+
+        #if os(iOS)
+        // A bottom bar of its own, above the tab bar. This is where refresh was before the map
+        // existed and where it rendered; the tab view's bottom *accessory* was the tidier API
+        // for it and did not appear at all.
+        ToolbarItemGroup(placement: .bottomBar) {
+            ToolbarSpacer()
+            RefreshButton(model: model)
+        }
+        #endif
     }
 
     /// What the fields mean, and where the data comes from. Reference material, so it is a button
@@ -35,7 +44,7 @@ struct AppToolbar: ToolbarContent {
     /// should not have to guess that it is filed under preferences.
     private var infoButton: some View {
         Button {
-            isShowingAboutData = true
+            sheet = .aboutData
         } label: {
             Label("About this Data", systemImage: "info.circle")
         }
@@ -43,7 +52,7 @@ struct AppToolbar: ToolbarContent {
 
     private var settingsButton: some View {
         Button {
-            isShowingSettings = true
+            sheet = .settings
         } label: {
             Label("Settings", systemImage: "gearshape")
         }

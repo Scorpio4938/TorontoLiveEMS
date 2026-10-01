@@ -14,28 +14,36 @@ struct RootView: View {
     @State private var model = IncidentFeedModel()
     @State private var geocoder = IncidentGeocoder()
 
-    @State private var isShowingSettings = false
-    @State private var isShowingAboutData = false
+    /// Which sheet is open, if any.
+    ///
+    /// One sheet driven by a value rather than two driven by booleans. Two `.sheet` modifiers on
+    /// the same view is a long-standing way to get the first one working and the second silently
+    /// not — and the symptom is exactly "the button does nothing", because the tap lands and the
+    /// presentation does not.
+    enum Sheet: String, Identifiable {
+        case settings
+        case aboutData
+
+        var id: String { rawValue }
+    }
+
+    @State private var sheet: Sheet?
 
     var body: some View {
         tabs
-            // Refresh in the tab view's own bottom accessory, not in the top bar. On iOS 26 that
-            // is the bar that sits *beside* the tab bar — the place Apple puts a control that
-            // belongs to the whole app rather than to one tab, and the place this one was asked
-            // for. It is a separate bar from the tabs, so the two do not compete for the bottom.
+            // The tab bar is told never to minimise. It does so by default — `.automatic` — and
+            // a bar that hides itself on scroll is a bar a reader has to rediscover, which is
+            // the complaint this answers.
             #if os(iOS)
-            .tabViewBottomAccessory {
-                HStack {
-                    Spacer()
-                    RefreshButton(model: model)
-                }
-            }
+            .tabBarMinimizeBehavior(.never)
             #endif
-            .sheet(isPresented: $isShowingSettings) {
-                SettingsView()
-            }
-            .sheet(isPresented: $isShowingAboutData) {
-                AboutThisDataView()
+            .sheet(item: $sheet) { which in
+                switch which {
+                case .settings:
+                    SettingsView()
+                case .aboutData:
+                    AboutThisDataView()
+                }
             }
             // A refresh the City provably cannot have changed is acknowledged rather than
             // silently skipped. A silent skip is indistinguishable from a dead button, which is
@@ -50,21 +58,11 @@ struct RootView: View {
     private var tabs: some View {
         TabView {
             Tab("Active Incidents", systemImage: "list.bullet") {
-                ContentView(
-                    model: model,
-                    geocoder: geocoder,
-                    isShowingSettings: $isShowingSettings,
-                    isShowingAboutData: $isShowingAboutData
-                )
+                ContentView(model: model, geocoder: geocoder, sheet: $sheet)
             }
 
             Tab("Map", systemImage: "map") {
-                IncidentsScreen(
-                    model: model,
-                    geocoder: geocoder,
-                    isShowingSettings: $isShowingSettings,
-                    isShowingAboutData: $isShowingAboutData
-                )
+                IncidentsScreen(model: model, geocoder: geocoder, sheet: $sheet)
             }
         }
     }
@@ -76,10 +74,9 @@ private struct IncidentsScreen: View {
     let model: IncidentFeedModel
     let geocoder: IncidentGeocoder
 
-    /// The root's flags, not a second pair. Two screens each owning their own would present the
-    /// same sheet twice, and the one behind would be invisible and stuck.
-    @Binding var isShowingSettings: Bool
-    @Binding var isShowingAboutData: Bool
+    /// The root's, not a second flag. Two screens each presenting their own would put one sheet
+    /// behind the other, invisible and stuck.
+    @Binding var sheet: RootView.Sheet?
 
     var body: some View {
         NavigationStack {
@@ -89,11 +86,7 @@ private struct IncidentsScreen: View {
                 .navigationBarTitleDisplayMode(.inline)
                 #endif
                 .toolbar {
-                    AppToolbar(
-                        model: model,
-                        isShowingSettings: $isShowingSettings,
-                        isShowingAboutData: $isShowingAboutData
-                    )
+                    AppToolbar(model: model, sheet: $sheet)
                 }
         }
         // Here rather than on the tab view. A `TabView`'s own `.task` is one task for the whole
