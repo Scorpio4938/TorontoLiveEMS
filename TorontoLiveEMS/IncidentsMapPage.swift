@@ -93,7 +93,10 @@ struct IncidentsMapPage: View {
         // "One definition, applied wherever there is a scroll view under a bar" is what that
         // helper is for, and a map under a bar is that case — whether or not it is a scroll view.
         .softScrollEdge()
-        .overlay(alignment: .top) { notice }
+        // Bottom-leading, where Apple Maps keeps its attribution, rather than across the top.
+        // The top of a map is where the chrome lives — the title and the two buttons — and a
+        // strip of glass underneath it read as a second bar rather than as a caption.
+        .overlay(alignment: .bottomLeading) { notice }
         // Keyed on the places, so a new set of them is looked up and the same set is not.
         .task(id: lookedUp) {
             await geocoder.resolve(lookedUp)
@@ -151,12 +154,16 @@ struct IncidentsMapPage: View {
 
     // MARK: - What is drawn over the map
 
-    /// The data's age, which is on screen at all times, and what is still arriving.
+    /// The data's age, and what is still arriving.
     ///
     /// The age is here because the licence reason for showing it is about the *app* rather than
     /// about the list: the feed is provided "as is" and must not be presented as authoritative,
     /// and a map with circles on it reads as more authoritative than a table, not less. This tab
     /// has no list, so without this line it would be the one screen with no idea how old it is.
+    ///
+    /// **Bottom-leading, like a map's attribution.** It sat across the top, which put a strip of
+    /// glass directly under the navigation bar — a second bar, in the one place a reader is
+    /// already looking at chrome. Down here it is a caption on the map instead.
     private var notice: some View {
         HStack(spacing: 6) {
             if feed.status.isStale {
@@ -172,7 +179,8 @@ struct IncidentsMapPage: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .mapSurface(cornerRadius: 10)
-        .padding(.top, 8)
+        .padding(.leading, 12)
+        .padding(.bottom, 10)
     }
 
     /// One place's card: every incident there, each a way into its own detail view.
