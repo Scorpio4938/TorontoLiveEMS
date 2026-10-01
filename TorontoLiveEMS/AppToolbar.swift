@@ -74,7 +74,16 @@ struct ScreenSwitcherBar: View {
                 }
             }
             .padding(4)
+            // Glass where it exists. `glassEffect` is `@available(iOS 26.0, macOS 26.0, …)` and
+            // explicitly **unavailable on visionOS** — and this target declares `xros` in
+            // `SUPPORTED_PLATFORMS` with `TARGETED_DEVICE_FAMILY = "1,2,7"`, so that is a
+            // destination Xcode will happily build for and fail on. Read out of the SDK interface;
+            // the material is the fallback everywhere glass is not.
+            #if os(iOS) || os(macOS)
             .glassEffect(.regular, in: Capsule())
+            #else
+            .background(.regularMaterial, in: Capsule())
+            #endif
 
             Spacer(minLength: 0)
 
@@ -96,7 +105,11 @@ struct ScreenSwitcherBar: View {
             } label: {
                 label(for: candidate)
             }
+            #if os(iOS) || os(macOS)
             .buttonStyle(.glassProminent)
+            #else
+            .buttonStyle(.borderedProminent)
+            #endif
         } else {
             Button {
                 section = candidate
@@ -145,9 +158,10 @@ struct RefreshButton: View {
             Label("Refresh", systemImage: "arrow.clockwise")
                 .labelStyle(.iconOnly)
         }
-        // Glass on iOS, which is the circular button beside the bar in every one of the apps this
-        // is modelled on. `.bordered` was the closest thing before the material was checked.
-        #if os(iOS)
+        // Glass where it exists — the circular button beside the bar in every one of the apps
+        // this is modelled on. Unavailable on visionOS, which this target builds for; see
+        // `ScreenSwitcherBar` for the same guard and the same reason.
+        #if os(iOS) || os(macOS)
         .buttonStyle(.glass)
         #else
         .buttonStyle(.bordered)
