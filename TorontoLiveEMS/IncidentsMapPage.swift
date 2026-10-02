@@ -35,10 +35,26 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
+    /// What a place is drawn as.
+    ///
+    /// **The published area first, and the geocoder only for what it alone can answer.** A postal
+    /// area needs no lookup now: the boundary file ships in the bundle, so a postal incident costs
+    /// no network at all and the map shows the area the City published rather than a circle around
+    /// wherever Apple's geocoder landed.
+    private enum Mark {
+        /// The area the City named, as the pieces it is made of.
+        case area(pieces: [PostalAreas.Area], bounds: PostalAreas.Bounds)
+        /// A postal area the boundary file does not know, drawn the way the app drew every one of
+        /// them before: an approximation, but not nothing.
+        case circle(centre: CLLocationCoordinate2D)
+        /// A place the feed named precisely.
+        case pin(CLLocationCoordinate2D)
+    }
+
     /// A place the feed named, once, with however many incidents are there.
     private struct Place: Identifiable {
         let location: IncidentLocation
-        let resolved: IncidentGeocoder.Resolved
+        let mark: Mark
         let incidents: [Incident]
 
         var id: IncidentLocation { location }
@@ -47,17 +63,30 @@ struct IncidentsMapPage: View {
     var body: some View {
         Map(position: $position, selection: $selected) {
             ForEach(places) { place in
-                if place.resolved.isArea {
-                    // An FSA. Drawing it as a pin would put a medical incident at the centre of a
-                    // neighbourhood and call it a location — ADR-0004 forbids narrowing it, and
-                    // this is the map's version of not narrowing it. The same circle the detail
-                    // map draws, from the same constant.
-                    MapCircle(center: place.resolved.coordinate, radius: IncidentMapScale.postalAreaRadius)
+                if case .area(let pieces, _) = place.mark {
+                    // The area the City named, drawn as the area it is. All of it: twenty of
+                    // Toronto's FSAs are in more than one piece, and drawing the largest and
+                    // calling it the area would be the same kind of claim as a pin.
+                    //
+                    // Every piece carries the same tag, so tapping any part of a split FSA
+                    // selects the one place — which is what a reader who tapped an island
+                    // means.
+                    ForEach(pieces.indices, id: \.self) { index in
+                        pieces[index].mapShape
+                            .foregroundStyle(Color.orange.opacity(0.20))
+                            .stroke(Color.orange, lineWidth: 1)
+                            .tag(place.location)
+                    }
+                } else if case .circle(let centre) = place.mark {
+                    // A postal area the boundary file does not know. Drawing it as a pin would put
+                    // a medical incident at the centre of a neighbourhood and call it a location,
+                    // which is the narrowing ADR-0004 forbids; a circle says *somewhere in here*.
+                    MapCircle(center: centre, radius: IncidentMapScale.postalAreaRadius)
                         .foregroundStyle(Color.orange.opacity(0.20))
                         .stroke(Color.orange, lineWidth: 1)
                         .tag(place.location)
-                } else {
-                    Annotation("", coordinate: place.resolved.coordinate) {
+                } else if case .pin(let coordinate) = place.mark {
+                    Annotation("", coordinate: coordinate) {
                         IncidentPin(incident: place.incidents[0])
                     }
                     .annotationTitles(.hidden)
@@ -103,10 +132,10 @@ struct IncidentsMapPage: View {
 
     /// Every distinct place the feed named, in the order the incidents were published.
     ///
-    /// Nothing is filtered by whether it can be found: an FSA and a cross street are both
-    /// questions worth asking, and `IncidentGeocoder` is the thing that knows which of them
-    /// cannot be asked at all.
-    private var lookedUp: [IncidentLocation] {
+    /// Nothing is filtered by whether it can be **found** — a postal area with no boundary and a
+    /// cross street are both questions worth asking. What is filtered, further down, is what
+    /// needs asking at all.
+    private var namedPlaces: [IncidentLocation] {
         var seen: [IncidentLocation] = []
         for incident in feed.snapshot?.incidents ?? [] {
             let location = IncidentLocation.from(incident)
@@ -116,15 +145,50 @@ struct IncidentsMapPage: View {
         return seen
     }
 
-    /// The places that can be drawn: a location, and an answer for it.
+    /// The places a geocoder has to be asked about.
+    ///
+    /// **A postal area the boundary file knows is not one of them.** Asking anyway would be a
+    /// network round trip per postal incident for an answer the app then throws away, and it was
+    /// the app's most obvious waste: on the live capture, nine of fifteen incidents are postal
+    /// areas.
+    private var lookedUp: [IncidentLocation] {
+        namedPlaces.filter { publishedArea(for: $0) == nil }
+    }
+
+    /// The published boundary for a location, when the City named a postal area the file knows.
+    private func publishedArea(
+        for location: IncidentLocation
+    ) -> (pieces: [PostalAreas.Area], bounds: PostalAreas.Bounds)? {
+        guard
+            case .postalArea(let code) = location,
+            let pieces = PostalAreas.bundled.areas(for: code),
+            let bounds = PostalAreas.bundled.bounds(for: code)
+        else {
+            return nil
+        }
+        return (pieces, bounds)
+    }
+
+    /// The places that can be drawn: a location, and something to draw for it.
     private var places: [Place] {
         let incidents = feed.snapshot?.incidents ?? []
-        return lookedUp.compactMap { location in
+        return namedPlaces.compactMap { location in
+            let here = incidents.filter { IncidentLocation.from($0) == location }
+
+            if let published = publishedArea(for: location) {
+                return Place(
+                    location: location,
+                    mark: .area(pieces: published.pieces, bounds: published.bounds),
+                    incidents: here
+                )
+            }
             guard let resolved = geocoder.known(location) else { return nil }
             return Place(
                 location: location,
-                resolved: resolved,
-                incidents: incidents.filter { IncidentLocation.from($0) == location }
+                mark: resolved.isArea
+                    ? .circle(centre: resolved.coordinate)
+                    : .pin(resolved.coordinate),
+                incidents: here
             )
         }
     }
@@ -134,18 +198,28 @@ struct IncidentsMapPage: View {
         return places.first { $0.location == selected }
     }
 
-    /// Places still being looked up, counted as places because a place is what a mark is.
+    /// Places still being looked up. Postal areas are not among them any more — they are answered
+    /// from the bundle before anything is asked.
     private var pendingPlaces: Int {
         lookedUp.filter { geocoder.outcome(of: $0) == .pending }.count
     }
 
-    /// Where a place's card hangs from: above a pin, above an area's rim, never a middle.
+    /// Where a place's card hangs from: above a pin, above an area's northern edge, never a middle.
+    ///
+    /// For a published area that is the top of its own box, above the box's middle — the same
+    /// place the fallback circle's northern rim gives, for a shape that is not a circle.
     private func anchor(for place: Place) -> CLLocationCoordinate2D {
-        guard place.resolved.isArea else { return place.resolved.coordinate }
-        return IncidentMapScale.northernRim(
-            of: place.resolved.coordinate,
-            radius: IncidentMapScale.postalAreaRadius
-        )
+        switch place.mark {
+        case .area(_, let bounds):
+            return bounds.northCentre.coordinate
+        case .circle(let centre):
+            return IncidentMapScale.northernRim(
+                of: centre,
+                radius: IncidentMapScale.postalAreaRadius
+            )
+        case .pin(let coordinate):
+            return coordinate
+        }
     }
 
     // MARK: - What is drawn over the map
@@ -154,8 +228,9 @@ struct IncidentsMapPage: View {
     ///
     /// The age is here because the licence reason for showing it is about the *app* rather than
     /// about the list: the feed is provided "as is" and must not be presented as authoritative,
-    /// and a map with circles on it reads as more authoritative than a table, not less. This tab
-    /// has no list, so without this line it would be the one screen with no idea how old it is.
+    /// and a map with the City's own shapes on it reads as more authoritative than a table, not
+    /// less. This tab has no list, so without this line it would be the one screen with no idea
+    /// how old it is.
     ///
     /// **A line of text, not an element.** It was a full-width glass capsule at the top, which
     /// put a strip of the app's own chrome directly under the navigation bar — a second bar, in

@@ -153,6 +153,46 @@ struct PostalAreasTests {
         #expect(hole.count == 6)
     }
 
+    // MARK: - the box, which both maps use
+
+    @Test("M6K's box is its own, to five decimals")
+    func m6kBounds() throws {
+        let bounds = try #require(areas.bounds(for: "M6K"))
+        #expect(abs(bounds.south - 43.63331) < 0.00001)
+        #expect(abs(bounds.north - 43.65273) < 0.00001)
+        #expect(abs(bounds.west - -79.44841) < 0.00001)
+        #expect(abs(bounds.east - -79.41044) < 0.00001)
+
+        // The callout hangs above the middle of the box, never from its centre.
+        #expect(bounds.northCentre.latitude == bounds.north)
+        #expect(bounds.northCentre.longitude == bounds.centre.longitude)
+        #expect(bounds.northCentre.latitude > bounds.centre.latitude)
+    }
+
+    @Test("the box of a split FSA contains every piece")
+    func splitAreaBounds() throws {
+        // M5J is the Harbourfront and the Islands: twenty separate rings.
+        let pieces = try #require(areas.areas(for: "M5J"))
+        #expect(pieces.count == 20)
+
+        let bounds = try #require(areas.bounds(for: "M5J"))
+        for piece in pieces {
+            for point in piece.outer {
+                #expect(point.latitude >= bounds.south && point.latitude <= bounds.north)
+                #expect(point.longitude >= bounds.west && point.longitude <= bounds.east)
+            }
+        }
+        // Wider than any single island, which is the point of a union.
+        #expect(bounds.latitudeSpan > 0.03)
+        #expect(bounds.longitudeSpan > 0.05)
+    }
+
+    @Test("a box for an FSA the file does not know is nil")
+    func boundsForUnknownFSA() {
+        #expect(areas.bounds(for: "K1A") == nil)
+        #expect(areas.bounds(for: "") == nil)
+    }
+
     // MARK: - looking one up
 
     @Test("a lookup is case-blind, and an unknown FSA is nil rather than empty")

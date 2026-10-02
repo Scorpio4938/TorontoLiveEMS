@@ -52,6 +52,43 @@ public struct PostalAreas: Sendable {
         }
     }
 
+    /// The box a postal area occupies, in degrees.
+    ///
+    /// The app uses it twice for two different reasons: to frame an area on the detail map, and to
+    /// hang a callout above one on the general map. Both are presentation, but both are arithmetic
+    /// over these coordinates — and the app target has no tests at all while this one does, which
+    /// is why the arithmetic lives here.
+    public struct Bounds: Sendable, Equatable {
+        public let south: Double
+        public let north: Double
+        public let west: Double
+        public let east: Double
+
+        public init(south: Double, north: Double, west: Double, east: Double) {
+            self.south = south
+            self.north = north
+            self.west = west
+            self.east = east
+        }
+
+        /// The middle of the box.
+        public var centre: Point {
+            Point(latitude: (south + north) / 2, longitude: (west + east) / 2)
+        }
+
+        public var latitudeSpan: Double { north - south }
+        public var longitudeSpan: Double { east - west }
+
+        /// Above the middle of the box: where a callout for this area hangs from.
+        ///
+        /// Not the centre. A card anchored to the middle of an area would be a card covering the
+        /// middle of it, and the middle is the one place a postal area's location must never be
+        /// read as — see `docs/adr/0004-medical-locations-not-narrowed.md`.
+        public var northCentre: Point {
+            Point(latitude: north, longitude: centre.longitude)
+        }
+    }
+
     /// Required by the licence that governs the shapes. Empty only if the file failed to load.
     public let attribution: String
 
@@ -96,6 +133,29 @@ public struct PostalAreas: Sendable {
     /// a test.
     public func areas(for fsa: String) -> [Area]? {
         byCode[fsa.uppercased()]
+    }
+
+    /// The box that contains every piece of one FSA, or nil when the file has no such FSA.
+    ///
+    /// Twelve of Toronto's 96 are in more than one piece, so this is the box of all of them: the
+    /// frame the detail map opens on, and the place a callout hangs from.
+    public func bounds(for fsa: String) -> Bounds? {
+        guard let pieces = areas(for: fsa), !pieces.isEmpty else { return nil }
+
+        var south = Double.greatestFiniteMagnitude
+        var north = -Double.greatestFiniteMagnitude
+        var west = Double.greatestFiniteMagnitude
+        var east = -Double.greatestFiniteMagnitude
+        for piece in pieces {
+            for point in piece.outer {
+                south = Swift.min(south, point.latitude)
+                north = Swift.max(north, point.latitude)
+                west = Swift.min(west, point.longitude)
+                east = Swift.max(east, point.longitude)
+            }
+        }
+        guard south <= north, west <= east else { return nil }
+        return Bounds(south: south, north: north, west: west, east: east)
     }
 
     /// Reads the generated file.

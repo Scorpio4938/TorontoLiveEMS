@@ -532,15 +532,29 @@ say which of them mattered.
   pattern already used here.
 - **The root is `RootView`; `ContentView` becomes the incidents page.** The tab view, the
   accessory, the toolbar, the sheets and the alert are the app, not the content.
-- **Every incident with a location is drawn** — a pin for a precise one, the same 1,200 m
-  circle for a postal area, reused unchanged from the detail map.
+- **Every incident with a location is drawn** — a pin for a precise one, and the area the City
+  published for a postal area.
+- **The postal area is the real one, not a circle around a guess.** An FSA is drawn as Statistics
+  Canada's boundary for it, generated into the package by `scripts/make_postal_areas.py`
+  (Open Government Licence – Canada, and the attribution is shown in *About this Data* because it
+  is required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
+  and it could spill into a neighbouring FSA or out into the lake — claiming ground the City never
+  named. A postal area also needs **no geocoding at all** now, which removes a network round trip
+  per postal incident: nine of the fifteen incidents in the live capture were postal areas.
 - **One mark per place, not per incident.** The live capture holds fifteen incidents in
-  thirteen places, with two postal areas holding two each. A mark per incident would stack
-  two identical circles and leave one incident unreachable from the map.
-- **The card is a callout anchored above the pin, and above the circle's top edge** — never
-  at a circle's centre, which is the claim ADR-0004 exists to refuse. Liquid Glass through
-  `.glassEffect(_:in:)` alone; mixing it with `.buttonStyle(.glass)` produces two materials,
-  which is what made the last bar look wrong.
+  thirteen places, with two postal areas holding two each. A mark per incident would stack two
+  identical shapes and leave one incident unreachable from the map.
+- **The card is a callout anchored above the pin, and above an area's northern edge** — never at
+  an area's centre, which is the claim ADR-0004 exists to refuse. For a published area that is the
+  top of its own box, above the box's middle. Liquid Glass through `.glassEffect(_:in:)` alone;
+  mixing it with `.buttonStyle(.glass)` produces two materials, which is what made the last bar
+  look wrong.
+- **A postal area the boundary file does not know falls back to the circle, never to a pin.** The
+  file is from the 2021 census, so an FSA created since then has no shape here. An approximation
+  is still not a point, and a worse answer beats no answer.
+- **Holes are kept, and travel with their ring.** Exactly one Toronto FSA (M6P) has one; the
+  package keeps it rather than filling it, and the app draws it through `MKPolygon`'s interior
+  polygons because `MapPolygon`'s coordinate initialiser takes a single ring.
 - **Nothing published means nothing drawn, and no notice about it.** "Finding N more…"
   stays, because that is a loading indicator rather than a completeness notice.
 - **The map tab shows the data's age.** Decided twice; the second time after reading the
