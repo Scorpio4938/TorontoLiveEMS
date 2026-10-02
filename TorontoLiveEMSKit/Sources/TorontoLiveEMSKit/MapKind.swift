@@ -41,14 +41,16 @@ public enum MapKind: String, CaseIterable, Sendable {
     /// the map-type button is not a generic "change the map" symbol but the symbol of the map you
     /// are looking at, so the control states the current mode as well as offering the others.
     ///
-    /// **The names are chosen for certain existence, not for best fit.** There is no symbol list on
-    /// the machine this was written on, and a symbol name that is wrong draws *nothing at all* — an
-    /// invisible button that reads as a layout fault rather than as a typo. `map` and `globe` have
-    /// been in the set for years.
+    /// **Both are filled, deliberately**, so the two read as siblings in the capsule rather than as
+    /// one outlined icon and one solid one. The names were given rather than guessed, and they
+    /// cannot be checked on the machine this was written on — there is no symbol list to check them
+    /// against, and Apple publishes none. The failure mode is worth knowing and is not silent in the
+    /// way that matters: a symbol name that does not exist draws *nothing at all*, which reads as a
+    /// gap in the capsule rather than as a wrong picture, and is one word to fix.
     public var systemImage: String {
         switch self {
-        case .standard: return "map"
-        case .satellite: return "globe"
+        case .standard: return "map.fill"
+        case .satellite: return "globe.americas.fill"
         }
     }
 }
