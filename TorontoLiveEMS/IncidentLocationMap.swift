@@ -80,6 +80,23 @@ enum IncidentMapScale {
     }
 }
 
+extension MapKind {
+
+    /// The style this kind asks the map for.
+    ///
+    /// **The whole of the app's knowledge about turning a stored preference into a map**, in one
+    /// place, next to the maps it applies to. The enum itself is in the package, because that is
+    /// where the app's stored preferences live and where they can be tested; `MapStyle` is here
+    /// because it is MapKit's and the package holds no MapKit at all.
+    var style: MapStyle {
+        switch self {
+        case .standard: return .standard
+        case .imagery: return .imagery
+        case .hybrid: return .hybrid
+        }
+    }
+}
+
 extension PostalAreas.Point {
 
     /// The same point, in the type the maps draw with.

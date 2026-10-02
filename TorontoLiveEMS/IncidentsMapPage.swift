@@ -38,6 +38,13 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
+    /// Which kind of map to draw.
+    ///
+    /// The same stored key the chrome's control writes, which is how a control in one view changes
+    /// a map in another without either of them knowing the other exists.
+    @AppStorage(SettingsKey.mapKind)
+    private var mapKind: MapKind = .standard
+
     /// What a place is drawn as.
     ///
     /// **The published area first, and the geocoder only for what it alone can answer.** A postal
@@ -124,6 +131,9 @@ struct IncidentsMapPage: View {
                     .annotationTitles(.hidden)
                 }
             }
+            // The kind the reader chose, which is `.standard` unless they said otherwise. Nothing
+            // on this page changes it: the control that does lives in the chrome above.
+            .mapStyle(mapKind.style)
             .mapControls {
                 MapCompass()
                 // `alignment` given rather than left off. `MapScaleView` has two initialisers and

@@ -9,6 +9,9 @@ import TorontoLiveEMSKit
 enum SettingsKey {
     static let dispatchTimeFormat = "dispatchTimeFormat"
     static let presentation = "incidentPresentation"
+    /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
+    /// which is the point of it being a stored preference rather than state passed down.
+    static let mapKind = "mapKind"
 }
 
 struct SettingsView: View {

@@ -61,6 +61,14 @@ struct RootView: View {
     @State private var feed: IncidentFeed
     @State private var screen: Screen = .incidents
 
+    /// Which kind of map the map page draws.
+    ///
+    /// **Stored rather than passed.** Two views read it and neither owns the other: the page draws
+    /// the map, and this view's chrome draws the control that changes it. A binding threaded from
+    /// the app root into a page is exactly the plumbing this avoids — and it is the same pattern
+    /// the dispatch-time format already uses, so nothing new is being invented to make it work.
+    @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
+
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
@@ -102,7 +110,13 @@ struct RootView: View {
             // keeps the title, which was never the part in question.
             .screenControlsLayer(
                 onInfo: { isShowingAboutData = true },
-                onSettings: { isShowingSettings = true }
+                onSettings: { isShowingSettings = true },
+                // **The belief under test.** The map's own control is *added* to the one shared
+                // layer, on the one tab that has a map, rather than being a second piece of chrome.
+                // `screen` is the tab view's own selection, so the condition needs no new state —
+                // and the control goes at the capsule's leading end, so Info and Settings do not
+                // move when it appears.
+                mapKind: screen == .map ? $mapKind : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -257,11 +271,12 @@ private extension View {
     @ViewBuilder
     func screenControlsLayer(
         onInfo: @escaping () -> Void,
-        onSettings: @escaping () -> Void
+        onSettings: @escaping () -> Void,
+        mapKind: Binding<MapKind>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
-            ScreenControls(onInfo: onInfo, onSettings: onSettings)
+            ScreenControls(onInfo: onInfo, onSettings: onSettings, mapKind: mapKind)
                 // Centred in a bar's height at a content margin, which is where the bar's own
                 // items sat before this layer replaced them. These two numbers are the placement,
                 // and the only ones in it.
