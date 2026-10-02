@@ -35,4 +35,24 @@ public enum MapKind: String, CaseIterable, Sendable {
         case .hybrid: return "Hybrid"
         }
     }
+
+    /// The glyph for this kind, and the one Apple's own Maps taught us to use.
+    ///
+    /// **The button wears the icon of the kind in force.** That is Apple's behaviour in its Maps:
+    /// the map-type button is not a generic "change the map" symbol but the symbol of the map you
+    /// are looking at, so the control states the current mode as well as offering the others. The
+    /// control asks each kind for its glyph and draws the current one.
+    ///
+    /// **The names are chosen for certain existence, not for best fit.** There is no symbol list
+    /// on the machine this was written on, and a symbol name that is wrong draws *nothing at all* —
+    /// an invisible button that reads as a layout fault rather than as a typo. `map`, `globe` and
+    /// `map.fill` have been in the set since its first release. `map.fill` for hybrid is the
+    /// weakest of the three: Apple's own Maps has no hybrid mode, so there was nothing to copy.
+    public var systemImage: String {
+        switch self {
+        case .standard: return "map"
+        case .imagery: return "globe"
+        case .hybrid: return "map.fill"
+        }
+    }
 }

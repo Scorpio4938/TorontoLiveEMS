@@ -49,16 +49,24 @@ struct SettingsControl: View {
 
 /// The map's own control: which kind of map to draw.
 ///
+/// **The button wears the icon of the kind in force**, which is Apple's own behaviour in its Maps:
+/// the control is not a generic "change the map" glyph but the glyph of the map you are looking at,
+/// so it states the current mode as well as offering the others. Tap it and the menu lists all
+/// three with their glyphs, the current one carrying the platform's checkmark.
+///
 /// **A `Menu` holding a `Picker`, not a list of buttons.** The picker gives the current kind the
 /// platform's own checkmark, so the menu says which of the three is in force as well as offering
 /// the other two — which a flat list of actions cannot do without this code drawing the mark
 /// itself.
 ///
-/// **The glyph is `map`, and that is a deliberate compromise.** A layers-style symbol reads better
-/// for "map type", but there is no symbol list on the machine this was written on to check a name
-/// against, and a symbol that does not exist draws *nothing at all* — an invisible control that
-/// looks like a spacing bug. `map` is certain to exist. If it sits wrong beside the other two, the
-/// name is the whole of the change.
+/// **Why a menu and not Apple's sheet, which is the question worth answering.** Apple's map-mode
+/// chooser slides up from the bottom because it carries *previews*: a thumbnail of each style, so
+/// you choose by looking rather than by reading. That is the whole reason it is that large. We have
+/// no thumbnails to show — rendering one per option means snapshotting the map in each style, which
+/// is a network fetch per presentation for a picture of a map the reader is already looking at — so
+/// a sheet would be a large container holding three words, covering the map it exists to change.
+/// The menu carries the same information, in the same place the reader tapped, without covering
+/// anything.
 struct MapKindControl: View {
 
     @Binding var mapKind: MapKind
@@ -67,11 +75,12 @@ struct MapKindControl: View {
         Menu {
             Picker("Map Type", selection: $mapKind) {
                 ForEach(MapKind.allCases, id: \.self) { kind in
-                    Text(kind.label).tag(kind)
+                    Label(kind.label, systemImage: kind.systemImage)
+                        .tag(kind)
                 }
             }
         } label: {
-            Image(systemName: "map")
+            Image(systemName: mapKind.systemImage)
                 .foregroundStyle(Color.primary)
         }
         .accessibilityLabel("Map Type")
