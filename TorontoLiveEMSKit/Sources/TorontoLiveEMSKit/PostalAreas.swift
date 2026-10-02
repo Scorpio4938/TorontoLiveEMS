@@ -181,6 +181,51 @@ public struct PostalAreas: Sendable {
     }
 }
 
+// MARK: - Hit testing, which is why the shapes are here at all
+
+extension PostalAreas {
+
+    /// Whether a coordinate falls inside one piece of a postal area.
+    ///
+    /// **Holes count.** A hole is ground that is *not* part of the area, so a tap inside one is a
+    /// tap on the map rather than on the FSA — and drawing it as a hole while hit-testing it as
+    /// solid would be two different answers to the same question.
+    public static func contains(_ point: Point, in area: Area) -> Bool {
+        guard contains(point, in: area.outer) else { return false }
+        return !area.holes.contains { contains(point, in: $0) }
+    }
+
+    /// Whether a coordinate falls inside a ring: a ray cast, counting the edges it crosses.
+    ///
+    /// **This exists because MapKit cannot be asked to select an overlay by tap.** Tapping a pin
+    /// showed its card; tapping a polygon produced a Metal drawable failure and nothing at all.
+    /// So a tap is turned into a coordinate and tested against the shape itself — which is what
+    /// having the shape was for. It is here rather than in the app because the app target has no
+    /// tests, and a hit test that is subtly wrong is worse than no hit test: it answers every tap
+    /// with a confident wrong place.
+    public static func contains(_ point: Point, in ring: [Point]) -> Bool {
+        guard ring.count >= 3 else { return false }
+
+        var inside = false
+        var previous = ring[ring.count - 1]
+        for current in ring {
+            // Only edges that straddle the point's latitude can be crossed by a ray going east.
+            let straddles =
+                (current.latitude > point.latitude) != (previous.latitude > point.latitude)
+            if straddles {
+                let along =
+                    (point.latitude - current.latitude)
+                    / (previous.latitude - current.latitude)
+                let crossing =
+                    current.longitude + along * (previous.longitude - current.longitude)
+                if point.longitude < crossing { inside.toggle() }
+            }
+            previous = current
+        }
+        return inside
+    }
+}
+
 /// What can go wrong reading the file.
 ///
 /// Both cases mean the file was not the file this code generates, which is worth failing a test

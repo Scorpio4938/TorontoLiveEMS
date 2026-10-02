@@ -193,6 +193,78 @@ struct PostalAreasTests {
         #expect(areas.bounds(for: "") == nil)
     }
 
+    // MARK: - hit testing, which is what the shapes are for
+
+    @Test("a coordinate inside an FSA is inside it")
+    func hitTestInside() throws {
+        let centre = PostalAreas.Point(latitude: 43.64302, longitude: -79.42942)
+        let pieces = try #require(areas.areas(for: "M6K"))
+        #expect(pieces.contains { PostalAreas.contains(centre, in: $0) })
+    }
+
+    @Test("a coordinate outside an FSA is outside it")
+    func hitTestOutside() throws {
+        let pieces = try #require(areas.areas(for: "M6K"))
+        // Two kilometres north of M6K's own northern edge.
+        let north = PostalAreas.Point(latitude: 43.65273 + 0.02, longitude: -79.42942)
+        #expect(!pieces.contains { PostalAreas.contains(north, in: $0) })
+        // And a coordinate in the lake, well south of everything the City publishes.
+        let lake = PostalAreas.Point(latitude: 43.55, longitude: -79.38)
+        #expect(!pieces.contains { PostalAreas.contains(lake, in: $0) })
+    }
+
+    @Test("a hole is not part of the area it is cut into")
+    func hitTestHole() throws {
+        let piece = try #require(areas.areas(for: "M6P")?.first)
+
+        // The middle of M6P's hole, which is ground that is not M6P.
+        let inHole = PostalAreas.Point(latitude: 43.65620, longitude: -79.44755)
+        #expect(!PostalAreas.contains(inHole, in: piece))
+
+        // A corner of M6P's outer ring that is not inside the hole.
+        let inArea = PostalAreas.Point(latitude: 43.65784, longitude: -79.44519)
+        #expect(PostalAreas.contains(inArea, in: piece))
+    }
+
+    @Test("the FSAs do not overlap: a point belongs to at most one")
+    func noOverlaps() {
+        // A grid over downtown, where the FSAs are smallest and most numerous.
+        var claimed = 0
+        var doubled = 0
+        for latitudeStep in 0..<5 {
+            for longitudeStep in 0..<5 {
+                let point = PostalAreas.Point(
+                    latitude: 43.645 + Double(latitudeStep) * 0.005,
+                    longitude: -79.42 + Double(longitudeStep) * 0.005
+                )
+                let found = areas.codes.filter { code in
+                    (areas.areas(for: code) ?? []).contains {
+                        PostalAreas.contains(point, in: $0)
+                    }
+                }
+                if found.count == 1 { claimed += 1 }
+                if found.count > 1 { doubled += 1 }
+            }
+        }
+        #expect(doubled == 0, "two FSAs claimed the same ground: check the ray cast")
+        #expect(claimed > 10, "the grid should mostly land inside some FSA, found \(claimed)")
+    }
+
+    @Test("a ring with too few corners contains nothing")
+    func hitTestDegenerateRing() {
+        let point = PostalAreas.Point(latitude: 43.65, longitude: -79.4)
+        #expect(!PostalAreas.contains(point, in: []))
+        #expect(
+            !PostalAreas.contains(
+                point,
+                in: [
+                    PostalAreas.Point(latitude: 43.6, longitude: -79.5),
+                    PostalAreas.Point(latitude: 43.7, longitude: -79.5),
+                ]
+            )
+        )
+    }
+
     // MARK: - looking one up
 
     @Test("a lookup is case-blind, and an unknown FSA is nil rather than empty")
