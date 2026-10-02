@@ -61,6 +61,13 @@ struct IncidentsMapPage: View {
         let incidents: [Incident]
 
         var id: IncidentLocation { location }
+
+        /// Whether anything at this place warrants attention.
+        ///
+        /// A place takes the colour of its most serious incident, because a mark is one mark: two
+        /// of the thirteen places in the live capture hold two incidents each, and a neighbourhood
+        /// holding a fire must not be drawn as though it held only the medical call beside it.
+        var isUrgent: Bool { incidents.contains(where: \.warrantsAttention) }
     }
 
     var body: some View {
@@ -69,6 +76,12 @@ struct IncidentsMapPage: View {
         MapReader { proxy in
             Map(position: $position) {
                 ForEach(places) { place in
+                    // Red for the most urgent, orange for the rest — and the same for every kind of
+                    // mark, so an area is coloured by what is in it rather than by being an area.
+                    // The orange that used to be painted on every postal area was the shape's
+                    // colour, which meant the map said "look here" about a quiet neighbourhood.
+                    let colour = MarkColour.of(warrantsAttention: place.isUrgent)
+
                     if case .area(let pieces, _) = place.mark {
                         // The area the City named, drawn as the area it is. All of it: twenty of
                         // Toronto's FSAs are in more than one piece, and drawing the largest and
@@ -78,8 +91,8 @@ struct IncidentsMapPage: View {
                         // build proved it — and a tag on it only invites MapKit to try.
                         ForEach(pieces.indices, id: \.self) { index in
                             pieces[index].mapShape
-                                .foregroundStyle(Color.orange.opacity(0.20))
-                                .stroke(Color.orange, lineWidth: 1)
+                                .foregroundStyle(colour.opacity(0.20))
+                                .stroke(colour, lineWidth: 1)
                         }
                     } else if case .circle(let centre) = place.mark {
                         // A postal area the boundary file does not know. Drawing it as a pin would
@@ -87,15 +100,15 @@ struct IncidentsMapPage: View {
                         // location, which is the narrowing ADR-0004 forbids; a circle says
                         // *somewhere in here*.
                         MapCircle(center: centre, radius: IncidentMapScale.postalAreaRadius)
-                            .foregroundStyle(Color.orange.opacity(0.20))
-                            .stroke(Color.orange, lineWidth: 1)
+                            .foregroundStyle(colour.opacity(0.20))
+                            .stroke(colour, lineWidth: 1)
                     } else if case .pin(let coordinate) = place.mark {
-                        // **Untagged too, and that is the fix for a card that flashed and went.**
-                        // A tag here made MapKit select the pin on a tap while this page's own
-                        // gesture was also running, so the two answers raced: the card appeared
-                        // and was then wiped by whichever lost. One mechanism, one answer.
+                        // **Untagged, and that is the fix for a card that flashed and went.** A tag
+                        // here made MapKit select the pin on a tap while this page's own gesture was
+                        // also running, so the two answers raced: the card appeared and was then
+                        // wiped by whichever lost. One mechanism, one answer.
                         Annotation("", coordinate: coordinate) {
-                            IncidentPin(incident: place.incidents[0])
+                            IncidentPin(warrantsAttention: place.isUrgent)
                         }
                         .annotationTitles(.hidden)
                     }
@@ -381,7 +394,7 @@ struct IncidentsMapPage: View {
                         .font(.caption2)
                 }
             }
-            .foregroundStyle(incident.warrantsAttention ? Color.orange : Color.primary)
+            .foregroundStyle(incident.warrantsAttention ? MarkColour.urgent : Color.primary)
 
             Text([type.text, time.text].compactMap { $0 }.joined(separator: " · "))
                 .font(.caption2)

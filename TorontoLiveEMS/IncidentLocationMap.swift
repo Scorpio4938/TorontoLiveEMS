@@ -182,14 +182,18 @@ struct IncidentLocationMap: View {
     /// piece, and the Harbourfront one is twenty pieces on its own. Drawing the largest and
     /// calling it the area would be the same kind of claim as a pin.
     private func areaMap(_ pieces: [PostalAreas.Area], bounds: PostalAreas.Bounds) -> some View {
-        Map(
+        // The incident's own urgency, on the same rule as its pin would be: red for the most
+        // urgent, orange for the rest. An area is a mark like any other, and the orange it used to
+        // be painted with said nothing about the incident inside it.
+        let colour = MarkColour.of(warrantsAttention: incident.warrantsAttention)
+        return Map(
             initialPosition: .region(IncidentMapScale.region(for: bounds)),
             interactionModes: [.pan, .zoom]
         ) {
             ForEach(pieces.indices, id: \.self) { index in
                 pieces[index].mapShape
-                    .foregroundStyle(Color.orange.opacity(0.20))
-                    .stroke(Color.orange, lineWidth: 1)
+                    .foregroundStyle(colour.opacity(0.20))
+                    .stroke(colour, lineWidth: 1)
             }
         }
         .frame(height: 220)
@@ -200,7 +204,8 @@ struct IncidentLocationMap: View {
     /// The map for everything the boundary file cannot answer: a precise address, or a postal area
     /// newer than the file.
     private func map(for resolved: IncidentGeocoder.Resolved) -> some View {
-        Map(
+        let colour = MarkColour.of(warrantsAttention: incident.warrantsAttention)
+        return Map(
             initialPosition: .region(
                 IncidentMapScale.region(around: resolved.coordinate, isArea: resolved.isArea)
             ),
@@ -208,11 +213,11 @@ struct IncidentLocationMap: View {
         ) {
             if resolved.isArea {
                 MapCircle(center: resolved.coordinate, radius: IncidentMapScale.postalAreaRadius)
-                    .foregroundStyle(Color.orange.opacity(0.20))
-                    .stroke(Color.orange, lineWidth: 1)
+                    .foregroundStyle(colour.opacity(0.20))
+                    .stroke(colour, lineWidth: 1)
             } else {
                 Annotation(incident.incidentNumber, coordinate: resolved.coordinate) {
-                    IncidentPin(incident: incident)
+                    IncidentPin(warrantsAttention: incident.warrantsAttention)
                 }
                 .annotationTitles(.hidden)
             }
@@ -225,16 +230,19 @@ struct IncidentLocationMap: View {
 
 /// The dot that stands for an incident on a map.
 ///
-/// Orange for the incidents the app marks, and the accent otherwise — the same rule the list
-/// uses, from the same place. A white ring because a coloured dot on a coloured map needs an
-/// edge that is not the map's colour.
+/// Red for the most urgent, orange for the rest — `MarkColour`, the same definition the table and
+/// the areas use. A white ring because a coloured dot on a coloured map needs an edge that is not
+/// the map's colour.
+///
+/// It is told *whether* rather than *which incident*, because a place can hold more than one and a
+/// dot is one dot: the caller decides, and `Place.isUrgent` is where that decision is made.
 struct IncidentPin: View {
 
-    let incident: Incident
+    let warrantsAttention: Bool
 
     var body: some View {
         Circle()
-            .fill(incident.warrantsAttention ? Color.orange : Color.accentColor)
+            .fill(MarkColour.of(warrantsAttention: warrantsAttention))
             .frame(width: 13, height: 13)
             .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
             .shadow(radius: 1)

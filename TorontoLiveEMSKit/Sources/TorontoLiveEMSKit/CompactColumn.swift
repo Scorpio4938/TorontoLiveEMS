@@ -160,7 +160,7 @@ public enum CompactColumn: CaseIterable, Sendable {
         case .alarmLevel:
             return CompactCell(
                 incident.alarmLevel,
-                warrantsAttention: AlarmLevel.isEscalated(incident.alarmLevel)
+                warrantsAttention: AlarmLevel.isMajorResponse(incident.alarmLevel)
             )
 
         case .dispatchedUnits:

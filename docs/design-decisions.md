@@ -236,9 +236,20 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   as a reference. Blue is what a link looks like. It is the only markdown link in the app, and
   `AttributionText` is the one place the accent is overridden; the controls stay red.
 - **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
-  the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
-  to the orange that marks an exception, and those two have to stay tellable apart. If they
-  read as one warm blur, the exception colour moves rather than the accent.
+  the app had no colour of its own. Worth knowing what follows: red is now the app's *most urgent*
+  state and orange is the ordinary one, so those two have to stay tellable apart — and if they read
+  as one warm blur, the **orange** moves rather than the accent, because the accent is the app's
+  identity.
+- **Red is the most urgent; orange is everything else, and the postal areas share the rule.** The
+  areas used to be painted orange for being areas, which meant one colour said two things — "this
+  is a postal area" and "this incident is dangerous" — and a quiet FSA looked like a burning one.
+  Every mark now takes the colour of what is inside it, and the level threshold moved from
+  "anything but 0" to the City's own line at 2, which its own meanings define as ten or more
+  emergency vehicles. Both colours live in one place, `MarkColour`, because they had been written
+  out in six and could therefore not be changed.
+- **One consequence, decided rather than overlooked:** the table's marked cells are red now instead
+  of orange. Orange means ordinary on a map, and the same orange meaning "urgent" on one screen
+  and "ordinary" on another is the drift this whole change exists to end.
 - **The installed icon is flat, and that is a limit of the format, not of the artwork.** A PNG
   is one layer, so there is nothing for a glass treatment to refract between. A glassy icon is
   not a PNG we can draw: it is an assembly, and Apple's tool for it is **Icon Composer**, which
