@@ -58,15 +58,52 @@ struct RootView: View {
         case refresh
     }
 
-    @State private var feed = IncidentFeed()
+    @State private var feed: IncidentFeed
     @State private var screen: Screen = .incidents
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
 
+    /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
+    /// never touch the City's server.
+    ///
+    /// **This is what makes the whole app previewable.** Without it, `#Preview` could only ever
+    /// build a live feed and sit on "Loading active incidents" — which meant every look at the
+    /// chrome above these two screens, and every experiment on it, cost a full build and a
+    /// device.
+    ///
+    /// **No default value, deliberately.** `IncidentFeed` is `@MainActor`, and a default
+    /// argument is evaluated in a nonisolated context, so `= IncidentFeed()` does not compile:
+    /// "call to main actor-isolated initializer 'init(fetch:now:)' in a synchronous nonisolated
+    /// context". Every caller here — the app entry point and the preview — is already a main
+    /// actor context, so they can pass it themselves. Found by the compiler, not by thinking.
+    init(feed: IncidentFeed) {
+        _feed = State(initialValue: feed)
+    }
+
     var body: some View {
         tabs
+            // **The app's controls, drawn once, above both pages.**
+            //
+            // The tab bar is the model. It is not part of either page — the container draws it —
+            // and that is exactly why it cannot differ between them. These two controls are now
+            // the same thing at the other end of the screen: one declaration, one position, one
+            // rendering, over whichever page is showing, and over a pushed detail view as well.
+            //
+            // Why not an accessory: the platform has none at the top. `tabViewBottomAccessory`
+            // is the only one, and it is the bottom. An overlay on the tab view is the
+            // container-level layer, and the safe area it respects is the tab view's own — the
+            // status bar on iPhone, and on iPad the top tab bar, so the controls land below it
+            // rather than on top of it.
+            //
+            // What this replaces: each page hosting a toolbar item, which could not be made to
+            // match, because a bar draws its items itself and pads what it is given. The bar
+            // keeps the title, which was never the part in question.
+            .screenControlsLayer(
+                onInfo: { isShowingAboutData = true },
+                onSettings: { isShowingSettings = true }
+            )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
@@ -100,16 +137,31 @@ struct RootView: View {
                     IncidentsPage(feed: feed)
                         .navigationTitle("Active Incidents")
                         .inlineNavigationTitle()
-                        .toolbar { toolbar }
+                        .barControls { toolbar }
                 }
             }
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage()
+                    IncidentsMapPage(feed: feed)
+                        // **The map tab has no navigation bar.** The band under it was the bar's
+                        // own glass — the build that hid the bar proved it — so the bar stays
+                        // hidden and the page is named by floating text instead.
+                        //
+                        // The two controls are not here at all. They are drawn once above every
+                        // page by `screenControlsLayer` on the tab view, which is the only
+                        // arrangement that can be identical on a page with a bar and a page
+                        // without one.
+                        //
+                        // The title and toolbar below are inert on iOS — there is no bar to hold
+                        // them — but not unused elsewhere: `barControls` applies them where the
+                        // platform has no layer above the pages, and a detail view pushed from
+                        // here takes a back button labelled "Map".
                         .navigationTitle("Map")
                         .inlineNavigationTitle()
-                        .toolbar { toolbar }
+                        .toolbar(.hidden, for: .navigationBar)
+                        .barControls { toolbar }
+                        .overlay(alignment: .top) { mapTitle }
                 }
             }
 
@@ -128,18 +180,25 @@ struct RootView: View {
             }
             #endif
         }
-        .onChange(of: screen) { _, selected in
+        .onChange(of: screen) { previous, selected in
             guard selected == .refresh else { return }
 
-            // Put the selection back **first**. Without this the refresh would work exactly
-            // once: the second tap would not change the selection, so nothing would change and
-            // nothing would fire. It is also why the bar's selection is seen to move.
-            screen = .incidents
+            // Back to the tab they were on, **not** to Incidents. This read `.incidents` until
+            // the map became a real page: refreshing while looking at the map would have moved
+            // the reader somewhere else entirely. Put back first, because otherwise the refresh
+            // would work exactly once — the second tap would not change the selection, so
+            // nothing would change and nothing would fire. It is also why the bar's selection is
+            // seen to move.
+            screen = previous
             Task { await refresh() }
         }
     }
 
-    /// The controls both screens carry, from one definition.
+    /// The controls, where the platform's own bar holds them.
+    ///
+    /// Unused on iOS: the controls are drawn once above every page instead — see
+    /// `screenControlsLayer` — which is the only arrangement that can be identical on a page with
+    /// a bar and a page without one.
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         AppToolbar(
@@ -147,6 +206,16 @@ struct RootView: View {
             onInfo: { isShowingAboutData = true },
             onSettings: { isShowingSettings = true }
         )
+    }
+
+    /// The map tab's name, floating: the tab has no navigation bar, and this is what carries the
+    /// page's name instead. Plain text, centred, where the bar's inline title used to sit. Its
+    /// first floating version was a glass capsule like the controls', and that read as a button —
+    /// a capsule is a control's shape, and the title is a name, not a control.
+    private var mapTitle: some View {
+        Text("Map")
+            .font(.headline)
+            .padding(.top, 12)
     }
 
     /// The button knows nothing about tasks; this is the one place that does.
@@ -175,6 +244,47 @@ struct RootView: View {
 
 private extension View {
 
+    /// The app's controls, drawn once above every page.
+    ///
+    /// **The tab bar's arrangement, at the other end of the screen.** One declaration, one
+    /// position, one rendering, above whichever page is showing — so a page with a navigation bar
+    /// and a page without one cannot differ, which is the whole of what was being chased.
+    ///
+    /// iOS only, because the bar behaviour this exists to avoid is an iOS bar's: on the other
+    /// platforms the window toolbar has the controls already, applied by `barControls`. The `#if`
+    /// is inside the body rather than at each call site, so the tabs cannot end up with different
+    /// chrome.
+    @ViewBuilder
+    func screenControlsLayer(
+        onInfo: @escaping () -> Void,
+        onSettings: @escaping () -> Void
+    ) -> some View {
+        #if os(iOS)
+        overlay(alignment: .topTrailing) {
+            ScreenControls(onInfo: onInfo, onSettings: onSettings)
+                // Centred in a bar's height at a content margin, which is where the bar's own
+                // items sat before this layer replaced them. These two numbers are the placement,
+                // and the only ones in it.
+                .frame(height: 44, alignment: .center)
+                .padding(.trailing, 12)
+        }
+        #else
+        self
+        #endif
+    }
+
+    /// The bar's own controls, on the platforms that have no layer above the pages.
+    @ViewBuilder
+    func barControls<Content: ToolbarContent>(
+        @ToolbarContentBuilder _ content: () -> Content
+    ) -> some View {
+        #if os(iOS)
+        self
+        #else
+        toolbar(content)
+        #endif
+    }
+
     /// Inline on iOS, unchanged elsewhere.
     ///
     /// Inline rather than large, on iOS: a large title collapses as the list scrolls while the
@@ -194,6 +304,6 @@ private extension View {
     }
 }
 
-#Preview {
-    RootView()
+#Preview("App — sample data") {
+    RootView(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
 }

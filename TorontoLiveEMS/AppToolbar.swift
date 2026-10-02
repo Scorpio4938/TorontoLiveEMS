@@ -25,13 +25,14 @@ struct RefreshButton: View {
     }
 }
 
-/// The controls every screen carries, declared once.
+/// The controls, where the platform's own bar is the right place for them.
 ///
-/// **Why this type exists.** Each tab in a `TabView` has its own `NavigationStack`, and
-/// therefore its own navigation bar — so a toolbar is no longer a property of the app but of
-/// each screen it appears on. Two screens now need the same controls, and this is the one
-/// definition they both use, so they cannot drift apart in a corner of the screen nobody looks
-/// at until it is wrong.
+/// **Not used on iOS.** There the controls are drawn once above every page by
+/// `screenControlsLayer` — the tab bar's arrangement, at the top of the screen — because two bars
+/// cannot be made to agree with each other, nor one of them with a capsule drawn by hand, and one
+/// layer above both pages cannot disagree with itself. What is left here serves the platforms
+/// whose window toolbar belongs to the window rather than to a page, and which have no tab bar
+/// layer to mirror. The bar behaviour this avoids is an iOS bar's.
 ///
 /// **The refresh control is not here on iOS.** It is a tab at the trailing end of the tab bar —
 /// see `RootView`. A `.bottomBar` toolbar item was tried first and **does not merge**: it draws
@@ -47,10 +48,7 @@ struct AppToolbar: ToolbarContent {
     var body: some ToolbarContent {
         // One group, not several items sharing a placement. `ToolbarItemGroup` is the API for
         // more than one control in the same spot, and the order below is then the order on
-        // screen — which is what keeps settings in the rightmost slot it has always had. Two
-        // separate `ToolbarItem`s would also put them side by side, but their left-to-right
-        // order would be something this code asserted rather than something it decided, and
-        // nothing here can check which it is.
+        // screen — which is what keeps settings in the rightmost slot it has always had.
         ToolbarItemGroup(placement: .primaryAction) {
             // On iOS the refresh control is at the trailing end of the tab bar instead. Where
             // there is no tab bar to hold it, this is where it stays.
@@ -58,16 +56,21 @@ struct AppToolbar: ToolbarContent {
             RefreshButton(onTap: onRefresh)
             #endif
 
-            // What the fields mean, and where the data comes from. Reference material, so it is
-            // a button of its own rather than a row in Settings — somebody wondering what an
-            // Alarm Level is should not have to guess that it is filed under preferences.
-            Button(action: onInfo) {
-                Label("About this Data", systemImage: "info.circle")
-            }
-
-            Button(action: onSettings) {
-                Label("Settings", systemImage: "gearshape")
-            }
+            // **The same two controls the map tab floats, in the platform's own material.**
+            //
+            // `InfoControl` and `SettingsControl` are shared with the map capsule exactly —
+            // symbol, size, colour, spacing and VoiceOver name — so nothing this app owns can
+            // drift between the pages.
+            //
+            // The capsule around them is not shared, and hosting it here was tried and
+            // reverted: a custom toolbar item is padded by the platform on top of whatever the
+            // view already carries, so the controls came out *larger* than the map's, and the
+            // wide item pushed the centred inline title off centre. That is the opposite of
+            // what this was for. So the bar draws its own material around these same controls,
+            // and the difference that keeps the two pages from being identical is who draws the
+            // capsule — which is the platform's decision inside a bar, and not a number.
+            InfoControl(action: onInfo)
+            SettingsControl(action: onSettings)
         }
     }
 }

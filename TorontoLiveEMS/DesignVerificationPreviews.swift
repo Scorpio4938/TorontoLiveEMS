@@ -47,6 +47,17 @@ enum PreviewIncidents {
     )
 
     static let all = [medicalFSA, fire, locationWithheld]
+
+    /// The same incidents as the feed would have handed them over, for previews of a whole
+    /// screen rather than of one view.
+    ///
+    /// `IncidentFeed` takes its fetch as a parameter precisely so this is possible: a preview can
+    /// hand the app a fixed snapshot and never touch the City's server. Without it, `#Preview`
+    /// could only ever render "Loading active incidents".
+    static let snapshot = LiveCADSnapshot(
+        updatedFromDatabaseAt: "2026-09-29 20:00:01",
+        incidents: all
+    )
 }
 
 /// What the status line says in the previews. The real value is the City's refresh tick,

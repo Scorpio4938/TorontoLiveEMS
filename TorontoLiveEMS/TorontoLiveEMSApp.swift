@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import TorontoLiveEMSKit
 
 @main
 struct TorontoLiveEMSApp: App {
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(feed: IncidentFeed())
         }
     }
 }

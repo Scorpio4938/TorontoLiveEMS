@@ -26,3 +26,14 @@ extension View {
         #endif
     }
 }
+
+// Where it is applied, written down because the list is the point of the helper:
+//
+//   IncidentLists.swift        both arrangements
+//   IncidentDetailView.swift   the detail view
+//
+// **The map page is deliberately not in this list.** It carries no edge treatment at all: its
+// tab has no navigation bar, so there is no boundary to treat and no scroll view to treat it.
+// That was not obvious — the page once ran its map under the bar and tried every setting of the
+// effect against the band that appeared, which was four attempts at an API that configures
+// scroll views on a page that had none.
