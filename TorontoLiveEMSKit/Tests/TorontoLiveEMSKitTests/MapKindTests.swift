@@ -13,8 +13,7 @@ struct MapKindTests {
         // map that went back to standard the next time the app opened. So the values are pinned.
         #expect(MapKind.standard.rawValue == "standard")
         #expect(MapKind.satellite.rawValue == "satellite")
-        #expect(MapKind.transit.rawValue == "transit")
-        #expect(MapKind.allCases.count == 3)
+        #expect(MapKind.allCases.count == 2)
     }
 
     @Test("every kind has a name and a glyph of its own")

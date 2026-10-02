@@ -100,14 +100,6 @@ extension MapKind {
         // a map with no street names on it. Looked at, and rejected in exactly those terms.
         case .satellite:
             return MapStyle.hybrid
-
-        // The standard map with everything hidden but transit stops. MapKit has no transit lines —
-        // `MKMapView` has `showsTraffic` and no `showsTransit` — so this is the honest nearest
-        // thing rather than a claim to be the real one. Traffic is deliberately *not* asked for:
-        // congestion on roads is a different question from the transit network, and folding it in
-        // here would make one mode answer two things.
-        case .transit:
-            return MapStyle.standard(pointsOfInterest: .including([.publicTransport]))
         }
     }
 }

@@ -563,13 +563,16 @@ say which of them mattered.
   the arrangement cheap: the chrome writes it and the page reads it, and neither knows the other
   exists. What it costs is recorded too — one capsule now means two things, facts about the app and
   a setting about a map.
-- **Three map modes, and two of them are not the styles MapKit names the same way.** Satellite is
-  MapKit's *hybrid*: plain imagery has no labels at all, so a map with no street names was built,
-  looked at, and rejected. Transit is the standard map with its points of interest limited to public
-  transport — the honest nearest thing rather than the real thing, because **MapKit has no transit
-  lines**: `MKMapView` has `showsTraffic` and no `showsTransit`, and Apple's own transit rendering is
-  not an API. Traffic is deliberately not folded into it: congestion on roads is a different
-  question from the transit network, and one mode should answer one thing.
+- **Two map modes.** Satellite is MapKit's *hybrid*: plain imagery has no labels at all, so a map
+  with no street names was built, looked at, and rejected — the satellite view is the one with
+  labels drawn over the imagery.
+- **A third mode was built and removed.** Transit was the standard map with its points of interest
+  limited to public transport — `PointOfInterestCategories.including([.publicTransport])`, a real
+  API, checked before it was used — and on screen it made no difference worth having. It is
+  recorded because the reasoning that produced it is still true and would produce it again:
+  **MapKit has no transit lines.** `MKMapView` has `showsTraffic` and no `showsTransit`, Apple's own
+  transit rendering is app-internal rather than an API, and filtering points of interest turned out
+  not to be a transit view.
 - **A menu, not Apple's bottom sheet.** Apple's chooser is that large because it carries *previews* —
   a thumbnail of each style, so you choose by looking rather than by reading. There are no thumbnails
   to show here: rendering one per option means snapshotting the map in each style, which is a network
