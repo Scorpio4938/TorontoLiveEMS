@@ -216,22 +216,29 @@ struct CompactColumnTests {
         #expect(!medical.warrantsAttention)
     }
 
-    @Test("shows the alarm level as published, and marks it only when escalated")
-    func alarmLevelMarksOnlyEscalation() {
-        // Level 0 is an initial response and covers almost every incident, so marking it
-        // would mark everything.
+    @Test("shows the alarm level as published, and marks it only when the City mobilised")
+    func alarmLevelMarksOnlyAMajorResponse() {
+        // Level 0 is an initial response and covers almost every incident, so marking it would
+        // mark everything; level 1 is one more crew. Level 2 is where the City's own meanings
+        // reach ten or more vehicles.
         let initial = CompactColumn.alarmLevel.cell(
             for: incident(alarmLevel: "0"),
             timeFormat: .twelveHour
         )
-        let escalated = CompactColumn.alarmLevel.cell(
+        let support = CompactColumn.alarmLevel.cell(
+            for: incident(alarmLevel: "1"),
+            timeFormat: .twelveHour
+        )
+        let major = CompactColumn.alarmLevel.cell(
             for: incident(alarmLevel: "2"),
             timeFormat: .twelveHour
         )
         #expect(initial.text == "0")
         #expect(!initial.warrantsAttention)
-        #expect(escalated.text == "2")
-        #expect(escalated.warrantsAttention)
+        #expect(support.text == "1")
+        #expect(!support.warrantsAttention)
+        #expect(major.text == "2")
+        #expect(major.warrantsAttention)
     }
 
     @Test("shows the apparatus roster exactly as published")

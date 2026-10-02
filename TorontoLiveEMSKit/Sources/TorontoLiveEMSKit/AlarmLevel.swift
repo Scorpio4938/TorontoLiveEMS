@@ -64,15 +64,20 @@ public enum AlarmLevel {
         return meanings[published.trimmingCharacters(in: .whitespacesAndNewlines)]
     }
 
-    /// Whether the City escalated this incident past an initial response.
+    /// Whether the City sent ten or more vehicles: level 2 and above.
     ///
-    /// Level `0` is an initial response and covers 99.76% of incidents, so it is the
-    /// neutral case and should not be marked. Anything else means a dispatcher or a crew
-    /// on scene decided this needed more, which is worth seeing without having to read
-    /// the number.
-    public static func isEscalated(_ published: String) -> Bool {
+    /// **The threshold is the City's, not ours.** Its own meanings put the line between `1` and
+    /// `2`: level `0` is an initial response, level `1` is a *support* fire response — one more
+    /// crew — and level `2` is already **10–14 emergency vehicles**. So `2` is where an incident
+    /// stops being one the City added a crew to and becomes one it mobilised for, which is why the
+    /// app spends its loudest colour there and not at `1`.
+    ///
+    /// Anything that is not a number is not a major response: the feed is inconsistent with itself
+    /// and a value we cannot read is one we must not colour as if we could.
+    public static func isMajorResponse(_ published: String) -> Bool {
         let trimmed = published.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmed.isEmpty && trimmed != "0"
+        guard let level = Int(trimmed) else { return false }
+        return level >= 2
     }
 
     /// Derived from `levels`, so the two cannot disagree about what a level means.

@@ -63,6 +63,14 @@ struct AboutThisDataView: View {
                 Section {
                     LinkedText(Attribution.attributed)
                 }
+
+                Section {
+                    LinkedText(Attribution.postalAreas)
+                } header: {
+                    Text("Postal Areas")
+                } footer: {
+                    Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy. These are Statistics Canada's boundaries for those areas, so the map shows the area the City named — never a point inside it. A postal area the boundary file does not know is drawn as a circle, which is an approximation and still not a point.")
+                }
             }
             .navigationTitle("About this Data")
             #if os(iOS)

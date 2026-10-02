@@ -126,8 +126,17 @@ it.
 
 ### Colour means state, not taxonomy
 
-Colour marks an exception. Fire, Hazmat, Carbon Monoxide, Rescue, and a non-zero Alarm
-Level are orange. Nothing else is coloured, ever.
+Colour marks an exception, and there are two colours. Fire, Hazmat, Carbon Monoxide, Rescue,
+and an Alarm Level of **2 or above** are **red** — the City's own line, where a response reaches
+ten or more vehicles rather than one more crew. Everything else is **orange** where a colour is
+needed, and uncoloured where it is not: a table cell stays plain, a mark on a map cannot.
+
+**Why orange for the ordinary case**, when this section used to say that nothing else is coloured
+ever: a map has to draw every shape and every dot in *some* colour, so unlike a table it cannot
+leave the ordinary case alone. Orange is that colour. What the rule still forbids is the thing
+that was actually wrong before — an area painted orange because it is an *area*, so that a quiet
+neighbourhood and a burning one looked identical, and red meant "nothing to see" on a pin while
+orange meant "look here" on the postal area behind it.
 
 **It forbids:** colouring the thirteen incident categories, colouring by area or station,
 a colour theme, or anything else that would make the 64% of incidents that are medical as

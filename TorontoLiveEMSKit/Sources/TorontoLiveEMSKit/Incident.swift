@@ -71,16 +71,20 @@ public extension Incident {
 
     /// Whether this incident is one the colour rule marks.
     ///
-    /// A dangerous category, or an alarm level above the initial response. The rule has been
-    /// stated in two places since it was written — once on Incident Type and once on Alarm Level,
-    /// because they are separate columns — and the map made it a third. It is one rule about an
-    /// incident, so it lives on the incident.
+    /// Whether this is the most urgent thing the app can tell you about an incident.
     ///
-    /// See `docs/design-grammar.md`: colour marks state rather than taxonomy, and the states are
-    /// these two.
+    /// Two conditions, and either one is enough: a dangerous category — fire, hazmat, carbon
+    /// monoxide, rescue — **or** a major response, which is the City's own line at ten or more
+    /// vehicles.
+    ///
+    /// The rule has been stated in two places since it was written — once on Incident Type and
+    /// once on Alarm Level, because they are separate columns — and the map made it a third. It is
+    /// one rule about an incident, so it lives on the incident.
+    ///
+    /// See `docs/design-grammar.md`: colour marks state rather than taxonomy.
     var warrantsAttention: Bool {
         (IncidentCategory.from(incidentType: incidentType)?.warrantsAttention ?? false)
-            || AlarmLevel.isEscalated(alarmLevel)
+            || AlarmLevel.isMajorResponse(alarmLevel)
     }
 
     /// Whether Prime Street is a forward sortation area rather than a street name.

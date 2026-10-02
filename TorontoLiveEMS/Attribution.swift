@@ -29,6 +29,28 @@ enum Attribution {
     private static let licenceURL =
         "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/"
 
+    /// The shapes' licence, which is a different licence from the feed's and has to be shown too.
+    ///
+    /// **The sentence itself travels inside the data file.** That is the point of putting it
+    /// there: the shapes and their attribution cannot be separated, so a missing attribution is
+    /// not a possibility to remember. This shows that sentence and adds only the link a JSON file
+    /// cannot carry.
+    ///
+    /// If the file failed to load there is nothing to attribute — and nothing drawn from it either
+    /// — so the sentence would be the link alone, which is why the licence is named in the link's
+    /// own text.
+    static var postalAreas: AttributedString {
+        .fromMarkdown(
+            "\(PostalAreas.bundled.attribution) The licence: "
+                + "[Open Government Licence – Canada](\(canadaLicenceURL))"
+        )
+    }
+
+    /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
+    /// Statistics Canada's own metadata names it in exactly these terms.
+    private static let canadaLicenceURL =
+        "https://open.canada.ca/en/open-government-licence-canada"
+
     /// The sentence with its link parsed.
     ///
     /// `Text` parses markdown from a string literal, but renders the syntax verbatim when

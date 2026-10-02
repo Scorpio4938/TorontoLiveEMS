@@ -27,21 +27,26 @@ struct AlarmLevelTests {
         #expect(AlarmLevel.meaning(for: "major") == nil)
     }
 
-    @Test("marks every level above the initial response")
-    func marksEscalation() {
-        // 0 is an initial response and covers 99.76% of incidents, so it is the neutral
-        // case and must not be marked.
-        #expect(!AlarmLevel.isEscalated("0"))
+    @Test("calls ten or more vehicles a major response, and one more crew not")
+    func marksAMajorResponse() {
+        // The threshold is the City's own. Its meanings put the line between 1 and 2: 0 is an
+        // initial response, 1 is a *support* fire response — one more crew — and 2 is already
+        // 10–14 emergency vehicles.
+        #expect(!AlarmLevel.isMajorResponse("0"))
+        #expect(!AlarmLevel.isMajorResponse("1"))
 
-        for level in ["1", "2", "3", "4", "5", "6"] {
-            #expect(AlarmLevel.isEscalated(level))
+        for level in ["2", "3", "4", "5", "6"] {
+            #expect(AlarmLevel.isMajorResponse(level))
         }
     }
 
-    @Test("does not mistake an unpublished level for an escalation")
-    func missingLevelIsNotEscalation() {
-        #expect(!AlarmLevel.isEscalated(""))
-        #expect(!AlarmLevel.isEscalated("   "))
+    @Test("does not mistake an unpublished or unreadable level for a major response")
+    func missingLevelIsNotAMajorResponse() {
+        #expect(!AlarmLevel.isMajorResponse(""))
+        #expect(!AlarmLevel.isMajorResponse("   "))
+        // The feed is inconsistent with itself, and a value we cannot read is one we must not
+        // colour as though we could.
+        #expect(!AlarmLevel.isMajorResponse("II"))
     }
 
     @Test("lists the levels in the order they are meant to be read")

@@ -4,8 +4,13 @@ import TorontoLiveEMSKit
 /// The colour a cell carries when it warrants attention, and whether it carries one at all.
 ///
 /// One definition, because every arrangement applies it and the rule is policy rather than
-/// taste: orange marks an exception — a dangerous category, an escalated alarm level — and
-/// nothing else is coloured. See `docs/design-grammar.md`.
+/// taste: the most urgent incidents are red — a dangerous category, or a response of ten or more
+/// vehicles — and nothing else is coloured. See `docs/design-grammar.md`.
+///
+/// **Red, not orange.** The maps need a colour for the ordinary case as well, because every shape
+/// and every dot has to be *some* colour, and orange is now that one. If the table kept orange
+/// for the exception, the same orange would mean "urgent" on one screen and "ordinary" on
+/// another.
 ///
 /// Returns nothing for an ordinary cell rather than a colour, because what an ordinary cell
 /// looks like is the arrangement's business: a table cell is primary text, a card's
@@ -13,7 +18,7 @@ import TorontoLiveEMSKit
 enum CompactAttention {
 
     static func colour(for cell: CompactCell) -> Color? {
-        cell.warrantsAttention ? .orange : nil
+        cell.warrantsAttention ? MarkColour.urgent : nil
     }
 }
 

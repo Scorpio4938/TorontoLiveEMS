@@ -236,9 +236,20 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   as a reference. Blue is what a link looks like. It is the only markdown link in the app, and
   `AttributionText` is the one place the accent is overridden; the controls stay red.
 - **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
-  the app had no colour of its own. Worth knowing what follows: the accent is now close in hue
-  to the orange that marks an exception, and those two have to stay tellable apart. If they
-  read as one warm blur, the exception colour moves rather than the accent.
+  the app had no colour of its own. Worth knowing what follows: red is now the app's *most urgent*
+  state and orange is the ordinary one, so those two have to stay tellable apart — and if they read
+  as one warm blur, the **orange** moves rather than the accent, because the accent is the app's
+  identity.
+- **Red is the most urgent; orange is everything else, and the postal areas share the rule.** The
+  areas used to be painted orange for being areas, which meant one colour said two things — "this
+  is a postal area" and "this incident is dangerous" — and a quiet FSA looked like a burning one.
+  Every mark now takes the colour of what is inside it, and the level threshold moved from
+  "anything but 0" to the City's own line at 2, which its own meanings define as ten or more
+  emergency vehicles. Both colours live in one place, `MarkColour`, because they had been written
+  out in six and could therefore not be changed.
+- **One consequence, decided rather than overlooked:** the table's marked cells are red now instead
+  of orange. Orange means ordinary on a map, and the same orange meaning "urgent" on one screen
+  and "ordinary" on another is the drift this whole change exists to end.
 - **The installed icon is flat, and that is a limit of the format, not of the artwork.** A PNG
   is one layer, so there is nothing for a glass treatment to refract between. A glassy icon is
   not a PNG we can draw: it is an assembly, and Apple's tool for it is **Icon Composer**, which
@@ -532,15 +543,38 @@ say which of them mattered.
   pattern already used here.
 - **The root is `RootView`; `ContentView` becomes the incidents page.** The tab view, the
   accessory, the toolbar, the sheets and the alert are the app, not the content.
-- **Every incident with a location is drawn** — a pin for a precise one, the same 1,200 m
-  circle for a postal area, reused unchanged from the detail map.
+- **Every incident with a location is drawn** — a pin for a precise one, and the area the City
+  published for a postal area.
+- **The postal area is the real one, not a circle around a guess.** An FSA is drawn as Statistics
+  Canada's boundary for it, generated into the package by `scripts/make_postal_areas.py`
+  (Open Government Licence – Canada, and the attribution is shown in *About this Data* because it
+  is required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
+  and it could spill into a neighbouring FSA or out into the lake — claiming ground the City never
+  named. A postal area also needs **no geocoding at all** now, which removes a network round trip
+  per postal incident: nine of the fifteen incidents in the live capture were postal areas.
 - **One mark per place, not per incident.** The live capture holds fifteen incidents in
-  thirteen places, with two postal areas holding two each. A mark per incident would stack
-  two identical circles and leave one incident unreachable from the map.
-- **The card is a callout anchored above the pin, and above the circle's top edge** — never
-  at a circle's centre, which is the claim ADR-0004 exists to refuse. Liquid Glass through
-  `.glassEffect(_:in:)` alone; mixing it with `.buttonStyle(.glass)` produces two materials,
-  which is what made the last bar look wrong.
+  thirteen places, with two postal areas holding two each. A mark per incident would stack two
+  identical shapes and leave one incident unreachable from the map.
+- **The card is a callout anchored above the pin, and above an area's northern edge** — never at
+  an area's centre, which is the claim ADR-0004 exists to refuse. For a published area that is the
+  top of its own box, above the box's middle. Liquid Glass through `.glassEffect(_:in:)` alone;
+  mixing it with `.buttonStyle(.glass)` produces two materials, which is what made the last bar
+  look wrong.
+- **The card carries no heading and no close button.** It had "2 incidents" and an `xmark`, which
+  cost a whole row of height to say what the rows below already said and to offer a way out that
+  tapping the map already is. Reported from a phone as too tall for what it held.
+- **A tap decides everything, and only one thing decides it.** The map's own selection cannot
+  select an overlay — a polygon tap produced a Metal drawable failure and no card — and where it
+  can select, on an annotation, it raced this page's own gesture and produced a card that flashed
+  and vanished. So nothing on the map is tagged, and every tap is turned into a coordinate and
+  tested against the published shapes and then the pins. A tap that hits nothing clears the card,
+  which is the dismissal: there is no control to reach for, because the tap already is one.
+- **A postal area the boundary file does not know falls back to the circle, never to a pin.** The
+  file is from the 2021 census, so an FSA created since then has no shape here. An approximation
+  is still not a point, and a worse answer beats no answer.
+- **Holes are kept, and travel with their ring.** Exactly one Toronto FSA (M6P) has one; the
+  package keeps it rather than filling it, and the app draws it through `MKPolygon`'s interior
+  polygons because `MapPolygon`'s coordinate initialiser takes a single ring.
 - **Nothing published means nothing drawn, and no notice about it.** "Finding N more…"
   stays, because that is a loading indicator rather than a completeness notice.
 - **The map tab shows the data's age.** Decided twice; the second time after reading the

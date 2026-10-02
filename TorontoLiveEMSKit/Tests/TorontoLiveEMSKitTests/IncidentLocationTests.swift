@@ -197,7 +197,7 @@ struct IncidentAttentionTests {
         ).warrantsAttention
     }
 
-    @Test("marks a dangerous category and an escalation, and neither on its own account")
+    @Test("marks a dangerous category and a mobilisation, and neither on its own account")
     func theRuleIsTwoConditions() {
         // The map, Incident Type and Alarm Level all read this now. Before it was written down
         // as one rule it was stated twice — once per column — which is how two columns come to
@@ -205,6 +205,9 @@ struct IncidentAttentionTests {
         #expect(attention(type: "Fire - Residential", level: "0"))
         #expect(attention(type: "MEDICAL", level: "2"))
         #expect(!attention(type: "MEDICAL", level: "0"))
+        // One more crew is the City's support response, and it is deliberately not the app's
+        // loudest state: the line is where the response reaches ten or more vehicles.
+        #expect(!attention(type: "MEDICAL", level: "1"))
         #expect(!attention(type: "Alarm Single Source", level: "0"))
     }
 
