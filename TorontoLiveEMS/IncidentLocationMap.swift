@@ -88,11 +88,26 @@ extension MapKind {
     /// place, next to the maps it applies to. The enum itself is in the package, because that is
     /// where the app's stored preferences live and where they can be tested; `MapStyle` is here
     /// because it is MapKit's and the package holds no MapKit at all.
+    ///
+    /// Every return is written `MapStyle.…` rather than bare, because this switch has cases named
+    /// the same as MapKit's styles and a bare `.standard` would be a question rather than a lookup.
     var style: MapStyle {
         switch self {
-        case .standard: return .standard
-        case .imagery: return .imagery
-        case .hybrid: return .hybrid
+        case .standard:
+            return MapStyle.standard
+
+        // `.hybrid`, deliberately, and not `.imagery`: imagery carries no labels at all, which is
+        // a map with no street names on it. Looked at, and rejected in exactly those terms.
+        case .satellite:
+            return MapStyle.hybrid
+
+        // The standard map with everything hidden but transit stops. MapKit has no transit lines —
+        // `MKMapView` has `showsTraffic` and no `showsTransit` — so this is the honest nearest
+        // thing rather than a claim to be the real one. Traffic is deliberately *not* asked for:
+        // congestion on roads is a different question from the transit network, and folding it in
+        // here would make one mode answer two things.
+        case .transit:
+            return MapStyle.standard(pointsOfInterest: .including([.publicTransport]))
         }
     }
 }

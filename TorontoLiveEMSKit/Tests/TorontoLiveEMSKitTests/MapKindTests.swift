@@ -12,9 +12,9 @@ struct MapKindTests {
         // and silently resets the choice of everyone who had made one — no error, no crash, just a
         // map that went back to standard the next time the app opened. So the values are pinned.
         #expect(MapKind.standard.rawValue == "standard")
-        #expect(MapKind.imagery.rawValue == "imagery")
-        #expect(MapKind.hybrid.rawValue == "hybrid")
-        #expect(MapKind.allCases.count == 3, "three kinds, because MapKit has three styles")
+        #expect(MapKind.satellite.rawValue == "satellite")
+        #expect(MapKind.transit.rawValue == "transit")
+        #expect(MapKind.allCases.count == 3)
     }
 
     @Test("every kind has a name and a glyph of its own")

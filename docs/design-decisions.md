@@ -555,6 +555,28 @@ say which of them mattered.
 - **One mark per place, not per incident.** The live capture holds fifteen incidents in
   thirteen places, with two postal areas holding two each. A mark per incident would stack two
   identical shapes and leave one incident unreachable from the map.
+- **The map-kind switch lives in the shared chrome, and only while the map is showing.** Decided
+  by a test build rather than in the abstract: the top-right capsule gains a third control behind
+  `screen == .map`, placed at its **leading** end so that Info and Settings do not move when it
+  appears — the capsule is trailing-aligned, so it grows leftward, and appending the control at the
+  end would have shifted both by its width. The choice is a stored preference, which is what makes
+  the arrangement cheap: the chrome writes it and the page reads it, and neither knows the other
+  exists. What it costs is recorded too — one capsule now means two things, facts about the app and
+  a setting about a map.
+- **Three map modes, and two of them are not the styles MapKit names the same way.** Satellite is
+  MapKit's *hybrid*: plain imagery has no labels at all, so a map with no street names was built,
+  looked at, and rejected. Transit is the standard map with its points of interest limited to public
+  transport — the honest nearest thing rather than the real thing, because **MapKit has no transit
+  lines**: `MKMapView` has `showsTraffic` and no `showsTransit`, and Apple's own transit rendering is
+  not an API. Traffic is deliberately not folded into it: congestion on roads is a different
+  question from the transit network, and one mode should answer one thing.
+- **A menu, not Apple's bottom sheet.** Apple's chooser is that large because it carries *previews* —
+  a thumbnail of each style, so you choose by looking rather than by reading. There are no thumbnails
+  to show here: rendering one per option means snapshotting the map in each style, which is a network
+  fetch per presentation to show a picture of the map the reader is already looking at. The sheet
+  would be a large container holding three words, covering the thing it exists to change. The button
+  wears the glyph of the kind in force, which is Apple's own behaviour and the reason the menu can be
+  small.
 - **The card is a callout anchored above the pin, and above an area's northern edge** — never at
   an area's centre, which is the claim ADR-0004 exists to refuse. For a published area that is the
   top of its own box, above the box's middle. Liquid Glass through `.glassEffect(_:in:)` alone;
