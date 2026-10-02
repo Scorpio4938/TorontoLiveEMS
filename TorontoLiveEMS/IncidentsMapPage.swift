@@ -20,13 +20,13 @@ import TorontoLiveEMSKit
 /// is what a mark is: "3 more" when three incidents share one corner would promise three marks
 /// and deliver one.
 ///
-/// **Pins are selected by the map; areas are hit-tested here, and that asymmetry is evidence.**
-/// Tagging with `.tag` and reading `selection:` works for an `Annotation` — tapping a pin shows
-/// its card — and does not work for an overlay: tapping a polygon on a real build produced
-/// "Failed to acquire drawable, rendering to temporary texture" and no card at all. A
-/// `MapCircle` is `MapContent` and not a `View`, so it cannot carry an `.onTapGesture`; the `Map`
-/// itself can, so the areas carry no tag and a tap is turned into a coordinate through
-/// `MapReader` and tested against the shapes. Which is what having the shapes was for.
+/// **Every tap is ours.** The map's own selection is not used at all, and that is a finding
+/// rather than a preference. It cannot select an overlay — tapping a polygon on a real build
+/// produced "Failed to acquire drawable, rendering to temporary texture" and no card — and where
+/// it *can* select, on an annotation, it raced this page's own gesture: a pin's card appeared and
+/// was then wiped by whichever of the two answered last. So nothing on this map is tagged, a tap
+/// is turned into a coordinate through `MapReader`, and it is tested against the published shapes
+/// and the pins. One mechanism, one answer, and a tap that lands on nothing puts the card away.
 struct IncidentsMapPage: View {
 
     let feed: IncidentFeed
@@ -67,16 +67,15 @@ struct IncidentsMapPage: View {
         // `MapReader`, because a tap has to become a coordinate: the areas are hit-tested here
         // rather than selected by the map. See `place(at:in:)` for why.
         MapReader { proxy in
-            Map(position: $position, selection: $selected) {
+            Map(position: $position) {
                 ForEach(places) { place in
                     if case .area(let pieces, _) = place.mark {
                         // The area the City named, drawn as the area it is. All of it: twenty of
                         // Toronto's FSAs are in more than one piece, and drawing the largest and
                         // calling it the area would be the same kind of claim as a pin.
                         //
-                        // **No `.tag`.** An overlay cannot be selected by a tap — a build proved
-                        // it — so MapKit is never asked to try. The pieces are drawn; the tap is
-                        // ours.
+                        // **Nothing here is tagged.** An overlay cannot be selected by a tap — a
+                        // build proved it — and a tag on it only invites MapKit to try.
                         ForEach(pieces.indices, id: \.self) { index in
                             pieces[index].mapShape
                                 .foregroundStyle(Color.orange.opacity(0.20))
@@ -86,18 +85,19 @@ struct IncidentsMapPage: View {
                         // A postal area the boundary file does not know. Drawing it as a pin would
                         // put a medical incident at the centre of a neighbourhood and call it a
                         // location, which is the narrowing ADR-0004 forbids; a circle says
-                        // *somewhere in here*. Untagged for the same reason as the areas.
+                        // *somewhere in here*.
                         MapCircle(center: centre, radius: IncidentMapScale.postalAreaRadius)
                             .foregroundStyle(Color.orange.opacity(0.20))
                             .stroke(Color.orange, lineWidth: 1)
                     } else if case .pin(let coordinate) = place.mark {
-                        // Tagged, because an annotation is the one kind the map does select on a
-                        // tap — and it is the kind that was seen working.
+                        // **Untagged too, and that is the fix for a card that flashed and went.**
+                        // A tag here made MapKit select the pin on a tap while this page's own
+                        // gesture was also running, so the two answers raced: the card appeared
+                        // and was then wiped by whichever lost. One mechanism, one answer.
                         Annotation("", coordinate: coordinate) {
                             IncidentPin(incident: place.incidents[0])
                         }
                         .annotationTitles(.hidden)
-                        .tag(place.location)
                     }
                 }
 
@@ -118,12 +118,13 @@ struct IncidentsMapPage: View {
                 // between them — it reads as the natural call and is not one.
                 MapScaleView(alignment: .leading)
             }
-            // **A tap is turned into a place here, or into nothing.** Nothing is how a reader puts
-            // the card away, which is why this sets the selection rather than only setting it when
-            // something was hit. The coordinate space is named on both sides — the gesture's and
-            // the conversion's — rather than left to the defaults, because the two defaults belong
-            // to different views and agreeing by accident is not agreeing.
-            .onTapGesture(coordinateSpace: .global) { point in
+            // **Every tap is decided here, and only here.** The map's own selection is not used
+            // at all: with it, a tap on a pin set the selection twice — once by MapKit and once by
+            // this — and a card that flashed and vanished was the result. There is one mechanism
+            // now, and one rule: a tap that lands on a place shows its card, and a tap that lands
+            // on nothing puts the card away. The second half is the dismissal, which is why this
+            // sets the selection whether or not something was hit.
+            .onTapGesture(coordinateSpace: .local) { point in
                 selected = place(at: point, in: proxy)?.location
             }
             // **This page sits under no bar; its title and controls float, from `RootView`.**
@@ -240,10 +241,10 @@ struct IncidentsMapPage: View {
 
     /// The place a tap landed on, if it landed on one.
     ///
-    /// **Why this exists at all.** The map selects an annotation on a tap — a pin shows its card —
-    /// and does not select an overlay: tapping a polygon on a real build produced "Failed to
-    /// acquire drawable, rendering to temporary texture" and no card at all. So the areas carry no
-    /// tag, MapKit is never asked to try, and the tap is tested against the shape itself.
+    /// **Why this exists at all.** The map selects an annotation on a tap and does not select an
+    /// overlay: tapping a polygon on a real build produced "Failed to acquire drawable, rendering
+    /// to temporary texture" and no card at all. So nothing on this map is tagged, the map's
+    /// selection is never used, and every tap is tested here.
     ///
     /// **Pins first, and generously.** A pin is a thirteen-point dot, so a tap within twenty-two
     /// points of one is taken to be that pin rather than the area behind it: a reader who hit a
@@ -254,18 +255,23 @@ struct IncidentsMapPage: View {
     /// authority on where the City's boundary puts a coordinate; the fallback circle has no shape
     /// to test, so it is tested with the same radius it is drawn at. Nil means the tap hit nothing,
     /// which is how the card is dismissed.
+    ///
+    /// **`.local`, on both sides.** `MapProxy.convert` is documented as being relative to the
+    /// coordinate space associated with the `MapReader`, and the map fills that reader exactly, so
+    /// the tap and the conversion are talking about the same space by construction rather than by
+    /// agreement.
     private func place(at point: CGPoint, in proxy: MapProxy) -> Place? {
         for place in places {
             guard
                 case .pin(let coordinate) = place.mark,
-                let centre = proxy.convert(coordinate, to: .global)
+                let centre = proxy.convert(coordinate, to: .local)
             else { continue }
             if hypot(centre.x - point.x, centre.y - point.y) <= 22 {
                 return place
             }
         }
 
-        guard let coordinate = proxy.convert(point, from: .global) else { return nil }
+        guard let coordinate = proxy.convert(point, from: .local) else { return nil }
         let tapped = PostalAreas.Point(
             latitude: coordinate.latitude,
             longitude: coordinate.longitude
@@ -327,28 +333,16 @@ struct IncidentsMapPage: View {
     /// One place's card: every incident there, each a way into its own detail view.
     ///
     /// It can hold more than one row, which is the whole reason it is a card rather than a
-    /// single line: two of the thirteen places in the live capture hold two incidents each.
+    /// single line: two of the thirteen places in the live capture hold two incidents each. The
+    /// rows say how many there are, which is why nothing above them counts them.
+    ///
+    /// **No close button, and no heading.** It carried "2 incidents" and an `xmark` beside it,
+    /// which cost a whole row of height to say what the rows below already said, and to offer a
+    /// way out that tapping the map already is. Reported from a phone: the card was too tall for
+    /// what it held, and a dismiss control is not what a thumb reaches for when tapping elsewhere
+    /// is the gesture it is already making.
     private func callout(for place: Place) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-                Text(place.incidents.count == 1 ? "1 incident" : "\(place.incidents.count) incidents")
-                    .font(.caption2)
-                    .foregroundStyle(Color.secondary)
-
-                Spacer(minLength: 12)
-
-                // Explicit rather than relying on a tap elsewhere in the map to clear the
-                // selection: a control that dismisses is something a reader can look for.
-                Button {
-                    selected = nil
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.caption2)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.secondary)
-            }
-
+        VStack(alignment: .leading, spacing: 6) {
             ForEach(place.incidents) { incident in
                 NavigationLink {
                     IncidentDetailView(incident: incident)
@@ -358,8 +352,8 @@ struct IncidentsMapPage: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(10)
-        .frame(maxWidth: 280, alignment: .leading)
+        .padding(8)
+        .frame(maxWidth: 260, alignment: .leading)
         .glassSurface(cornerRadius: 12)
     }
 

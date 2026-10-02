@@ -549,6 +549,15 @@ say which of them mattered.
   top of its own box, above the box's middle. Liquid Glass through `.glassEffect(_:in:)` alone;
   mixing it with `.buttonStyle(.glass)` produces two materials, which is what made the last bar
   look wrong.
+- **The card carries no heading and no close button.** It had "2 incidents" and an `xmark`, which
+  cost a whole row of height to say what the rows below already said and to offer a way out that
+  tapping the map already is. Reported from a phone as too tall for what it held.
+- **A tap decides everything, and only one thing decides it.** The map's own selection cannot
+  select an overlay — a polygon tap produced a Metal drawable failure and no card — and where it
+  can select, on an annotation, it raced this page's own gesture and produced a card that flashed
+  and vanished. So nothing on the map is tagged, and every tap is turned into a coordinate and
+  tested against the published shapes and then the pins. A tap that hits nothing clears the card,
+  which is the dismissal: there is no control to reach for, because the tap already is one.
 - **A postal area the boundary file does not know falls back to the circle, never to a pin.** The
   file is from the 2021 census, so an FSA created since then has no shape here. An approximation
   is still not a point, and a worse answer beats no answer.
