@@ -42,8 +42,11 @@ struct PoliceCallsInformationContent: View {
 
                 Text("Division")
                 Text("Intersection")
-                Text("Latitude")
-                Text("Longitude")
+
+                // The same judgement as the row above: the Service publishes a point as two numbers,
+                // and it is one place. Two rows would list a single published fact twice.
+                Text("Latitude & Longitude")
+
                 Text("Occurrence Time")
             } header: {
                 Text("Fields")
