@@ -56,6 +56,22 @@ def main():
         if len(parts) < 2:
             continue
         status, path = parts[0][0], parts[-1]
+
+        # **A rename is a remove and an add.** `git diff --name-status` reports one as `R057`
+        # followed by both paths, and the first version of this handled `A` and `D` only — so a
+        # renamed file matched neither, the report came out empty, and the tool advised a rebuild
+        # for the one change that certainly needs the project reopened: Xcode's copy of the group
+        # still holds the old filename. Found by renaming a file and reading what this said.
+        #
+        # A check whose silence is wrong is worse than no check, which this file's sibling
+        # `check_swift.py` had already learned the same way.
+        if status == "R":
+            renamed_from = [name for name in parts[1:-1] if name.startswith("TorontoLiveEMS/")]
+            if path.endswith(".swift") and path.startswith("TorontoLiveEMS/"):
+                added.append(path)
+                removed.extend(renamed_from)
+            continue
+
         if not path.endswith(".swift"):
             continue
         # Only the app folder is synchronized. The package's sources are a package target, and
