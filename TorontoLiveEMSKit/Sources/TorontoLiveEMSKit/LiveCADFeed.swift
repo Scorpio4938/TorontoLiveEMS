@@ -1,3 +1,5 @@
+import Foundation
+
 /// The live active-incident feed published by Toronto Fire Services.
 ///
 /// This endpoint is undocumented. It is not on the City's Open Data portal and

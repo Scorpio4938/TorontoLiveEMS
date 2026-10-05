@@ -7,7 +7,14 @@ produces and that nothing else here can:
   1. unbalanced delimiters;
   2. a raw newline inside a single-line string literal;
   3. a reference to a member that does not exist on one of our own types;
-  4. a file that names a public package type without importing the package.
+  4. a file that names a public package type without importing the package;
+  5. a file that names a Foundation type with nothing imported that provides it.
+
+The fifth is here because it reached a build. `LiveCADFeed.swift` imported *nothing at all* — it
+only ever used `String`, so it needed nothing — and a `URL` was added to it. The app's files were
+fine, because `import SwiftUI` brings Foundation with it; a package file with no imports does not.
+It failed as "cannot find type 'URL' in scope", which is the same shape of miss as (4): a real
+error, in the one file the checks were not looking at.
 
 The fourth is here because it caught nothing when it mattered. `IncidentFeed` is declared
 `public final class`, and the pattern that collects package types allowed `public class` but
@@ -34,6 +41,22 @@ import re
 import sys
 
 RAW_NEWLINE = "<<RAW-NEWLINE-INSIDE-LITERAL>>"
+
+# Foundation's types, and the imports that certainly bring Foundation with them. Both lists are
+# short on purpose: a type missing from the first makes the check quieter rather than wrong, and a
+# module missing from the second can only produce a false alarm, which is the one outcome worth
+# avoiding. `SwiftUI` is in the second because this repository's own files use `Bundle` and `Date`
+# with nothing but `import SwiftUI` above them and compile.
+FOUNDATION_TYPES = (
+    "URL", "URLComponents", "URLRequest", "URLSession", "Data", "Date", "DateFormatter",
+    "UUID", "Bundle", "JSONDecoder", "JSONEncoder", "FileManager", "Locale", "TimeZone",
+    "Calendar", "NumberFormatter", "Scanner", "NSLock", "IndexSet",
+)
+
+FOUNDATION_PROVIDERS = (
+    "Foundation", "FoundationXML", "FoundationNetworking", "SwiftUI", "MapKit", "UIKit",
+    "CoreLocation", "Testing", "XCTest",
+)
 
 
 def scan(src):
@@ -215,6 +238,19 @@ def main():
 
         for line, name in unresolved(code, declared):
             notes.append(f"line {line}: {name} is not declared on that type")
+
+        # Its own pass, and deliberately conservative: the modules listed as providing Foundation
+        # are the ones that certainly do, and a module left off the list can only make this quieter,
+        # never wrong. A check that cries wolf gets ignored, which is the same death as a check that
+        # cannot fail.
+        imported = set(re.findall(r"^import (\w+)", code, re.M))
+        if not (imported & set(FOUNDATION_PROVIDERS)):
+            named = sorted(t for t in FOUNDATION_TYPES if re.search(rf"\b{t}\b", code))
+            if named:
+                notes.append(
+                    f"names {', '.join(named)} with nothing imported that provides Foundation "
+                    f"(imports: {', '.join(sorted(imported)) or 'none'})"
+                )
 
         if notes:
             problems += 1
