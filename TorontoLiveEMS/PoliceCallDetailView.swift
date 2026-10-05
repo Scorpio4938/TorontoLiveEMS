@@ -26,22 +26,14 @@ struct PoliceCallDetailView: View {
     var body: some View {
         List {
             Section {
-                // **Words and code in one row, because they are one thing said twice.** The words on
-                // the first line and the code beneath them, rather than a value beside a label — a
-                // long call type is thirty-one characters, and a `value:` column would truncate it.
-                //
+                LabeledContent("Call Type", value: call.callType)
+
                 // Tappable, so the code is something a reader can follow rather than something they
-                // are told about: the list it opens is the one that says what codes mean.
+                // are told about.
                 NavigationLink {
                     CallTypeCodeList()
                 } label: {
-                    LabeledContent("Call Type & Code") {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(call.callType)
-                            Text(call.callTypeCode)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+                    LabeledContent("Code", value: call.callTypeCode)
                 }
 
                 LabeledContent("Division", value: call.division)
