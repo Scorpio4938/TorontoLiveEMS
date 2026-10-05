@@ -39,8 +39,9 @@ public struct PoliceCall: Identifiable, Equatable, Sendable {
     /// The call as a code, e.g. `PERGU`.
     ///
     /// Kept beside the readable form because it is what the Service publishes and the app does not
-    /// decode it: there is no legend for these codes in the service, and inventing one would be
-    /// inventing the Service's vocabulary.
+    /// decode it: the Service publishes no legend, and inventing one would be inventing the Service's
+    /// vocabulary. What the app can do is pair each code with the words the Service sent beside it,
+    /// which is `PoliceCallType.published(in:)`.
     public let callTypeCode: String
 
     /// The call in words, e.g. `PERSON WITH A GUN`, exactly as published.

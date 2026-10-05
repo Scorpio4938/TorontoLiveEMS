@@ -14,6 +14,12 @@ import TorontoLiveEMSKit
 /// the published metadata, and this screen does not repeat them. See the note there.
 struct PoliceCallsInformationContent: View {
 
+    /// The codes the app has read, for the list the Fields section opens.
+    ///
+    /// Passed in rather than taken from a feed: this screen is a reference and knows nothing about
+    /// fetching, which is what lets it be pushed from About as well as presented from the chrome.
+    let callTypes: [PoliceCallType]
+
     var body: some View {
         List {
             Section {
@@ -30,7 +36,16 @@ struct PoliceCallsInformationContent: View {
 
             Section {
                 LabeledContent("Call Type", value: "What the call was, in words")
-                LabeledContent("Code", value: "The Service's own code for it")
+
+                // The one row on this screen that leads somewhere. The codes themselves are a list
+                // rather than a sentence, and a list belongs on its own screen — which is also where
+                // the honest sentence about what the list can and cannot be fits.
+                NavigationLink {
+                    CallTypeCodeList(callTypes: callTypes)
+                } label: {
+                    LabeledContent("Code", value: "The Service's own code for it")
+                }
+
                 LabeledContent("Division", value: "The police division it belongs to")
                 LabeledContent("Intersection", value: "The nearest intersection")
                 LabeledContent("Latitude", value: "The point, as published")
@@ -39,7 +54,7 @@ struct PoliceCallsInformationContent: View {
             } header: {
                 Text("Fields")
             } footer: {
-                Text("A code is shown as published. This app has no legend for these codes and does not guess at one, so a call is named in the Service's words and marked with the Service's code beside them.")
+                Text("A code is shown as published. The Service publishes no legend for these codes and this app does not guess at one — what it can do is list the ones it has read, with the Service's own words beside each, which is what the Code row opens.")
             }
 
             Section {
@@ -78,11 +93,13 @@ struct PoliceCallsInformationContent: View {
 /// `NavigationStack`.
 struct PoliceCallsInformationView: View {
 
+    let callTypes: [PoliceCallType]
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            PoliceCallsInformationContent()
+            PoliceCallsInformationContent(callTypes: callTypes)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
@@ -92,6 +109,41 @@ struct PoliceCallsInformationView: View {
     }
 }
 
+/// Every code the Service has used in the calls this app has read, with its name.
+///
+/// **The screen the Code rows open**, from this reference screen and from a call's own detail view.
+///
+/// **A record, not a legend, and it says so.** The Service publishes no list to show; what it
+/// publishes is a code and the words it stands for, on every call. So this is as complete as the
+/// Service's four-hour window was busy. A short list with no explanation would read as the app
+/// failing rather than the window's limit — and a long one would read as complete — so the limit is
+/// stated above the list instead of being left to be inferred.
+struct CallTypeCodeList: View {
+
+    let callTypes: [PoliceCallType]
+
+    var body: some View {
+        List {
+            Section {
+                if callTypes.isEmpty {
+                    Text("No calls have been read yet, so no codes have been seen.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(callTypes) { type in
+                        LabeledContent(type.code, value: type.names.joined(separator: " · "))
+                    }
+                }
+            } footer: {
+                Text("The Service publishes no legend for these codes. These are the codes in the calls this app has read — the Service's last four hours — with its own words beside each, which is why a code that has not come up yet is not here and will be when it does.")
+            }
+        }
+        .navigationTitle("Call Type Codes")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+}
+
 #Preview {
-    PoliceCallsInformationView()
+    PoliceCallsInformationView(callTypes: [])
 }
