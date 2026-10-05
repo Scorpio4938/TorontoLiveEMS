@@ -112,9 +112,10 @@ rather than trusting.
 | `v0.0.6-postal-areas` | `f5c770d` | Builds. A postal area drawn as the boundary Statistics Canada publishes, instead of a circle around a geocoder's guess. |
 | `v0.0.7-map-kinds` | `d76a13d` | Builds. Standard and Satellite, chosen from a control in the shared chrome. |
 | `v0.0.8-fire-page` | `aa130e7` | **Not built.** The incidents page renamed and retitled Fire, and a fire extinguisher on its tab. |
-| `v0.0.9` | — | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
+| `v0.0.9` | `58668fe` | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
+| `v0.0.10` | — | **Not built.** Settings says the version, the build and the stage — the build number back where it was, and the sentence under it explaining which number is which. |
 
-The newest row has no hash because this file is committed with it; `git rev-parse v0.0.9` answers
+The newest row has no hash because this file is committed with it; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
 
 Why this is written down: for seven commits nothing could build, and Xcode kept running the last

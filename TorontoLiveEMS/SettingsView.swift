@@ -24,15 +24,44 @@ struct SettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    /// `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`, as the bundle carries them.
+    /// The number the bundle carries, which is `MARKETING_VERSION` in the project.
     ///
-    /// Read, never written. The project in Xcode is the source of the number and this only
-    /// reports it, which is also why nothing here tries to keep a tag and a version in step:
-    /// that is one field in Xcode, and the project file is Xcode's to own.
+    /// **Read, never written, and that is what the row is for.** A version typed into a screen is
+    /// one that will one day disagree with the project it was built from — so that sentence lives
+    /// here, with the decision, rather than in the footer, where a reader is looking for what their
+    /// version *means* rather than for why this code is written the way it is.
+    ///
+    /// Whether a *tag* carries the same number is `scripts/version_check.py`'s business rather
+    /// than this screen's — a screen cannot check a repository — and `docs/releasing.md` holds the
+    /// scheme itself.
+    private static var bundleVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            ?? "unknown"
+    }
+
+    /// The version as a reader should see it: the checkpoint, and the build.
+    ///
+    /// **The build is shown even though it stays at 1 until the app is distributed.** It is the one
+    /// number that changes with every upload, so it is the number someone reporting a problem will
+    /// be asked for — and a version row that conceals a number the app has is a row that leaves the
+    /// reader wondering what else it is not saying.
     private static var version: String {
-        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-        return "\(short ?? "unknown") (\(build ?? "unknown"))"
+            ?? "unknown"
+        return "\(bundleVersion) (\(build))"
+    }
+
+    /// What the two numbers are, and what the version says about the app.
+    ///
+    /// The first sentence is for a reader looking at two numbers and wondering which is which. The
+    /// second comes from the package, so the words a test pins are the words a reader sees — the
+    /// same rule the layout names above follow. A version with no stage gets the first sentence
+    /// alone, which is the honest answer for a number this cannot read.
+    private static var versionNote: String {
+        let whatTheNumbersAre =
+            "The version is the checkpoint, and the number in brackets is the build."
+        guard let stage = VersionStage.of(bundleVersion) else { return whatTheNumbersAre }
+        return "\(whatTheNumbersAre) \(stage.note)"
     }
 
     var body: some View {
@@ -72,7 +101,7 @@ struct SettingsView: View {
                 Section {
                     LabeledContent("Version", value: Self.version)
                 } footer: {
-                    Text("The app's own version, read from the app rather than written down here — a version typed into a screen is one that will one day disagree with the project it was built from.")
+                    Text(Self.versionNote)
                 }
             }
             .navigationTitle("Settings")
