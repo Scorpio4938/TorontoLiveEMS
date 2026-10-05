@@ -114,9 +114,8 @@ rather than trusting.
 | `v0.0.8-fire-page` | `aa130e7` | **Not built.** The incidents page renamed and retitled Fire, and a fire extinguisher on its tab. |
 | `v0.0.9` | `58668fe` | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
 | `v0.0.10` | `1f4d003` | **Not built.** Settings says the version, the build and the stage — the build number back where it was, and the sentence under it explaining which number is which. |
-| `v0.0.11` | — | **Not built.** Settings keeps its preferences and gains one row; the app's name, version, description and links move to an *About* screen of their own. |
 
-The newest row has no hash because this file is committed with it; `git rev-parse <tag>` answers
+A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
 
 Why this is written down: for seven commits nothing could build, and Xcode kept running the last

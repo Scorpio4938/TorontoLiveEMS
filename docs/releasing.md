@@ -26,6 +26,14 @@ hand to a commit.
 later, `v1.0.6` is the release. Nothing is renamed, nothing is renumbered, and the checkpoint
 history stays legible as the app's history.
 
+## A checkpoint is a decision, not a merge hook
+
+Not every merged branch becomes one. The version moves when the work is worth marking, and the
+merge that introduced the *About* screen went in **without** moving it: the number stayed `0.0.10`,
+no tag was made, and `0.0.11` is still free for the next checkpoint that deserves it. A branch may
+carry a bump with it, so that the merge commit's tree already says its own number — or it may be
+merged as it is, and the number waits. What it must never do is move by itself.
+
 ## At a checkpoint
 
 1. Bump `MARKETING_VERSION` in `TorontoLiveEMS.xcodeproj/project.pbxproj` — **both build
