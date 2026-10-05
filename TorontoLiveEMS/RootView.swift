@@ -195,7 +195,7 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage(feed: feed)
+                    IncidentsMapPage(feed: feed, policeFeed: policeFeed)
                         // **The map tab has no navigation bar.** The band under it was the bar's
                         // own glass — the build that hid the bar proved it — so the bar stays
                         // hidden and the page is named by floating text instead.
@@ -301,6 +301,19 @@ struct RootView: View {
         switch screen {
         case .police:
             outcome = await policeFeed.refresh()
+            message = policeFeed.nothingNewerMessage
+        case .map:
+            // **The map draws both feeds, so a refresh on it asks both.** Each keeps its own gate, so
+            // inside the Service's twenty minutes the police half costs no request at all and inside
+            // the City's five the fire half costs none — a tap with nothing to fetch is still instant.
+            //
+            // The alert only appears when **neither** found anything: saying "nothing newer" while one
+            // of the two had in fact refreshed would be the kind of half-truth this alert exists to
+            // avoid saying.
+            let fireOutcome = await feed.refresh()
+            let policeOutcome = await policeFeed.refresh()
+            guard fireOutcome == .skipped, policeOutcome == .skipped else { return }
+            outcome = .skipped
             message = policeFeed.nothingNewerMessage
         default:
             outcome = await feed.refresh()

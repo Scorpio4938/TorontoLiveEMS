@@ -31,9 +31,19 @@ struct IncidentsMapPage: View {
 
     let feed: IncidentFeed
 
+    /// The police calls, drawn from the same kind of mark as the fire incidents.
+    ///
+    /// **A required parameter rather than a defaulted one.** `PoliceCallFeed` is `@MainActor`, and a
+    /// default argument is evaluated outside the actor — which is the trap this project has already
+    /// been caught by once. The previews and `RootView` pass it in like everything else.
+    let policeFeed: PoliceCallFeed
+
     @State private var geocoder = IncidentGeocoder()
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
-    @State private var selected: IncidentLocation?
+
+    /// The place whose card is showing, by `Place.id` rather than by location: a police place is a
+    /// coordinate and has no `IncidentLocation` to be named by.
+    @State private var selected: String?
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
@@ -44,6 +54,10 @@ struct IncidentsMapPage: View {
     /// a map in another without either of them knowing the other exists.
     @AppStorage(SettingsKey.mapKind)
     private var mapKind: MapKind = .standard
+
+    /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
+    @AppStorage(SettingsKey.policeCallTypeStyle)
+    private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
     /// What a place is drawn as.
     ///
@@ -67,23 +81,38 @@ struct IncidentsMapPage: View {
         case pin(CLLocationCoordinate2D)
     }
 
-    /// A place the feed named, once, with however many incidents are there.
+    /// A place the feed named, once, with however many records are there.
+    ///
+    /// **One type for both feeds, which is what makes the drawing one path.** Its `geometry` and its
+    /// `mark` are what the map needs, and both are the same kind of thing whoever published them. What
+    /// differs is the records inside it, and only the card looks at those.
     private struct Place: Identifiable {
-        let location: IncidentLocation
-        let geometry: Geometry
-        let incidents: [Incident]
 
-        /// What the place is drawn as: its kind and its colour, from its most serious incident.
+        /// Stable across reads, and unique across sources: a fire place is named by its location, a
+        /// police place by its coordinate. Prefixed by source so the two can never collide.
+        let id: String
+
+        let geometry: Geometry
+
+        /// What the place is drawn as: its kind and its colour, from its most serious record.
         ///
-        /// **A place takes one incident's mark, because a mark is one mark.** Two of the thirteen
-        /// places in the live capture hold two incidents each, and a neighbourhood holding a fire
-        /// must not be drawn as though it held only the medical call beside it. The mark is built by
+        /// **A place takes one record's mark, because a mark is one mark.** Two of the thirteen fire
+        /// places in the live capture hold two incidents each, and a neighbourhood holding a fire must
+        /// not be drawn as though it held only the medical call beside it. The mark is built by
         /// `IncidentMark`, which is the one place that knows what a kind or an urgency is; this page
-        /// no longer reads either, and that is what lets a second feed arrive without a second way of
-        /// drawing a dot.
+        /// reads neither, which is what lets a second feed arrive without a second way of drawing.
         let mark: IncidentMark
 
-        var id: IncidentLocation { location }
+        let contents: Contents
+
+        /// What is at the place: records of one feed or the other, never both.
+        ///
+        /// An enum rather than two optional arrays, so that "this place has no incidents and no calls"
+        /// is not a state that can be written down.
+        enum Contents {
+            case fire([Incident])
+            case police([PoliceCall])
+        }
     }
 
     var body: some View {
@@ -124,7 +153,7 @@ struct IncidentsMapPage: View {
                         // also running, so the two answers raced: the card appeared and was then
                         // wiped by whichever lost. One mechanism, one answer.
                         Annotation("", coordinate: coordinate) {
-                            IncidentPin(warrantsAttention: place.mark.warrantsAttention)
+                            MapPin(mark: place.mark)
                         }
                         .annotationTitles(.hidden)
                     }
@@ -174,6 +203,13 @@ struct IncidentsMapPage: View {
             .task(id: lookedUp) {
                 await geocoder.resolve(lookedUp)
             }
+            // The police calls are read by this page too, when it arrives rather than at launch, for
+            // the reason the police page reads them that way: nothing else on this tab needs them.
+            .task {
+                if policeFeed.calls == nil {
+                    await policeFeed.load()
+                }
+            }
         }
     }
 
@@ -218,8 +254,13 @@ struct IncidentsMapPage: View {
         return (pieces, bounds)
     }
 
-    /// The places that can be drawn: a location, something to draw for it, and its mark.
+    /// Everything on the map, from both feeds.
     private var places: [Place] {
+        firePlaces + policePlaces
+    }
+
+    /// The fire places that can be drawn: a location, something to draw for it, and its mark.
+    private var firePlaces: [Place] {
         let incidents = feed.snapshot?.incidents ?? []
         return namedPlaces.compactMap { location in
             let here = incidents.filter { IncidentLocation.from($0) == location }
@@ -228,23 +269,81 @@ struct IncidentsMapPage: View {
             // asserted, so that if it ever did, a mark would be missing rather than wrong.
             guard let mark = mostSeriousMark(among: here) else { return nil }
 
+            let contents = Place.Contents.fire(here)
             if let published = publishedArea(for: location) {
                 return Place(
-                    location: location,
+                    id: Self.fireId(location),
                     geometry: .area(pieces: published.pieces, bounds: published.bounds),
-                    incidents: here,
-                    mark: mark
+                    mark: mark,
+                    contents: contents
                 )
             }
             guard let resolved = geocoder.known(location) else { return nil }
             return Place(
-                location: location,
+                id: Self.fireId(location),
                 geometry: resolved.isArea
                     ? .circle(centre: resolved.coordinate)
                     : .pin(resolved.coordinate),
-                incidents: here,
-                mark: mark
+                mark: mark,
+                contents: contents
             )
+        }
+    }
+
+    /// A fire place's identity, prefixed so it can never collide with a police one.
+    ///
+    /// Through `description` rather than a hash: this is compared between renders, and `hashValue`
+    /// changes from one launch to the next while the printed value does not.
+    private static func fireId(_ location: IncidentLocation) -> String {
+        "fire.\(String(describing: location))"
+    }
+
+    /// The police places: one mark per distinct point.
+    ///
+    /// **Grouped, by the same rule the fire places use, because a mark is one mark.** The Service
+    /// publishes a point per call, and calls are not evenly spread: in the window sampled on
+    /// 2026-10-05, eighty-nine calls sat at eighty-two distinct points, seven of them sharing a point
+    /// with another call. Drawing those as two pins would stack two marks and leave one of them
+    /// unreachable while the map claimed to show both.
+    ///
+    /// **Rounded to five decimal places — about a metre.** Two calls at one intersection are published
+    /// with coordinates differing in the sixth place, so matching exactly would draw two pins a hand's
+    /// width apart. Five places is the grain the coincidences were found at, and is far finer than any
+    /// pin is wide.
+    private var policePlaces: [Place] {
+        var byPoint: [PointKey: [PoliceCall]] = [:]
+        var order: [PointKey] = []
+        for call in policeFeed.calls ?? [] {
+            let key = PointKey(call)
+            if byPoint[key] == nil {
+                order.append(key)
+            }
+            byPoint[key, default: []].append(call)
+        }
+
+        return order.compactMap { key in
+            guard let calls = byPoint[key], let first = calls.first else { return nil }
+            return Place(
+                id: "police.\(key.id)",
+                geometry: .pin(
+                    CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude)
+                ),
+                mark: IncidentMark(call: first),
+                contents: .police(calls)
+            )
+        }
+    }
+
+    /// A point, at the grain two calls have to agree on to be the same place.
+    private struct PointKey: Hashable {
+        let latitude: Int
+        let longitude: Int
+
+        var id: String { "\(latitude),\(longitude)" }
+
+        init(_ call: PoliceCall) {
+            latitude = Int((call.latitude * 100_000).rounded())
+            longitude = Int((call.longitude * 100_000).rounded())
         }
     }
 
@@ -261,7 +360,7 @@ struct IncidentsMapPage: View {
 
     private var selectedPlace: Place? {
         guard let selected else { return nil }
-        return places.first { $0.location == selected }
+        return places.first { $0.id == selected }
     }
 
     /// Places still being looked up. Postal areas are not among them any more — they are answered
@@ -392,18 +491,53 @@ struct IncidentsMapPage: View {
     /// is the gesture it is already making.
     private func callout(for place: Place) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(place.incidents) { incident in
-                NavigationLink {
-                    IncidentDetailView(incident: incident)
-                } label: {
-                    row(for: incident)
+            switch place.contents {
+            case .fire(let incidents):
+                ForEach(incidents) { incident in
+                    NavigationLink {
+                        IncidentDetailView(incident: incident)
+                    } label: {
+                        row(for: incident)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            case .police(let calls):
+                ForEach(calls) { call in
+                    NavigationLink {
+                        PoliceCallDetailView(call: call)
+                    } label: {
+                        policeRow(for: call)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .padding(8)
         .frame(maxWidth: 260, alignment: .leading)
         .glassSurface(cornerRadius: 12)
+    }
+
+    /// One police call inside a place's card.
+    ///
+    /// The point is the same for every row here — that is what put them together — so the rows are
+    /// told apart by what the call was and when, which is what the compact columns say everywhere else
+    /// in the app, and which reads the reader's own choice of words or code.
+    private func policeRow(for call: PoliceCall) -> some View {
+        let type = CompactColumn<PoliceCall>
+            .callType(style: policeCallTypeStyle)
+            .cell(call, dispatchTimeFormat)
+        let time = CompactColumn<PoliceCall>.occurrenceTime.cell(call, dispatchTimeFormat)
+
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(type.text ?? NotProvided.mark)
+                .font(.caption)
+                .fontWeight(.medium)
+            Text(time.text ?? NotProvided.mark)
+                .font(.caption2)
+                .foregroundStyle(Color.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     /// One incident inside a place's card.
@@ -445,8 +579,44 @@ struct IncidentsMapPage: View {
     }
 }
 
+/// One mark on the map: the kind's symbol, in the colour the state calls for.
+///
+/// **One view for both feeds.** A fire incident and a police call now differ in what their symbol says
+/// and in nothing else about how they are drawn, which is the point of a mark: the map draws marks, and
+/// a mark from a second publisher is the same kind of thing as one from the first. It replaces a pin
+/// that was a bare coloured dot — the one thing a dot cannot do is say what it is.
+///
+/// The disc is `Color.background` rather than white so that it holds up over a satellite map as well
+/// as a light one. The **shape** carries the kind and the **colour** carries whether the incident
+/// warrants attention; neither is asked to do both jobs, which is the rule the fire side already
+/// recorded and the reason the two live in different places.
+private struct MapPin: View {
+
+    let mark: IncidentMark
+
+    private var colour: Color {
+        MarkColour.of(warrantsAttention: mark.warrantsAttention)
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.background)
+                .frame(width: 22, height: 22)
+            Image(systemName: mark.category.symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(colour)
+        }
+        .overlay(Circle().stroke(colour, lineWidth: 1.5))
+        .shadow(radius: 1)
+    }
+}
+
 #Preview("Map — bare") {
-    IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
+    IncidentsMapPage(
+        feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
+        policeFeed: PreviewCalls.feed()
+    )
 }
 
 // The same page in a navigation stack, to see what a default bar over it would do. The app
@@ -455,6 +625,9 @@ struct IncidentsMapPage: View {
 // `RootView` preview shows it whole, header and all.
 #Preview("Map — in a navigation stack") {
     NavigationStack {
-        IncidentsMapPage(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
+        IncidentsMapPage(
+            feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
+            policeFeed: PreviewCalls.feed()
+        )
     }
 }
