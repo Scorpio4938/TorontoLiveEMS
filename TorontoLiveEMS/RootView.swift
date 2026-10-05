@@ -145,7 +145,7 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $screen) {
-            Tab("Fire", systemImage: "list.bullet", value: Screen.fire) {
+            Tab("Fire", systemImage: "fire.extinguisher", value: Screen.fire) {
                 // Each tab carries its own `NavigationStack`, which is what gives it its own
                 // title and its own navigation bar. That is the reason the toolbar is applied
                 // here rather than once around the whole `TabView`.
