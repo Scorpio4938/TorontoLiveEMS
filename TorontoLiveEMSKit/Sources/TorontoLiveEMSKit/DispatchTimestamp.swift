@@ -1,4 +1,6 @@
 /// How a dispatch time should be rendered for reading.
+import Foundation
+
 public enum DispatchTimeFormat: String, CaseIterable, Sendable {
 
     /// `6:24 PM` — what the City's own page shows.
