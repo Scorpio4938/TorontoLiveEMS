@@ -38,12 +38,18 @@ public enum CallsForServiceFeed {
 
     /// Where the layer describes itself, which is where its own clock is.
     ///
-    /// **Not the query endpoint.** A `query` cannot be asked for the layer's edit time — this
-    /// service's `advancedQueryCapabilities` offers no `returnEditMoment`, checked — so the app asks
-    /// the layer what it is and reads `editingInfo.dataLastEditDate` out of the answer. That response
-    /// is 10.5 KB against 22.7 KB for the calls themselves. See `interval` for why it is worth it.
+    /// **Not the query endpoint, and it must ask for JSON.** A `query` cannot be asked for the layer's
+    /// edit time — this service's `advancedQueryCapabilities` offers no `returnEditMoment`, checked —
+    /// so the app asks the layer what it is and reads `editingInfo.dataLastEditDate` out of the answer.
+    /// That response is 10.5 KB against 22.7 KB for the calls themselves. See `interval` for why it is
+    /// worth it.
+    ///
+    /// **`?f=json` is not decoration.** Without it this same address answers an 8.8 KB *HTML page* —
+    /// ArcGIS's human-readable layer directory, `Layer: C4S_Public_NoGO (ID:0)` — which decodes to
+    /// nothing, so the app had no clock to quote and said "an unknown time" while looking perfectly
+    /// healthy. Every measurement that found this time used `?f=json`; the URL did not.
     public static let layerURLString =
-        "https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/C4S_Public_NoGO/FeatureServer/0"
+        "https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/C4S_Public_NoGO/FeatureServer/0?f=json"
 
     /// The same layer as a URL, for the client.
     public static var layerURL: URL? {

@@ -121,7 +121,12 @@ position ADR-0004 already takes for the fire feed.
   was measured too. A value standing in for nothing is recognised by the fire feed's own rule, that
   no letter and no digit means no value; a *one-sided intersection*, `"BONIS AVE - "`, has letters
   in it and is therefore kept **as published** rather than tidied — the dangling separator is a
-  display question, not a parsing one.
+  display question, not a parsing one. And **the same address with and without `f=json` is two
+  different things**: the layer answers a 10.5 KB JSON document when asked and an 8.8 KB HTML page
+  when not, which is how the app came to say "an unknown time" with nothing visibly wrong — the URL
+  had been written without it, and the one test on that URL asserted its *shape* rather than what it
+  asked for. The layer's `dateFieldsTimeReference` also reports `{"timeZone":"UTC"}`, corroborating
+  the literal's zone from the service's own metadata rather than from a measurement.
 - **The app asks for `f=json`, not `f=geojson`.** Both are offered, and GeoJSON *stringifies every
   attribute* — `OCCURRENCE_TIME` arrives as `"1791219259000"` — while Esri's own format keeps numbers
   as numbers. Nothing needs the geometry, because the point is published as two attributes, so the

@@ -189,14 +189,48 @@ struct PoliceCallTests {
         #expect(CallsForServiceFeed.cadenceNote.contains("twenty minutes"))
     }
 
-    @Test("the layer the Service's clock is read from is a real URL, and is not the query endpoint")
-    func theLayerURLIsUsable() throws {
-        // Two endpoints of one service, and the difference matters: a `query` cannot return the layer's
-        // edit time, so a client that reached for the wrong one would silently never gate.
-        let url = try #require(CallsForServiceFeed.layerURL)
-        #expect(url.scheme == "https")
-        #expect(url.absoluteString.hasSuffix("/FeatureServer/0"))
-        #expect(url.absoluteString != CallsForServiceFeed.endpointURLString)
+    @Test("both endpoints ask the service for JSON")
+    func bothEndpointsAskForJSON() throws {
+        // **The test that was missing, and the bug it would have caught.** The layer URL was written
+        // without `?f=json`, and this endpoint answers an *HTML page* — ArcGIS's own layer directory —
+        // when it is not asked. Nothing decoded it, so the app had no clock to quote and said "TPS data
+        // as of an unknown time" while looking perfectly healthy. Every measurement that found the time
+        // used `?f=json`; the URL did not, and the only test on the URL asserted its *shape*, which was
+        // precisely what was wrong with it. A URL is not the network, so a unit test can check what it
+        // asks for — the closest it gets to the response, and exactly the part that was wrong.
+        let layer = try #require(CallsForServiceFeed.layerURL)
+        #expect(layer.scheme == "https")
+        #expect(layer.absoluteString != CallsForServiceFeed.endpointURLString, "two endpoints, not one")
+        let layerItems = try #require(URLComponents(url: layer, resolvingAgainstBaseURL: false)?.queryItems)
+        #expect(layerItems.contains { $0.name == "f" && $0.value == "json" })
+
+        let query = try #require(CallsForServiceFeed.queryURL(now: Date(timeIntervalSince1970: 0)))
+        let queryItems = try #require(URLComponents(url: query, resolvingAgainstBaseURL: false)?.queryItems)
+        #expect(queryItems.contains { $0.name == "f" && $0.value == "json" })
+    }
+
+    @Test("reads the Service's own clock out of the layer metadata")
+    func readsTheServicesClock() throws {
+        // Trimmed from a real response, keeping only what is read. `dataLastEditDate` is milliseconds
+        // since 1970, like OCCURRENCE_TIME, and the layer also sends `lastEditDate` and
+        // `schemaLastEditDate` beside it.
+        let json = Data(#"""
+        {"currentVersion":12,"id":0,"name":"C4S_Public_NoGO","editingInfo":{"lastEditDate":1791222647982,"schemaLastEditDate":1791222646638,"dataLastEditDate":1791222647982}}
+        """#.utf8)
+
+        let stamp = try #require(CallsForServiceParser.publishedAt(from: json))
+        #expect(stamp == Date(timeIntervalSince1970: 1_791_222_647.982))
+    }
+
+    @Test("a layer response with no clock in it is not a time")
+    func noClockIsNotATime() {
+        // A layer that stops stating one costs the gate and the line, and must never be a failure.
+        #expect(CallsForServiceParser.publishedAt(from: Data(#"{"id":0,"name":"C4S_Public_NoGO"}"#.utf8)) == nil)
+
+        // And the HTML this endpoint answers when it is not asked for JSON — the shape the missing
+        // `?f=json` produced. Asserted rather than trusted: it is the reason this test exists.
+        let html = Data(#"<html lang="en"><head><title>Layer: C4S_Public_NoGO (ID:0)</title></head></html>"#.utf8)
+        #expect(CallsForServiceParser.publishedAt(from: html) == nil)
     }
 
     @Test("the Service's interval is the twenty minutes it writes on")
