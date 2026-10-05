@@ -119,6 +119,96 @@ struct IncidentMarkTests {
         )
     }
 
+    // MARK: - The police side
+
+    private static func call(code: String) -> PoliceCall {
+        PoliceCall(
+            objectID: 1,
+            occurrenceTime: Date(timeIntervalSince1970: 1_791_219_259),
+            division: "D14",
+            latitude: 43.66,
+            longitude: -79.42,
+            callTypeCode: code,
+            callType: "AS THE SERVICE SENT IT",
+            crossStreets: nil
+        )
+    }
+
+    @Test("every code in the app's own list has a kind")
+    func everyDocumentedCodeHasAMapping() {
+        // **The test that keeps the table honest.** `from(callTypeCode:)` answers `nil` for a code it
+        // does not know — the right answer for one the Service has started using since, and the wrong
+        // answer for one the app itself lists. Walking the list means adding a code forces a decision
+        // about where it belongs instead of leaving it quietly unknown.
+        for type in PoliceCallType.documented {
+            #expect(
+                IncidentMark.Category.from(callTypeCode: type.code) != nil,
+                "\(type.code) (\(type.name)) is in the app's list but maps to no kind"
+            )
+        }
+    }
+
+    @Test("the police codes land where their words say")
+    func policeCodesMapToTheirKinds() {
+        let expected: [(String, IncidentMark.Category)] = [
+            ("FIR", .fire),
+            ("FIRAL", .alarm),
+            ("SEEAM", .medical),
+            ("MISVU", .rescue),
+            ("HAZ", .hazard),
+            ("PIACC", .traffic),
+            ("IMPDR", .traffic),
+            ("PERGU", .crime),
+            ("ASSPR", .crime),
+            ("DIS", .disturbance),
+            ("FIG", .disturbance),
+            ("FOUPR", .other),
+        ]
+        for (code, kind) in expected {
+            #expect(IncidentMark(call: Self.call(code: code)).category == kind, "\(code)")
+        }
+    }
+
+    @Test("an unknown trouble is left unknown")
+    func anUnknownTroubleStaysUnknown() {
+        // The Service's own word for it is that it does not know. `.disturbance` would be this app
+        // answering a question the Service left open.
+        #expect(IncidentMark(call: Self.call(code: "UNKTR")).category == .other)
+    }
+
+    @Test("a code the Service starts using is unknown, not guessed at")
+    func anUnseenCodeIsNotGuessedAt() {
+        #expect(IncidentMark.Category.from(callTypeCode: "BRANDNEW") == nil)
+        #expect(IncidentMark(call: Self.call(code: "BRANDNEW")).category == .other)
+    }
+
+    @Test("a police call never claims to warrant attention")
+    func policeCallsCarryNoUrgency() {
+        // The Service publishes no urgency, and this app will not decide on its behalf which kinds of
+        // call are serious. Checked across every code the app knows rather than on a sample.
+        for type in PoliceCallType.documented {
+            #expect(
+                !IncidentMark(call: Self.call(code: type.code)).warrantsAttention,
+                "\(type.code) claimed an urgency nobody published"
+            )
+        }
+    }
+
+    @Test("between the two feeds, every kind is used")
+    func bothFeedsJustifyTheWholeSet() {
+        // Nine kinds is a claim about the data: a kind nothing uses would be a symbol nobody ever
+        // sees. The fire side reaches seven of the nine, and the police side supplies the two it
+        // cannot reach — which is the reason for a shared vocabulary rather than a fire one with two
+        // extra cases bolted on.
+        var used = Set(IncidentCategory.allCases.map(IncidentMark.Category.init(incidentCategory:)))
+        used.formUnion(
+            PoliceCallType.documented.compactMap {
+                IncidentMark.Category.from(callTypeCode: $0.code)
+            }
+        )
+        #expect(used.count == IncidentMark.Category.allCases.count)
+    }
+
     #if canImport(UIKit)
     @Test("every symbol the marks use exists in the system's own catalogue")
     func symbolsExist() {

@@ -52,7 +52,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         case alarm
         case rescue
         case hazard
-        case collision
+        case traffic
         case crime
         case disturbance
         case other
@@ -74,7 +74,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return "lifepreserver.fill"
             case .hazard:
                 return "exclamationmark.triangle.fill"
-            case .collision:
+            case .traffic:
                 return "car.fill"
             case .crime:
                 return "shield.fill"
@@ -98,8 +98,8 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return "Rescue"
             case .hazard:
                 return "Hazard"
-            case .collision:
-                return "Collision"
+            case .traffic:
+                return "Traffic"
             case .crime:
                 return "Crime"
             case .disturbance:
@@ -132,9 +132,50 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
             case .carbonMonoxide, .hazmat, .gasLeak, .water, .wiresDown:
                 self = .hazard
             case .vehicle:
-                self = .collision
+                self = .traffic
             case .checkCall, .policeAssist, .other:
                 self = .other
+            }
+        }
+
+        /// The coarse kind a police call belongs to, from the Service's own code.
+        ///
+        /// **A table rather than a rule, because the codes cannot be read.** `INDEX` means *indecent
+        /// exposure* while `EXPJU` means *indecent exposure just occurred*, so the letters are not an
+        /// abbreviation scheme and no amount of parsing would recover the meaning. Every one of the
+        /// thirty codes the app knows is listed, and the mapping from a code to a kind is this app's
+        /// judgement about where it belongs — not the Service's, which publishes no kinds at all.
+        ///
+        /// **`nil` means "no mapping", and that is different from `.other`.** A code the Service has
+        /// started using since this list was gathered is genuinely unknown, and it has to be
+        /// distinguishable from `FOUND PROPERTY` and `UNKNOWN TROUBLE`, which really do belong in
+        /// `.other`. A test walks `PoliceCallType.documented` and fails if any code in the app's own
+        /// list has no mapping, so adding a code forces the question.
+        public static func from(callTypeCode: String) -> Category? {
+            switch callTypeCode {
+            case "FIR":
+                return .fire
+            case "FIRAL":
+                return .alarm
+            case "SEEAM":
+                return .medical
+            case "MISVU":
+                return .rescue
+            case "HAZ":
+                return .hazard
+            case "IMPDR", "PDACC", "PIACC", "WRWAY":
+                return .traffic
+            case "ARR", "ASS", "ASSJU", "ASSPR", "ATTBR", "BREEN", "DAM", "EXPJU", "FRA",
+                 "INDEX", "PERGU", "THEAU", "THEJU", "THEPR", "TRE":
+                return .crime
+            case "DEMO", "DIS", "DISPU", "FIG":
+                return .disturbance
+            // `UNKNOWN TROUBLE` is `.other` and not `.disturbance`: the Service's own word is that it
+            // does not know, and answering a question the Service left open would be inventing one.
+            case "FOUPR", "UNKTR":
+                return .other
+            default:
+                return nil
             }
         }
     }
@@ -159,6 +200,20 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         self.source = source
         self.category = category
         self.warrantsAttention = warrantsAttention
+    }
+
+    /// The mark for a police call.
+    ///
+    /// **No urgency, because the Service publishes none.** `warrantsAttention` is `false` for every
+    /// police call: the fire feed's rule weighs an Alarm Level the Service does not have, and deciding
+    /// for ourselves which kinds of call are "serious" would be putting a judgement on the screen that
+    /// nobody made. The colour says nothing about a police mark, which is the honest answer.
+    public init(call: PoliceCall) {
+        self.init(
+            source: .police,
+            category: Category.from(callTypeCode: call.callTypeCode) ?? .other,
+            warrantsAttention: false
+        )
     }
 
     /// The mark for a fire incident.
