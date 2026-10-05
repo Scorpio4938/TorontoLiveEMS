@@ -230,11 +230,11 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
   no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
   treatment — rule 17 of `docs/design-grammar.md` applied to the icon.
-- **Except the licence link, which is blue.** Links take the accent, which is correct — it is
-  what an accent is for, and Apple Music does exactly the same with its red one. But red also
-  means error and destructive, so a licence notice drawn in it reads as a warning rather than
-  as a reference. Blue is what a link looks like. It is the only markdown link in the app, and
-  `AttributionText` is the one place the accent is overridden; the controls stay red.
+- **Links are blue, wherever they appear.** Links take the accent, which is correct — it is what
+  an accent is for, and Apple Music does exactly the same with its red one. But red also means
+  error and destructive, so a licence notice or the City's page drawn in it reads as a warning
+  rather than as something to tap. Blue is what a link looks like: `LinkedText` tints it, and so
+  does the one external link on *About*. The controls stay fire red.
 - **The accent is fire red too**, in light and dark variants. It was an empty stub before, so
   the app had no colour of its own. Worth knowing what follows: red is now the app's *most urgent*
   state and orange is the ordinary one, so those two have to stay tellable apart — and if they read
@@ -342,17 +342,26 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   away. That is the judgement this project had already made once for *About this Data*, applied to
   the rest of what had gathered here.
 - **Two About screens, because they answer different questions.** *About* is about the app: its
-  name, which version is in the reader's hand, what it is for, and the City's page it reads. *About
-  this Data* is about the feed: what each field means, and the licences the data and the postal-area
-  shapes come under. The second is reached *from* the first, so the licences keep one home instead
-  of being copied into a second screen to save a tap.
+  icon, its name, which version is in the reader's hand, what it is for, and the City's page it
+  reads. *About this Data* is about the feed: what each field means, and the licences the data and
+  the postal-area shapes come under — and it is reached from the **info button** beside Settings
+  rather than from *About*, which has no row to it. A second way in would be a second place to keep
+  the same list true, and the licences have one home already.
+- **The one external link on *About* says whose it is.** It sits under a header naming the City,
+  with a footer saying that the app only reads what they publish and is not affiliated with them.
+  An About screen is about *this* app, so a row that opened somebody else's page without saying so
+  would be a mistake the reader has no way to avoid making.
+- **The icon is the artwork the Home screen uses**, from the imagesets the icon previews already
+  load, clipped on the same continuous corner the system uses — about 22.4% of the edge — and the
+  dark variant in dark mode, because that is the one the Home screen is showing at the time. No
+  `UIImage(named: "AppIcon")`, which is a trick the documentation does not promise.
 - **The source repository is not linked, and that is a fact about the repository rather than a
   preference.** `github.com/Scorpio4938/TorontoLiveEMS` answers **404** to anyone not signed in as
   its owner — checked, with the account itself answering 200 to the same request — so a row
   pointing at it would be a link a reader cannot open. It belongs in *About* on the day the
   repository is public, which a release will make it.
 - **Everything on *About* is read rather than typed**: the name from the bundle, the version from
-  the bundle, the City's page from the package. The app sets no `CFBundleDisplayName`, so its name
+  the bundle, the artwork from the asset catalogue, the City's page from the package. The app sets no `CFBundleDisplayName`, so its name
   there is the target's — `TorontoLiveEMS`, without the spaces it is called by in prose. Setting
   `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is the whole of that change, and then
   the row and the Home screen agree without either being told.
