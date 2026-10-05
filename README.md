@@ -91,22 +91,37 @@ each, which is why it is a command now and no longer a paragraph.
 
 ## Versions and tags
 
-**Tags are checkpoints, not promises.** One of them is known not to build, so the list is
-worth reading rather than trusting.
+**A tag is a version.** The project's `MARKETING_VERSION`, the tag, and the version Settings shows
+are one number — `major.minor.checkpoint` — and `python3 scripts/version_check.py` fails if they
+disagree. `docs/releasing.md` has the scheme and the process.
+
+The rule starts at `v0.0.9`. The eight tags before it all carry `0.0.1a1` in their trees, set once
+at `v0.0.1` and never moved: they are older than the rule, not wrong, and they are left alone
+because a tag that changes meaning is the one thing tags exist to prevent.
+
+**Tags are checkpoints, not promises.** Some have never been built, so the list is worth reading
+rather than trusting.
 
 | | | |
 |---|---|---|
-| `v0.0.1` | `e98d13d` | **The last tag that builds.** From before the design work, so it is rougher than what is on `master` — but it is a working point, and the only one that is. |
+| `v0.0.1` | `e98d13d` | Builds. From before the design work, so rougher than what is on `master` — but it is a working point. |
 | `v0.0.2` | `d1ea109` | **Does not build.** `d1ea109` put `ToolbarSpacer()` inside a `ToolbarItemGroup`, whose content is a `ViewBuilder`; `ToolbarSpacer` conforms to `ToolbarContent` and not to `View`. Every commit through `065e326` inherits the fault; `1732bd5` fixes it. |
-| `v0.0.3-bar-and-cards` | `3cb40f2` | The design work after `v0.0.2` — the bottom bar, the switcher, the cards arrangement, the general map page. Kept on `archive/everything-since-v0.0.2`, not on `master`. |
+| `v0.0.3-bar-and-cards` | `3cb40f2` | Builds. The design work after `v0.0.2` — the bottom bar, the switcher, the cards arrangement, the general map page. Kept on `archive/everything-since-v0.0.2`, not on `master`. |
+| `v0.0.4-two-tabs` | `660f4a4` | Builds, and ran on an iPhone: the bottom tab bar, with refresh as the prominent trailing tab. |
+| `v0.0.5-map-page` | `f648162` | Builds. The map page, and the chrome above both pages as one layer. |
+| `v0.0.6-postal-areas` | `f5c770d` | Builds. A postal area drawn as the boundary Statistics Canada publishes, instead of a circle around a geocoder's guess. |
+| `v0.0.7-map-kinds` | `d76a13d` | Builds. Standard and Satellite, chosen from a control in the shared chrome. |
+| `v0.0.8-fire-page` | `aa130e7` | **Not built.** The incidents page renamed and retitled Fire, and a fire extinguisher on its tab. |
+| `v0.0.9` | — | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
 
-`master` is `v0.0.2` plus the `ToolbarSpacer` fix plus the map in the detail view's Location
-section, and nothing else.
+The newest row has no hash because this file is committed with it; `git rev-parse v0.0.9` answers
+it. Every other row can be checked with `git show <hash> --stat`.
 
-Why this is written down: for seven commits nothing could build, and Xcode kept running the
-last binary it had. Reports made during that window described an app older than the code
-being changed, and fixes were tested against it. Believing a tag was good when it was not is
-the specific mistake this table exists to prevent.
+Why this is written down: for seven commits nothing could build, and Xcode kept running the last
+binary it had. Reports made during that window described an app older than the code being changed,
+and fixes were tested against it. Believing a tag was good when it was not is the specific mistake
+this table exists to prevent — and the same mistake, in the other direction, is why each row says
+whether it was ever *run* as well as whether it was ever *built*.
 
 ## Status
 
