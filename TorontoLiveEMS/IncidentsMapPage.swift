@@ -55,6 +55,11 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.mapKind)
     private var mapKind: MapKind = .standard
 
+    /// Which feeds to draw. The same stored key the chrome's control writes, which is how a control in
+    /// one view changes a map in another without either knowing the other exists.
+    @AppStorage(SettingsKey.mapFilter)
+    private var mapFilter: MapFilter = .all
+
     /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
@@ -254,9 +259,13 @@ struct IncidentsMapPage: View {
         return (pieces, bounds)
     }
 
-    /// Everything on the map, from both feeds.
+    /// Everything on the map, from both feeds — minus whatever the reader has filtered out.
+    ///
+    /// The filter is applied here rather than inside the two lists, so that "which feeds" is one
+    /// question in one place. It asks each mark where it came from and nothing else, which is what
+    /// `MapFilter.keeps` is.
     private var places: [Place] {
-        firePlaces + policePlaces
+        (firePlaces + policePlaces).filter { mapFilter.keeps($0.mark) }
     }
 
     /// The fire places that can be drawn: a location, something to draw for it, and its mark.
@@ -467,6 +476,12 @@ struct IncidentsMapPage: View {
                 Image(systemName: "exclamationmark.triangle")
             }
             Text(noticeText)
+            // A filtered map with nothing on screen to say so is the confusion this prevents: half the
+            // marks gone and no reason visible. Only when a filter is in force, because "Both Feeds" is
+            // not worth saying.
+            if mapFilter != .all {
+                Text("· \(mapFilter.label)")
+            }
             if pendingPlaces > 0 {
                 Text("· Finding \(pendingPlaces) more…")
             }

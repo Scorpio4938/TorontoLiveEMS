@@ -80,6 +80,7 @@ struct RootView: View {
     /// the app root into a page is exactly the plumbing this avoids — and it is the same pattern
     /// the dispatch-time format already uses, so nothing new is being invented to make it work.
     @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
+    @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
@@ -137,7 +138,8 @@ struct RootView: View {
                 // `screen` is the tab view's own selection, so the condition needs no new state —
                 // and the control goes at the capsule's leading end, so Info and Settings do not
                 // move when it appears.
-                mapKind: screen == .map ? $mapKind : nil
+                mapKind: screen == .map ? $mapKind : nil,
+                mapFilter: screen == .map ? $mapFilter : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -347,11 +349,17 @@ private extension View {
     func screenControlsLayer(
         onInfo: @escaping () -> Void,
         onSettings: @escaping () -> Void,
-        mapKind: Binding<MapKind>? = nil
+        mapKind: Binding<MapKind>? = nil,
+        mapFilter: Binding<MapFilter>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
-            ScreenControls(onInfo: onInfo, onSettings: onSettings, mapKind: mapKind)
+            ScreenControls(
+                onInfo: onInfo,
+                onSettings: onSettings,
+                mapKind: mapKind,
+                mapFilter: mapFilter
+            )
                 // Centred in a bar's height at a content margin, which is where the bar's own
                 // items sat before this layer replaced them. These two numbers are the placement,
                 // and the only ones in it.

@@ -87,6 +87,39 @@ struct MapKindControl: View {
     }
 }
 
+/// The map's other control: which feeds to draw.
+///
+/// **Built like `MapKindControl`, deliberately.** A `Menu` holding a `Picker`, so the option in force
+/// carries the platform's own checkmark and the menu states the current filter as well as offering the
+/// other two — which a flat list of actions cannot do without this code drawing the mark itself.
+///
+/// **The label is the filter's own glyph, not the current option's.** A map kind can wear the glyph of
+/// the kind in force, because there are three map glyphs and each means one thing. There is no glyph
+/// that means "both feeds" or "police only" — the sources' glyphs are already the *kinds* flame and
+/// shield — so the control says what it is, and where the filter is in force it also says so in the
+/// map's own small print. A filtered map with nothing on screen to explain it is the confusion this
+/// avoids.
+struct MapFilterControl: View {
+
+    @Binding var mapFilter: MapFilter
+
+    var body: some View {
+        Menu {
+            Picker("Filter", selection: $mapFilter) {
+                ForEach(MapFilter.allCases, id: \.self) { option in
+                    Label(option.label, systemImage: option.systemImage)
+                        .tag(option)
+                }
+            }
+        } label: {
+            Image(systemName: MapFilter.all.systemImage)
+                .foregroundStyle(Color.primary)
+        }
+        // The state, for anyone who cannot see the small print.
+        .accessibilityLabel("Filter, \(mapFilter.label)")
+    }
+}
+
 /// The controls in the app's own capsule — drawn once, above every page.
 ///
 /// **One layer, like the tab bar.** The tab bar is not part of either page: the container draws
@@ -131,10 +164,21 @@ struct ScreenControls: View {
     /// could disturb something that was already right.
     var mapKind: Binding<MapKind>? = nil
 
+    /// Which feeds the map draws — the map's second control, present on the same terms as the first.
+    ///
+    /// **Second from the leading end, which is where it was asked for.** The two controls that belong
+    /// to a map sit together at the left, and Info and Settings keep the slots they have always had:
+    /// the capsule is trailing-aligned, so anything inserted before them leaves them exactly where
+    /// they were and moves only the capsule's left edge.
+    var mapFilter: Binding<MapFilter>? = nil
+
     var body: some View {
         HStack(spacing: 16) {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
+            }
+            if let mapFilter {
+                MapFilterControl(mapFilter: mapFilter)
             }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)

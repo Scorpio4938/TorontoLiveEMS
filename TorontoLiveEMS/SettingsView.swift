@@ -14,6 +14,8 @@ enum SettingsKey {
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"
+    /// Which feeds the map draws, on the same terms: written by the chrome, read by the page.
+    static let mapFilter = "mapFilter"
 }
 
 /// The app's preferences, and one row to everything that is not one.

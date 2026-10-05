@@ -270,6 +270,14 @@ struct IncidentMarkTests {
                 "\(category.symbol) is not a symbol this system knows"
             )
         }
+        // And the filter's, which are drawn in the chrome rather than on the map: `all` wears a glyph
+        // nothing else in the app uses, so it is the one of these that has never been drawn before.
+        for option in MapFilter.allCases {
+            #expect(
+                UIImage(systemName: option.systemImage) != nil,
+                "\(option.systemImage) is not a symbol this system knows"
+            )
+        }
     }
     #endif
 
