@@ -1,0 +1,101 @@
+# Toronto Police calls for service as the police incident source
+
+Police incidents come from a **feature service** published by the Toronto Police Service on
+ArcGIS Online:
+
+```
+https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/C4S_Public_NoGO/FeatureServer
+```
+
+## It is an API, not a page
+
+**The raw data is a JSON document at a URL, and the app reads it exactly the way it reads the
+City's XML: one request, one response, one decoder. Nothing is scraped and no HTML is involved.**
+
+The distinction matters because it is easy to mistake the two. The link a person finds is an
+**item page** — `torontops.maps.arcgis.com/home/item.html?id=d6d48b3d9ccf42faa8e656b78f8289d3` —
+which is a human interface. The item *declares* the machine endpoint above, and that endpoint is
+part of the ArcGIS REST API, which Esri documents. A query looks like this:
+
+```
+<endpoint>/0/query?where=OCCURRENCE_TIME > TIMESTAMP '2026-10-05 15:00:00'&outFields=*&f=geojson
+```
+
+and answers with a GeoJSON `FeatureCollection` — or with Esri's own JSON when asked for `f=json`.
+Both were fetched during this research, **anonymously**: no token, no API key, no account.
+
+So the fetch is a data task and the parse is a decoder, which is what `LiveCADClient` and
+`LiveCADParser` already do for the fire feed. The one difference in shape is that this endpoint is
+asked a *question* — a `where` clause — rather than handed a fixed document.
+
+**This is the opposite situation to ADR-0001.** The fire feed is an undocumented path found by
+reading a page's inline JavaScript. This one is a published service, with a documented API, a
+declared schema and written terms.
+
+## What it carries
+
+One point layer, nine fields, and **no geocoding**:
+
+| field | meaning |
+|---|---|
+| `OBJECTID` | the row's identity |
+| `OCCURRENCE_TIME` | when the call happened |
+| `DIVISION` | the police division |
+| `LATITUDE`, `LONGITUDE` | the point, in WGS84 |
+| `CALL_TYPE_CODE`, `CALL_TYPE` | the call, as a code and as words |
+| `CROSS_STREETS` | the nearest intersection |
+| `OCCURRENCE_TIME_AGOL` | a second copy of the time, kept by the platform |
+
+**It is a four-hour rolling window.** The service held 80 records spanning 4.2 hours when it was
+checked, oldest to newest, and the publisher's own description says a dot is visible for four
+hours. So the whole of it arrives in one request and `maxRecordCount` of 2000 is never approached.
+This is also the first source in this app that needs no geocoding at all: the Service publishes a
+point, where the fire feed publishes a street and makes the app ask Apple where it is.
+
+## Licence, and the restrictions that are design rules
+
+**Open Government Licence – Ontario**, attributed to the Toronto Police Service. That is a third
+licence — Toronto's for the fire feed, Canada's for the postal-area shapes, Ontario's here — so the
+attribution screen carries all three.
+
+Two of the licence's restrictions are not footnotes, because they constrain what this app may be:
+
+- **"Not to merge or link the information with any other databases for the purpose of attempting to
+  identify an individual person, business, or organization."** Police calls are not correlated with
+  the fire feed, or with anything else, to sharpen either. This is ADR-0004's rule, written by a
+  licensor instead of by us.
+- **"Not to present the information in such a manner that gives the appearance that you may have
+  received … information held by the Toronto Police Service … about any identifiable individual
+  person."** The police page presents calls *at places*, and nothing in it is person-shaped.
+
+The publisher filters as well: calls are excluded for domestic violence, sexual assault and medical
+distress, and for ongoing police operations. **A call that is not there is not evidence that
+nothing happened** — so the police page has to read as a view of what was published, which is the
+position ADR-0004 already takes for the fire feed.
+
+## Consequences we accept
+
+- **Twenty minutes, or five, or neither.** The item's summary says the data is updated every 20
+  minutes; the application's own description says it is refreshed every five. The publisher
+  contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. So the app **shows
+  the data's age and promises no cadence** — the fire feed's discipline, where the feed's own
+  timestamp is the only thing the status line reads.
+- **Traps the client has to handle.** A time filter needs a literal: `OCCURRENCE_TIME > TIMESTAMP
+  '…'` works and a bare millisecond number answers 400. Missing values arrive as a dash with one
+  side empty — `"BONIS AVE - "` — which is the "no letter and no digit means no value" rule this
+  app already applies to the fire feed. And **GeoJSON stringifies the attributes**, so
+  `OCCURRENCE_TIME` arrives as `"1791219259000"` and has to be read as a number.
+- **`returnCountOnly` is not supported**, so counting means fetching. At eighty records that is not
+  a hardship.
+- **Politeness.** It is a public service on somebody else's infrastructure, read on the fire feed's
+  terms: once at launch, once per explicit refresh, and never on a timer of its own.
+- **A second feed, not a second list.** The police page owns its own client, its own clock and its
+  own age. See `docs/design-decisions.md` for why the fire feed is not copied.
+
+## What this does not decide
+
+- **The fifth column.** The compact table is fixed at five columns by design, and police offers
+  four obvious ones: Time, Call Type, Division, Cross Streets. The fifth is not obvious — the code
+  is redundant beside the type, and latitude and longitude mean nothing to a reader.
+- **The page's name.** These calls are not *active*; they are *recent*, within four hours. "Active
+  Police Incidents" would repeat a mistake this project has already corrected once.
