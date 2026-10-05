@@ -32,6 +32,26 @@ private actor CallsService {
     }
 }
 
+/// The metadata side of the service: answers with the Service's clock, and counts being asked.
+///
+/// Counted separately from the calls, because the gate makes two different claims: that the calls are
+/// not fetched between two of the Service's writes, and that the Service is not *asked* whether it has
+/// written either. The second is the one that used to cost a round trip.
+private actor StampService {
+
+    private let stamp: Date?
+    private(set) var requestCount = 0
+
+    init(_ stamp: Date?) {
+        self.stamp = stamp
+    }
+
+    func next() -> Date? {
+        requestCount += 1
+        return stamp
+    }
+}
+
 /// The police feed's state: what it holds after a read, what the gate lets through, and what it says.
 ///
 /// Nothing here touches the network or the real clock — all three inputs are injected — so no test
@@ -129,18 +149,34 @@ struct PoliceCallFeedTests {
 
     // MARK: - The gate, before the fetch
 
-    @Test("inside the Service's interval, the calls are not asked for at all")
-    func insideTheIntervalTheCallsAreNotFetched() async {
-        // The heart of it: five minutes after the Service wrote, there is provably nothing new, so
-        // the request must not happen. The count is what proves it did not.
-        let service = CallsService([[Self.call(1)]])
-        let feed = Self.feed(readingCalls: service)
+    @Test("inside the Service's interval, nobody is asked anything at all")
+    func insideTheIntervalNobodyIsAsked() async {
+        // **The test for the freeze.** The gate used to be made *after* asking the Service for its
+        // clock, so a tap inside the window spent a network round trip learning what the app already
+        // knew — and on a slow connection that was a spinner appearing to do nothing. Now the clock the
+        // app holds decides, and neither request happens: the calls are not fetched, and the Service is
+        // not asked whether it has written.
+        let calls = CallsService([[Self.call(1)]])
+        let stamps = StampService(Self.readAt)
+        let feed = PoliceCallFeed(
+            fetch: { try await calls.next() },
+            fetchPublishedAt: { await stamps.next() },
+            now: { Self.readAt }
+        )
         await feed.load()
+
+        let loadedCalls = await calls.requestCount
+        let loadedStamp = await stamps.requestCount
+        #expect(loadedCalls == 1)
+        #expect(loadedStamp == 1, "the load reads the Service's clock, and does so unconditionally")
 
         let outcome = await feed.refresh()
         #expect(outcome == .skipped)
-        let requests = await service.requestCount
-        #expect(requests == 1, "the one request was the load, not the refresh")
+
+        let askedCalls = await calls.requestCount
+        let askedStamp = await stamps.requestCount
+        #expect(askedCalls == loadedCalls, "the calls are not fetched inside the window")
+        #expect(askedStamp == loadedStamp, "and the Service is not asked either — which is the fix")
     }
 
     @Test("at the interval, the calls are asked for again")
@@ -226,7 +262,13 @@ struct PoliceCallFeedTests {
 
     @Test("a first failed refresh, with nothing on screen, is not a skip either")
     func aFirstFailedRefreshIsNotASkip() async {
-        let feed = Self.feed(failingCalls: URLError(.timedOut))
+        // The window has passed, so this refresh actually asks — which is the only way a failure can
+        // be reached at all now.
+        let feed = PoliceCallFeed(
+            fetch: { throw URLError(.timedOut) },
+            fetchPublishedAt: { Self.readAt },
+            now: { Self.readAt.addingTimeInterval(21 * 60) }
+        )
 
         let outcome = await feed.refresh()
         #expect(outcome == .refreshed)

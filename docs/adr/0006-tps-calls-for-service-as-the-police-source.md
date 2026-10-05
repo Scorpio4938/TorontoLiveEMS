@@ -163,10 +163,14 @@ position ADR-0004 already takes for the fire feed.
 - **`returnCountOnly` is not supported**, so counting means fetching. At eighty records that is not
   a hardship.
 - **Politeness.** It is a public service on somebody else's infrastructure, read on the fire feed's
-  terms: once at launch, once per explicit refresh, and never on a timer of its own. A refresh now
-  costs one request inside the Service's twenty minutes and two outside it — the metadata to decide,
-  then the calls — which is a smaller ask than fetching the calls every time, and the only way the
-  screen can say when the Service last wrote.
+  terms: once at launch, once per explicit refresh, and never on a timer of its own. A refresh inside
+  the Service's twenty minutes costs **no request at all** — the clock the app already holds decides —
+  and one outside it, with a second only when that clock says something has been written and the calls
+  have to be fetched. The metadata is never read merely to ask a question the app can answer itself,
+  which is the difference between an instant tap and one that looks frozen. The client also gives up
+  on a request in **fifteen seconds rather than sixty** and ignores the cache: sixty is what made an
+  unreachable service look like a dead app, and a cached metadata response would hand the gate a stale
+  write time — which is the one value in this feed that has to be current.
 - **A second feed, not a second list.** The police page owns its own client, its own clock and its
   own age. See `docs/design-decisions.md` for why the fire feed is not copied.
 

@@ -20,6 +20,24 @@ public enum CallsForServiceClientError: Error, Equatable {
 /// were measured rather than assumed.
 public struct CallsForServiceClient: Sendable {
 
+    /// A session that gives up in fifteen seconds rather than sixty, and never serves a cached answer.
+    ///
+    /// **Both settings come from a measurement.** Tapping refresh on the police page while the service
+    /// was unreachable left the app looking dead for the better part of a minute: `URLSession.shared`
+    /// waits sixty seconds by default, and a tap can make two requests. Fifteen is generous for thirty
+    /// kilobytes and short enough that a reader is told something. It is the *inactivity* timeout, so a
+    /// slow connection that keeps moving is not cut off.
+    ///
+    /// **Ignoring the cache is correctness rather than tuning.** The metadata address is the same on
+    /// every request, so a cached answer would hand the app a stale write time — and that time is what
+    /// decides whether a refresh fetches the calls at all.
+    private static let session: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: configuration)
+    }()
+
     public init() {}
 
     /// The calls in the four hours ending at `now`.
@@ -28,7 +46,7 @@ public struct CallsForServiceClient: Sendable {
             throw CallsForServiceClientError.invalidURL
         }
 
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await Self.session.data(from: url)
 
         if let http = response as? HTTPURLResponse,
            !(200..<300).contains(http.statusCode) {
@@ -52,7 +70,7 @@ public struct CallsForServiceClient: Sendable {
             throw CallsForServiceClientError.invalidURL
         }
 
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await Self.session.data(from: url)
 
         if let http = response as? HTTPURLResponse,
            !(200..<300).contains(http.statusCode) {

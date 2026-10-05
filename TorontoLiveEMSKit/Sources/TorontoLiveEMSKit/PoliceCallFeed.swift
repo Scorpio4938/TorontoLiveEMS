@@ -12,10 +12,11 @@ import Observation
 ///
 /// **That request is worth making, because it answers two questions at once.** It is the gate ("the
 /// Service last wrote at 17:31 and writes about every twenty minutes, so at 17:41 there is nothing to
-/// fetch") and it is the time the status line quotes. One request buys both, which is why this feed
-/// gates before the fetch the way fire does rather than only comparing afterwards.
+/// fetch") and it is the time the status line quotes. And it is made only when the window has passed:
+/// the clock the app is already holding decides first, so a tap inside the interval asks nobody and
+/// answers at once. Fire gates on the same rule, for the same reason.
 ///
-/// **And the gate is checked again after a fetch.** Twenty minutes is the Service's pace, not a
+/// **And the gate is checked again after that request.** Twenty minutes is the Service's pace, not a
 /// promise: if a write is late, the gate opens and the calls come back unchanged — still nothing
 /// newer, and reported as such rather than as a refresh that found something.
 ///
@@ -112,8 +113,26 @@ public final class PoliceCallFeed {
         isRefreshing = true
         defer { isRefreshing = false }
 
+        // **The gate first, on what the app already knows.** The fire feed's rule exactly: if the
+        // Service last wrote at 17:31 and writes about every twenty minutes, then at 17:41 it cannot
+        // have written since — and there is nobody to ask.
+        //
+        // The version before this one asked the Service for its clock *before* making that test, so a
+        // tap inside the window still waited on a network round trip to be told something the app
+        // already knew. That is the freeze: on a slow connection, a tap that should have been
+        // instant handed the reader a spinning nothing for as long as the request took.
+        guard FeedRefresh.mayHaveRefreshed(
+            since: publishedAt,
+            interval: CallsForServiceFeed.interval,
+            now: now()
+        ) else {
+            return .skipped
+        }
+
         await readPublishedAt()
 
+        // Asked, because the window had passed — and the answer can still be that no write has
+        // happened since the one we already knew about. A pace is not a promise.
         guard FeedRefresh.mayHaveRefreshed(
             since: publishedAt,
             interval: CallsForServiceFeed.interval,
