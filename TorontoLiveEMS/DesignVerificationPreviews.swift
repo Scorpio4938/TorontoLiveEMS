@@ -10,6 +10,58 @@ import TorontoLiveEMSKit
 /// Between them they cover every shape the feed publishes: a medical incident whose
 /// location is an FSA, an ordinary addressable one, an escalated alarm with a long
 /// apparatus roster, and the two blank shapes — no Prime Street, and no `units_disp`.
+/// Sample police calls, for the previews.
+///
+/// **Invented, like the parser's fixture, and for the same reason.** Real calls name real places and
+/// real events, and a sample that lives in a repository is read by whoever opens the project. The
+/// *shape* is the service's own — four of the cross-street forms it actually sends are below.
+enum PreviewCalls {
+
+    static let all: [PoliceCall] = [
+        call(id: 4, minutesAgo: 6, division: "D14", code: "PERGU", type: "PERSON WITH A GUN",
+             streets: "CHRISTIE ST - BLOOR ST W", latitude: 43.6630, longitude: -79.4209),
+        call(id: 3, minutesAgo: 22, division: "D42", code: "UNKTR", type: "UNKNOWN TROUBLE",
+             streets: "BONIS AVE - ", latitude: 43.7811, longitude: -79.2981),
+        call(id: 2, minutesAgo: 48, division: "D55", code: "ASSAULT", type: "ASSAULT",
+             streets: nil, latitude: 43.7000, longitude: -79.4000),
+        call(id: 1, minutesAgo: 95, division: "D22", code: "TRAFCO", type: "TRAFFIC COLLISION",
+             streets: "QUEEN ST E - PARLIAMENT ST", latitude: 43.6550, longitude: -79.3660),
+    ]
+
+    /// A feed holding these, so a preview never touches the service.
+    ///
+    /// `@MainActor` because the feed is: building one from a nonisolated static function is the
+    /// "call to main actor-isolated initializer in a synchronous nonisolated context" that this
+    /// project has already been caught by once.
+    @MainActor
+    static func feed() -> PoliceCallFeed {
+        let calls = all
+        return PoliceCallFeed(fetch: { calls }, now: { Date() })
+    }
+
+    private static func call(
+        id: Int,
+        minutesAgo: Double,
+        division: String,
+        code: String,
+        type: String,
+        streets: String?,
+        latitude: Double,
+        longitude: Double
+    ) -> PoliceCall {
+        PoliceCall(
+            objectID: id,
+            occurrenceTime: Date().addingTimeInterval(-minutesAgo * 60),
+            division: division,
+            latitude: latitude,
+            longitude: longitude,
+            callTypeCode: code,
+            callType: type,
+            crossStreets: streets
+        )
+    }
+}
+
 enum PreviewIncidents {
 
     static let medicalFSA = Incident(
@@ -73,54 +125,85 @@ private let previewStatus = FeedStatus(
 // disagree with the app about the thing it exists to show — which the first draft of this
 // file did, in both layouts at once.
 
+/// The real table over the sample incidents, so a preview cannot show a layout the app does not
+/// have. The columns are the fire feed's own, from the package — the previews do not carry a second
+/// copy of them, which is what the eight call sites below used to do.
+private func fireTable(
+    _ timeFormat: DispatchTimeFormat,
+    status: FeedStatus = previewStatus
+) -> some View {
+    CompactTableList(
+        rows: PreviewIncidents.all,
+        columns: CompactColumn<Incident>.fire,
+        timeFormat: timeFormat,
+        status: status
+    ) { incident in
+        IncidentDetailView(incident: incident)
+    }
+}
+
+/// The real cards over the same data, in the fire feed's card order.
+private func fireCards(
+    _ timeFormat: DispatchTimeFormat,
+    status: FeedStatus = previewStatus
+) -> some View {
+    CardsList(
+        rows: PreviewIncidents.all,
+        columns: CompactColumn<Incident>.fireCard,
+        timeFormat: timeFormat,
+        status: status
+    ) { incident in
+        IncidentDetailView(incident: incident)
+    }
+}
+
 #Preview("Table — light") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
 }
 
 #Preview("Table — dark") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
+    fireTable(.twentyFourHour)
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
 }
 
 #Preview("Cards — dark") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
         .preferredColorScheme(.dark)
 }
 
 /// Cards are already a stack of two lines, so there is no separate accessibility layout
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 /// The status line's warning state, which is otherwise only reachable by breaking the
 /// network mid-session.
 #Preview("Cards — last result kept") {
-    CardsList(
-        incidents: PreviewIncidents.all,
-        timeFormat: .twelveHour,
+    fireCards(
+        .twelveHour,
         status: FeedStatus(
             text: "City data as of 2026-09-29 20:00:01 · showing the last result",
             isStale: true

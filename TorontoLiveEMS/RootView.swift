@@ -55,6 +55,9 @@ struct RootView: View {
         /// The fire feed's list. Named for the source rather than the content, because a police
         /// one is coming and two screens cannot both be called "Active Incidents".
         case fire
+        /// The police incidents, which have no source yet. A screen of its own rather than a section
+        /// of the fire one: when the data arrives it will be a second feed, not a second list.
+        case police
         case map
         /// Not a page. See the refresh tab, which is put back the moment it is chosen.
         case refresh
@@ -62,6 +65,13 @@ struct RootView: View {
 
     @State private var feed: IncidentFeed
     @State private var screen: Screen = .fire
+
+    /// The police calls, owned here for the same reason the fire feed is: two screens reading two
+    /// copies could disagree about what is happening, and about how current it is.
+    ///
+    /// It is read when the reader opens the police tab rather than at launch — nothing else shows
+    /// these calls — and that load lives on the page.
+    @State private var policeFeed: PoliceCallFeed
 
     /// Which kind of map the map page draws.
     ///
@@ -74,6 +84,14 @@ struct RootView: View {
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
+
+    /// The sentence the alert shows.
+    ///
+    /// Stored rather than worked out when the alert appears, because **which feed produced it is
+    /// decided at the moment of the tap**: the reader can be on another tab by the time a fetch
+    /// comes back, and an alert that described whatever tab they had moved to would be describing
+    /// the wrong feed.
+    @State private var nothingNewerMessage = ""
 
     /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
     /// never touch the City's server.
@@ -88,8 +106,9 @@ struct RootView: View {
     /// "call to main actor-isolated initializer 'init(fetch:now:)' in a synchronous nonisolated
     /// context". Every caller here — the app entry point and the preview — is already a main
     /// actor context, so they can pass it themselves. Found by the compiler, not by thinking.
-    init(feed: IncidentFeed) {
+    init(feed: IncidentFeed, policeFeed: PoliceCallFeed) {
         _feed = State(initialValue: feed)
+        _policeFeed = State(initialValue: policeFeed)
     }
 
     var body: some View {
@@ -123,13 +142,21 @@ struct RootView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
+            // Which screen the info button opens is decided here rather than in the toolbar, because
+            // there is one button and two answers: the reader is looking at a tab, and the
+            // information they want is that tab's. A sheet covers the tab bar, so `screen` cannot
+            // move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                AboutThisDataView()
+                if screen == .police {
+                    PoliceCallsInformationView()
+                } else {
+                    AboutThisDataView()
+                }
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text(feed.nothingNewerMessage)
+                Text(nothingNewerMessage)
             }
             // Runs when the view appears. It deliberately does not run again when the app comes
             // back from the background: the previous result is still in memory, and the feed
@@ -152,6 +179,15 @@ struct RootView: View {
                 NavigationStack {
                     FirePage(feed: feed)
                         .navigationTitle("Active Fire Incidents")
+                        .inlineNavigationTitle()
+                        .barControls { toolbar }
+                }
+            }
+
+            Tab("Police", systemImage: "shield", value: Screen.police) {
+                NavigationStack {
+                    PolicePage(feed: policeFeed)
+                        .navigationTitle("Recent Police Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
                 }
@@ -239,22 +275,43 @@ struct RootView: View {
         Task { await refresh() }
     }
 
-    /// Refreshes, and says so when the City provably cannot have republished.
+    /// Refreshes the feed of the tab the reader is on, and says so when there is provably nothing
+    /// newer.
     ///
-    /// The acknowledgement is an alert rather than a change to the status line, because the
-    /// whole reason it exists is that a tap has to be visibly acknowledged — a silent skip is
-    /// indistinguishable from a dead button.
+    /// **One control above every tab, so it has to mean the tab it was tapped on.** It used to
+    /// refresh the fire feed wherever it was tapped. On the police tab that re-read the City's fire
+    /// data, left the calls exactly where they were, and — when the City had not republished — put
+    /// "Up to Date" over a screen of police calls. That is not a dead button, which is the failure
+    /// the alert was written to avoid; it is a false reassurance, which is worse.
     ///
-    /// **Kept deliberately, and against advice.** An alert makes the whole window inert while
-    /// it is up, which is itself indistinguishable from a dead button; the comment that used to
-    /// sit beside this said so. It survives this change so that the screen it sits beside is the
-    /// only thing that differs — changing both at once would leave no way to say which one a
-    /// failure belonged to. Whether it can fire at all, and what it does when it does, is #15
-    /// and #18.
+    /// `screen` is read here rather than passed in, because both ways of asking have already put it
+    /// right: the prominent tab restores the previous selection *before* it runs its task (see the
+    /// note there), and the toolbar's button is only ever tapped while its own page is on screen.
+    ///
+    /// The acknowledgement is an alert rather than a change to the status line, because the whole
+    /// reason it exists is that a tap has to be visibly acknowledged — a silent skip is
+    /// indistinguishable from a dead button. **Kept deliberately, and against advice:** an alert
+    /// makes the whole window inert while it is up, which is itself indistinguishable from a dead
+    /// button. What #15 and #18 were about was what it says and whether it is ever true; both tabs
+    /// now answer a refresh with a fact, so both can say this honestly.
     private func refresh() async {
-        if await feed.refresh() == .skipped {
-            isShowingNothingToUpdate = true
+        let outcome: RefreshOutcome
+        let message: String
+
+        switch screen {
+        case .police:
+            outcome = await policeFeed.refresh()
+            message = policeFeed.nothingNewerMessage
+        default:
+            outcome = await feed.refresh()
+            message = feed.nothingNewerMessage
         }
+
+        guard outcome == .skipped else {
+            return
+        }
+        nothingNewerMessage = message
+        isShowingNothingToUpdate = true
     }
 }
 
@@ -322,5 +379,8 @@ private extension View {
 }
 
 #Preview("App — sample data") {
-    RootView(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
+    RootView(
+        feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
+        policeFeed: PreviewCalls.feed()
+    )
 }

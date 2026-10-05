@@ -45,16 +45,22 @@ struct FirePage: View {
             switch presentation {
             case .compactTable:
                 CompactTableList(
-                    incidents: snapshot.incidents,
+                    rows: snapshot.incidents,
+                    columns: CompactColumn<Incident>.fire,
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
-                )
+                ) { incident in
+                    IncidentDetailView(incident: incident)
+                }
             case .cards:
                 CardsList(
-                    incidents: snapshot.incidents,
+                    rows: snapshot.incidents,
+                    columns: CompactColumn<Incident>.fireCard,
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
-                )
+                ) { incident in
+                    IncidentDetailView(incident: incident)
+                }
             }
         } else if let failureMessage = feed.failureMessage {
             ContentUnavailableView(

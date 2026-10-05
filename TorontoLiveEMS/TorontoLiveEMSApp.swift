@@ -12,7 +12,7 @@ import TorontoLiveEMSKit
 struct TorontoLiveEMSApp: App {
     var body: some Scene {
         WindowGroup {
-            RootView(feed: IncidentFeed())
+            RootView(feed: IncidentFeed(), policeFeed: PoliceCallFeed())
         }
     }
 }

@@ -81,6 +81,15 @@ def tags():
     return out
 
 
+def is_ancestor(commit):
+    """Whether a commit is in this checkout's history.
+
+    `merge-base --is-ancestor` answers with its exit status and prints nothing, so success is an
+    *empty string* rather than a missing value — which is why this asks `is not None` and not `if`.
+    """
+    return git("merge-base", "--is-ancestor", commit, "HEAD") is not None
+
+
 def main():
     problems = []
 
@@ -99,11 +108,25 @@ def main():
             "major.minor.checkpoint, and a letter would be refused by the App Store"
         )
 
-    checked = tags()
-    since = [tag for tag in checked if ordinal(tag[1]) >= ordinal(SCHEME_STARTED_AT[1:])]
+    all_tags = tags()
+    # Which tags this checkout contains, and which are the rule's business.
+    #
+    # **Only the tags in this checkout's history count for the tree comparison.** A checkpoint may be
+    # made on a branch — `docs/releasing.md` allows a branch to carry its own bump, so the merge
+    # commit's tree already says its own number — and until that branch lands its tag is not one
+    # `master` follows. Counting every tag against every checkout made `master` report a failure for
+    # as long as a checkpoint branch was open: this tool contradicting the rule it exists to enforce.
+    #
+    # The rule about a *tag's own tree* below is different, and applies to every tag wherever it
+    # lives: whether a tag carries its own number is a fact about that tag, not about the checkout
+    # looking at it.
+    checked = [tag for tag in all_tags if is_ancestor(tag[2])]
+    checked.sort(key=lambda tag: ordinal(tag[1]))
+    since = [tag for tag in all_tags if ordinal(tag[1]) >= ordinal(SCHEME_STARTED_AT[1:])]
     since.sort(key=lambda tag: ordinal(tag[1]))
     print(
-        f"  tags: {len(checked)} versioned, {len(since)} since {SCHEME_STARTED_AT}"
+        f"  tags: {len(all_tags)} versioned, {len(checked)} in this checkout, "
+        f"{len(since)} since {SCHEME_STARTED_AT}"
     )
 
     for name, number, commit in since:
@@ -115,8 +138,8 @@ def main():
                 f"a tag must carry its own number ({number})"
             )
 
-    if since and current:
-        newest = since[-1][1]
+    if checked and current:
+        newest = checked[-1][1]
         if current != newest:
             # Older is always wrong; newer means a checkpoint is being prepared, which the
             # new tag is about to make true — so it is reported, not failed.

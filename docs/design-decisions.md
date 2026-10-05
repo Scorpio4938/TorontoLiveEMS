@@ -176,6 +176,21 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   line, which read as though the value belonged to whichever column it landed under.
 - **Incident Number and Area are not columns.** They live in the model and in the
   detail view.
+- **The table and the cards are one implementation, and the column set is the parameter.** Two
+  pages need them — Fire and Police — and the second must not fork the first. What differs between
+  sources is *which* columns there are and how a row reads them; what does not differ is the grid,
+  the header, the cell renderer, the card, the accessibility fallback, the status line and the
+  arrangements picker. So a column becomes a value — a label, a cramped label, and how to read one
+  row — and each source declares its own array. **The count is therefore a property of the array
+  rather than a constant of the layout:** Fire declares five, Police declares four, and nothing in
+  the table assumes either.
+- **Equal shares are why that costs no measurements.** Every column takes
+  `.frame(maxWidth: .infinity)` in one `HStack`, in the header and in every row, so four columns
+  divide the width by four and five by five. Checked rather than assumed, because "four instead of
+  five" sounds like a layout problem and is not one.
+- **What stays per-source:** the columns each source declares, the detail view a row pushes, and
+  the card's four slots — which are positions rather than names, so each source decides what its
+  first line and its second line mean for its own data.
 
 ## The two arrangements
 

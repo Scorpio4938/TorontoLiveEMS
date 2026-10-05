@@ -30,16 +30,18 @@ struct CompactColumnTests {
         )
     }
 
-    @Test("is fixed at five columns, in the order they are shown")
+    @Test("is five columns, in the order they are shown")
     func columnSetAndOrder() {
-        // Order is load-bearing. The header and every row iterate allCases in step, so
-        // reordering this list silently relabels both grids at once and still compiles.
-        #expect(CompactColumn.allCases == [
-            .primeStreet,
-            .dispatchTime,
-            .incidentType,
-            .alarmLevel,
-            .dispatchedUnits,
+        // Order is load-bearing. The header and every row iterate this same array in step, so
+        // reordering it silently relabels both grids at once and still compiles. Five is this
+        // source's count rather than the table's — the table draws however many it is given, and
+        // the police set declares four.
+        #expect(CompactColumn<Incident>.fire.map(\.id) == [
+            "Prime Street",
+            "Dispatch Time",
+            "Incident Type",
+            "Alarm Level",
+            "Dispatched Units",
         ])
     }
 
@@ -49,13 +51,13 @@ struct CompactColumnTests {
         // most incidents — every medical one — and is a refinement of Prime Street
         // rather than a peer of it, so on a phone it spent width it rarely used. A test
         // rather than a comment because adding it back is a decision, not an oversight.
-        let labels = CompactColumn.allCases.map { $0.label.lowercased() }
+        let labels = CompactColumn<Incident>.fire.map { $0.label.lowercased() }
         #expect(!labels.contains { $0.contains("cross") })
     }
 
     @Test("names every field the way the City does")
     func everyColumnHasALabel() {
-        #expect(CompactColumn.allCases.map { $0.label } == [
+        #expect(CompactColumn<Incident>.fire.map { $0.label } == [
             "Prime Street",
             "Dispatch Time",
             "Incident Type",
@@ -68,7 +70,7 @@ struct CompactColumnTests {
     func fieldLabelsCarryNoBreak() {
         // This is the label the stacked layout shows beside each value, where a forced
         // break would be a stray blank line rather than a column that wraps.
-        for column in CompactColumn.allCases {
+        for column in CompactColumn<Incident>.fire {
             #expect(!column.label.contains("\n"))
         }
     }
@@ -82,7 +84,7 @@ struct CompactColumnTests {
         //
         // Forcing the break is the cheap fix. Narrowing that one column was tried and
         // reverted: it moved the widths, and the alignment with them.
-        for column in CompactColumn.allCases {
+        for column in CompactColumn<Incident>.fire {
             #expect(column.headerLabel.contains("\n") == (column == .alarmLevel))
         }
     }
@@ -90,14 +92,14 @@ struct CompactColumnTests {
     @Test("the header label is the field label wherever there is no break to force")
     func headerLabelDefaultsToTheFieldLabel() {
         // Only Alarm Level has a reason to differ, so only Alarm Level may.
-        for column in CompactColumn.allCases where column != .alarmLevel {
+        for column in CompactColumn<Incident>.fire where column.id != CompactColumn<Incident>.alarmLevel.id {
             #expect(column.headerLabel == column.label)
         }
     }
 
     @Test("shows the prime street exactly as published")
     func primeStreetIsPublished() {
-        let cell = CompactColumn.primeStreet.cell(for: incident(), timeFormat: .twelveHour)
+        let cell = CompactColumn<Incident>.primeStreet.cell(incident(), .twelveHour)
         #expect(cell.text == "QUEEN ST W")
         #expect(!cell.warrantsAttention)
     }
@@ -107,29 +109,30 @@ struct CompactColumnTests {
         // The City publishes an intersection instead of an address for some incidents and
         // leaves Prime Street blank. The cell used to be empty, hiding a location the feed
         // does supply, on exactly the incidents whose location is hardest to infer.
-        let cell = CompactColumn.primeStreet.cell(
-            for: incident(primeStreet: nil, crossStreets: "ARDAGH ST / JANE ST"),
-            timeFormat: .twelveHour
+        let intersectionOnly = incident(
+            primeStreet: nil,
+            crossStreets: "ARDAGH ST / JANE ST"
         )
+        let cell = CompactColumn<Incident>.primeStreet.cell(intersectionOnly, .twelveHour)
         #expect(cell.text == "ARDAGH ST / JANE ST")
         #expect(cell.isFallback)
     }
 
     @Test("marks nothing as a fallback when the prime street is there")
     func noFallbackWhenTheAddressIsPublished() {
-        let cell = CompactColumn.primeStreet.cell(
-            for: incident(primeStreet: "QUEEN ST W", crossStreets: "BAY ST / YORK ST"),
-            timeFormat: .twelveHour
+        let bothPublished = incident(
+            primeStreet: "QUEEN ST W",
+            crossStreets: "BAY ST / YORK ST"
         )
+        let cell = CompactColumn<Incident>.primeStreet.cell(bothPublished, .twelveHour)
         #expect(cell.text == "QUEEN ST W")
         #expect(!cell.isFallback)
     }
 
     @Test("shows the mark, unmarked, when neither street is published")
     func noLocationAtAll() {
-        let cell = CompactColumn.primeStreet.cell(
-            for: incident(primeStreet: nil, crossStreets: nil),
-            timeFormat: .twelveHour
+        let cell = CompactColumn<Incident>.primeStreet.cell(incident(primeStreet: nil, crossStreets: nil),
+            .twelveHour
         )
         #expect(cell.text == NotProvided.mark)
         #expect(!cell.isFallback)
@@ -145,8 +148,8 @@ struct CompactColumnTests {
             crossStreets: "ARDAGH ST / JANE ST",
             dispatchedUnits: nil
         )
-        for column in CompactColumn.allCases where column != .primeStreet {
-            #expect(!column.cell(for: barren, timeFormat: .twelveHour).isFallback)
+        for column in CompactColumn<Incident>.fire where column.id != CompactColumn<Incident>.primeStreet.id {
+            #expect(!column.cell(barren, .twelveHour).isFallback)
         }
     }
 
@@ -156,10 +159,7 @@ struct CompactColumnTests {
         // leaves the eye with nothing to land on. It shows the same slash the detail view
         // uses — and no substitution mark, because a slash is the absence of a location
         // rather than a location found elsewhere.
-        let cell = CompactColumn.primeStreet.cell(
-            for: incident(primeStreet: nil),
-            timeFormat: .twelveHour
-        )
+        let cell = CompactColumn<Incident>.primeStreet.cell(incident(primeStreet: nil), .twelveHour)
         #expect(cell.text == NotProvided.mark)
         #expect(cell.text == "/")
         #expect(!cell.isFallback)
@@ -167,14 +167,8 @@ struct CompactColumnTests {
 
     @Test("renders the dispatch time in the reader's chosen clock")
     func dispatchTimeFollowsTheSetting() {
-        let twelve = CompactColumn.dispatchTime.cell(
-            for: incident(),
-            timeFormat: .twelveHour
-        )
-        let twentyFour = CompactColumn.dispatchTime.cell(
-            for: incident(),
-            timeFormat: .twentyFourHour
-        )
+        let twelve = CompactColumn<Incident>.dispatchTime.cell(incident(), .twelveHour)
+        let twentyFour = CompactColumn<Incident>.dispatchTime.cell(incident(), .twentyFourHour)
         #expect(twelve.text == "6:24 PM")
         #expect(twentyFour.text == "18:24")
     }
@@ -183,9 +177,8 @@ struct CompactColumnTests {
     func incidentTypeIsCategorised() {
         // Width is the reason. `Vehicle - Personal Injury` is 26 characters in a column
         // that has room for about 11.
-        let cell = CompactColumn.incidentType.cell(
-            for: incident(incidentType: "Vehicle - Personal Injury"),
-            timeFormat: .twelveHour
+        let cell = CompactColumn<Incident>.incidentType.cell(incident(incidentType: "Vehicle - Personal Injury"),
+            .twelveHour
         )
         #expect(cell.text == "Vehicle")
     }
@@ -194,9 +187,8 @@ struct CompactColumnTests {
     func unknownIncidentTypeFallsBack() {
         // Degrading to the raw value is the point: a type the City adds later shows up
         // unreadable-but-correct rather than missing.
-        let cell = CompactColumn.incidentType.cell(
-            for: incident(incidentType: "Hovercraft - Inverted"),
-            timeFormat: .twelveHour
+        let cell = CompactColumn<Incident>.incidentType.cell(incident(incidentType: "Hovercraft - Inverted"),
+            .twelveHour
         )
         #expect(cell.text == "Hovercraft - Inverted")
         #expect(!cell.warrantsAttention)
@@ -204,14 +196,10 @@ struct CompactColumnTests {
 
     @Test("marks the categories where someone may be in danger")
     func dangerousCategoriesStandOut() {
-        let fire = CompactColumn.incidentType.cell(
-            for: incident(incidentType: "Fire - Residential"),
-            timeFormat: .twelveHour
+        let fire = CompactColumn<Incident>.incidentType.cell(incident(incidentType: "Fire - Residential"),
+            .twelveHour
         )
-        let medical = CompactColumn.incidentType.cell(
-            for: incident(incidentType: "MEDICAL"),
-            timeFormat: .twelveHour
-        )
+        let medical = CompactColumn<Incident>.incidentType.cell(incident(incidentType: "MEDICAL"), .twelveHour)
         #expect(fire.warrantsAttention)
         #expect(!medical.warrantsAttention)
     }
@@ -221,18 +209,9 @@ struct CompactColumnTests {
         // Level 0 is an initial response and covers almost every incident, so marking it would
         // mark everything; level 1 is one more crew. Level 2 is where the City's own meanings
         // reach ten or more vehicles.
-        let initial = CompactColumn.alarmLevel.cell(
-            for: incident(alarmLevel: "0"),
-            timeFormat: .twelveHour
-        )
-        let support = CompactColumn.alarmLevel.cell(
-            for: incident(alarmLevel: "1"),
-            timeFormat: .twelveHour
-        )
-        let major = CompactColumn.alarmLevel.cell(
-            for: incident(alarmLevel: "2"),
-            timeFormat: .twelveHour
-        )
+        let initial = CompactColumn<Incident>.alarmLevel.cell(incident(alarmLevel: "0"), .twelveHour)
+        let support = CompactColumn<Incident>.alarmLevel.cell(incident(alarmLevel: "1"), .twelveHour)
+        let major = CompactColumn<Incident>.alarmLevel.cell(incident(alarmLevel: "2"), .twelveHour)
         #expect(initial.text == "0")
         #expect(!initial.warrantsAttention)
         #expect(support.text == "1")
@@ -245,10 +224,7 @@ struct CompactColumnTests {
     func dispatchedUnitsArePublished() {
         // Decoding `P231` to `Pumper 231` is worth the characters in the detail view and
         // not here. The legend lives there.
-        let cell = CompactColumn.dispatchedUnits.cell(
-            for: incident(dispatchedUnits: "P231, P234"),
-            timeFormat: .twelveHour
-        )
+        let cell = CompactColumn<Incident>.dispatchedUnits.cell(incident(dispatchedUnits: "P231, P234"), .twelveHour)
         #expect(cell.text == "P231, P234")
         #expect(!cell.warrantsAttention)
     }
@@ -259,16 +235,13 @@ struct CompactColumnTests {
         // an absent roster costs the reader nothing — so this is a deliberate exception
         // rather than the rule spreading.
         let barren = incident(dispatchedUnits: nil)
-        #expect(CompactColumn.dispatchedUnits.cell(for: barren, timeFormat: .twelveHour).text == nil)
+        #expect(CompactColumn<Incident>.dispatchedUnits.cell(barren, .twelveHour).text == nil)
     }
 
     @Test("leaves the roster empty when the feed omits the element")
     func absentRosterIsEmpty() {
         // The feed omits units_disp entirely for roughly one incident in five.
-        let cell = CompactColumn.dispatchedUnits.cell(
-            for: incident(dispatchedUnits: nil),
-            timeFormat: .twelveHour
-        )
+        let cell = CompactColumn<Incident>.dispatchedUnits.cell(incident(dispatchedUnits: nil), .twelveHour)
         #expect(cell.text == nil)
     }
 }

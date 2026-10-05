@@ -44,130 +44,152 @@ public struct CompactCell: Equatable, Sendable {
     }
 }
 
-/// The compact table's columns, in the order they are shown.
+/// One column of the compact table: what it is called, and how it reads one row.
 ///
-/// This is the single source of truth for the column set — order, label, and the value
-/// each column draws from an Incident. It is fixed at five: the table never grows
-/// columns, so one layout serves every row on every device.
+/// **Generic over the row, because there is more than one source.** A fire incident and a police
+/// call are different things with different fields — which is why they get models of their own —
+/// but the table is *one* table: the same grid, the same equal shares, the same header, the same
+/// cell renderer, the same fallbacks at accessibility sizes. So a column is a value that knows how
+/// to read one row, and each source declares its own set.
 ///
-/// Cross Street is deliberately absent. It is blank on most incidents — every medical
-/// one — and it is a refinement of Prime Street rather than a peer of it, so on a phone
-/// it spent width it rarely used. It lives in the detail view. Incident Number and Area
-/// are there too. See `docs/design-decisions.md`.
+/// **The count is therefore a property of the set rather than a constant of the layout.** Fire
+/// declares five and police declares four, and nothing in the table assumes either, because every
+/// column takes an equal share of the width — four columns divide it by four.
 ///
-/// Lives in the package rather than the app target because it is content, not layout:
-/// it maps an Incident to strings and flags, and imports nothing from SwiftUI. That is
-/// what lets the mapping be tested. The measurements that lay these columns out are
-/// `CompactTable`, in the app target.
-public enum CompactColumn: CaseIterable, Sendable {
+/// This is what replaced a closed enum. The enum was the fire feed's five columns *and* the only
+/// shape a column could have, so a second source had nowhere to put its own.
+public struct CompactColumn<Row>: Sendable {
 
-    case primeStreet
-    case dispatchTime
-    case incidentType
-    case alarmLevel
-    case dispatchedUnits
+    /// The full name, for the card and for the labelled layout at accessibility text sizes.
+    public let label: String
 
-    /// The City's own label for the field, with no line break in it.
-    ///
-    /// This is the label the stacked layout shows beside each value, where a forced break
-    /// would be a stray blank line rather than a column that wraps.
-    public var label: String {
-        switch self {
-        case .primeStreet:
-            return "Prime Street"
-        case .dispatchTime:
-            return "Dispatch Time"
-        case .incidentType:
-            return "Incident Type"
-        case .alarmLevel:
-            return "Alarm Level"
-        case .dispatchedUnits:
-            return "Dispatched Units"
+    /// The cramped name, for the header above the grid, where width is the scarcest thing there is.
+    public let headerLabel: String
+
+    /// The cell this column draws for one row.
+    public let cell: @Sendable (Row, DispatchTimeFormat) -> CompactCell
+
+    public init(
+        label: String,
+        headerLabel: String? = nil,
+        cell: @escaping @Sendable (Row, DispatchTimeFormat) -> CompactCell
+    ) {
+        self.label = label
+        self.headerLabel = headerLabel ?? label
+        self.cell = cell
+    }
+}
+
+extension CompactColumn: Identifiable {
+
+    /// The label is the identity: no two columns in one set share one, and a column is the same
+    /// column whatever it happens to read. Taken from the label rather than stored beside it, so
+    /// the two cannot come to disagree — which is the failure the header alignment has already had
+    /// twice, in a different place.
+    public var id: String { label }
+}
+
+// MARK: - The fire feed's columns
+
+extension CompactColumn where Row == Incident {
+
+    /// The address, or the area the City published in its place.
+    public static let primeStreet = CompactColumn<Incident>(label: "Prime Street") { incident, _ in
+        // Normally the address, or the postal area the City publishes in its place for a
+        // medical incident. Both are `primeStreet`, and both are shown as published.
+        if let street = incident.primeStreet {
+            return CompactCell(street)
         }
+
+        // Prime Street is blank here, which means the City published an intersection and
+        // nothing else. Leaving the cell empty would hide a location the feed supplies,
+        // for the incidents whose location is hardest to guess — so the intersection
+        // stands in, marked as the fallback it is.
+        //
+        // Cross Street stays out of the table otherwise: it is a refinement of Prime
+        // Street rather than a peer of it, and it is blank on most incidents. See
+        // `docs/design-decisions.md`.
+        //
+        // Neither street, which happens. The address starts the row in both compact
+        // arrangements, so an empty cell there leaves the eye without anything to land
+        // on — the one place in the list where nothing at all looks like a fault rather
+        // than like restraint. It shows the same mark the detail view uses.
+        //
+        // No substitution mark on it. `⇄ /` would say that a location was found
+        // elsewhere and that the location is nothing.
+        //
+        // This is the only column that does this. The rest stay empty when the feed
+        // published nothing, because a column of slashes is noise and their absence costs
+        // the reader nothing.
+        guard let intersection = incident.crossStreets,
+              !intersection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else {
+            return CompactCell(NotProvided.mark)
+        }
+        return CompactCell(intersection, isFallback: true)
     }
 
-    /// The label as the column header shows it.
-    ///
-    /// Only `Alarm Level` differs. It is a character shorter than the next shortest
-    /// label, so it was the only header that fitted on one line while the other four
-    /// wrapped to two — which reads as a column of a different shape rather than as a
-    /// shorter label. The break is forced so all five match.
-    ///
-    /// Forcing it is the cheap fix. Narrowing that one column was tried and reverted: it
-    /// moved the widths, and the alignment with them.
-    public var headerLabel: String {
-        switch self {
-        case .alarmLevel:
-            return "Alarm\nLevel"
-        default:
-            return label
-        }
+    /// When the City was called.
+    public static let dispatchTime = CompactColumn<Incident>(label: "Dispatch Time") { incident, timeFormat in
+        CompactCell(DispatchTimestamp.clockTime(incident.dispatchTime, format: timeFormat))
     }
 
-    /// What to show in this column for an incident, and whether it should stand out.
-    ///
-    /// `nil` text means there is nothing to show. It renders as an empty cell — no
-    /// placeholder, no substitute.
-    ///
-    /// Anything we cannot interpret falls back to the published string.
-    public func cell(for incident: Incident, timeFormat: DispatchTimeFormat) -> CompactCell {
-        switch self {
-        case .primeStreet:
-            // Normally the address, or the postal area the City publishes in its place for a
-            // medical incident. Both are `primeStreet`, and both are shown as published.
-            if let street = incident.primeStreet {
-                return CompactCell(street)
-            }
-
-            // Prime Street is blank here, which means the City published an intersection and
-            // nothing else. Leaving the cell empty would hide a location the feed supplies,
-            // for the incidents whose location is hardest to guess — so the intersection
-            // stands in, marked as the fallback it is.
-            //
-            // Cross Street stays out of the table otherwise: it is a refinement of Prime
-            // Street rather than a peer of it, and it is blank on most incidents. See
-            // `docs/design-decisions.md`.
-            // Neither street, which happens. The address starts the row in both compact
-            // arrangements, so an empty cell there leaves the eye without anything to land
-            // on — the one place in the list where nothing at all looks like a fault rather
-            // than like restraint. It shows the same mark the detail view uses.
-            //
-            // No substitution mark on it. `⇄ /` would say that a location was found
-            // elsewhere and that the location is nothing.
-            //
-            // This is the only column that does this. The rest stay empty when the feed
-            // published nothing, because a column of slashes is noise and their absence costs
-            // the reader nothing.
-            guard let intersection = incident.crossStreets,
-                  !intersection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            else {
-                return CompactCell(NotProvided.mark)
-            }
-            return CompactCell(intersection, isFallback: true)
-
-        case .dispatchTime:
-            return CompactCell(
-                DispatchTimestamp.clockTime(incident.dispatchTime, format: timeFormat)
-            )
-
-        case .incidentType:
-            let category = IncidentCategory.from(incidentType: incident.incidentType)
-            return CompactCell(
-                category?.label ?? incident.incidentType,
-                warrantsAttention: category?.warrantsAttention ?? false
-            )
-
-        case .alarmLevel:
-            return CompactCell(
-                incident.alarmLevel,
-                warrantsAttention: AlarmLevel.isMajorResponse(incident.alarmLevel)
-            )
-
-        case .dispatchedUnits:
-            // Left exactly as published. Decoding `P231` to `Pumper 231` is worth the
-            // characters in the detail view and not here, where width is the scarcest
-            // thing we have.
-            return CompactCell(incident.dispatchedUnits)
-        }
+    /// The City's own words for the call, as a category.
+    public static let incidentType = CompactColumn<Incident>(label: "Incident Type") { incident, _ in
+        let category = IncidentCategory.from(incidentType: incident.incidentType)
+        return CompactCell(
+            category?.label ?? incident.incidentType,
+            warrantsAttention: category?.warrantsAttention ?? false
+        )
     }
+
+    /// How far the City escalated its response.
+    public static let alarmLevel = CompactColumn<Incident>(
+        label: "Alarm Level",
+        headerLabel: "Alarm\nLevel"
+    ) { incident, _ in
+        CompactCell(
+            incident.alarmLevel,
+            warrantsAttention: AlarmLevel.isMajorResponse(incident.alarmLevel)
+        )
+    }
+
+    /// The apparatus the City sent, exactly as published.
+    public static let dispatchedUnits = CompactColumn<Incident>(label: "Dispatched Units") { incident, _ in
+        // Left exactly as published. Decoding `P231` to `Pumper 231` is worth the
+        // characters in the detail view and not here, where width is the scarcest
+        // thing we have.
+        CompactCell(incident.dispatchedUnits)
+    }
+
+    /// The fire feed's columns, in the order the table shows them.
+    ///
+    /// The single source of truth for this source's column set — order, labels, and the value each
+    /// draws from an incident. **Five is this source's count, not the table's**: it is however many
+    /// fields the fire feed publishes that are worth a column.
+    ///
+    /// Cross Street is deliberately absent. It is blank on most incidents — every medical one —
+    /// and it is a refinement of Prime Street rather than a peer of it, so on a phone it spent
+    /// width it rarely used. It lives in the detail view, as Incident Number and Area do.
+    public static let fire: [CompactColumn<Incident>] = [
+        primeStreet,
+        dispatchTime,
+        incidentType,
+        alarmLevel,
+        dispatchedUnits,
+    ]
+
+    /// The same five in the order the *card* reads them: what and where, then when and how much.
+    ///
+    /// Not the table's order, and deliberately. A card has two lines rather than five columns, and
+    /// it puts the address beside the type because those are what the row is *about*; the clock,
+    /// the level and the crews follow underneath. The order is a property of the card, so a source
+    /// decides it for its own data — the shape is the same for both, which is the point.
+    public static let fireCard: [CompactColumn<Incident>] = [
+        primeStreet,
+        incidentType,
+        dispatchTime,
+        alarmLevel,
+        dispatchedUnits,
+    ]
 }

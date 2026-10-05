@@ -30,11 +30,6 @@ public final class IncidentFeed {
     /// have to look different on screen — a skipped refresh that says nothing is
     /// indistinguishable from a button that does not work — so the caller needs to be told
     /// which happened, not left to reconstruct it from a nil-versus-non-nil comparison.
-    public enum RefreshOutcome: Equatable, Sendable {
-        case refreshed
-        case skipped
-    }
-
     /// The most recent snapshot, or nothing if the first fetch has not succeeded.
     public private(set) var snapshot: LiveCADSnapshot?
 

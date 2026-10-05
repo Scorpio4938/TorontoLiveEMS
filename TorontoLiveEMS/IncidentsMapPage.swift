@@ -386,9 +386,9 @@ struct IncidentsMapPage: View {
     /// rows are told apart by their type and their dispatch time, which is why those are what
     /// the second line carries.
     private func row(for incident: Incident) -> some View {
-        let location = CompactColumn.primeStreet.cell(for: incident, timeFormat: dispatchTimeFormat)
-        let type = CompactColumn.incidentType.cell(for: incident, timeFormat: dispatchTimeFormat)
-        let time = CompactColumn.dispatchTime.cell(for: incident, timeFormat: dispatchTimeFormat)
+        let location = CompactColumn<Incident>.primeStreet.cell(incident, dispatchTimeFormat)
+        let type = CompactColumn<Incident>.incidentType.cell(incident, dispatchTimeFormat)
+        let time = CompactColumn<Incident>.dispatchTime.cell(incident, dispatchTimeFormat)
 
         return VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {

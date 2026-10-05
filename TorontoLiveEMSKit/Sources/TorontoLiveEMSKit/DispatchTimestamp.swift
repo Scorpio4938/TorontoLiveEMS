@@ -1,4 +1,6 @@
 /// How a dispatch time should be rendered for reading.
+import Foundation
+
 public enum DispatchTimeFormat: String, CaseIterable, Sendable {
 
     /// `6:24 PM` — what the City's own page shows.
@@ -45,6 +47,92 @@ public enum DispatchTimestamp {
             return published
         }
         return "\(parts.month) \(parts.day), \(parts.twelveHour)"
+    }
+
+    /// The clock time of an instant, in the reader's own zone.
+    ///
+    /// **The fire feed publishes a wall-clock string and it is shown as published** — see the note at
+    /// the top of this type, which is why that path never goes near a date formatter. A police call
+    /// publishes an *instant* instead, and an instant has no clock until somebody chooses a zone.
+    /// The reader's own is the only honest choice.
+    ///
+    /// Done through `Calendar` rather than `DateFormatter`, for the reason the rest of this type is
+    /// done by hand: the parts are what the app wants, and a formatter would put the format in a
+    /// locale's hands instead of in the reader's setting. The calendar is a parameter so that a test
+    /// can pin a zone rather than depend on the machine it runs on.
+    public static func clockTime(
+        _ instant: Date,
+        format: DispatchTimeFormat = .twelveHour,
+        calendar: Calendar = .current
+    ) -> String {
+        let parts = calendar.dateComponents([.hour, .minute], from: instant)
+        // Unreachable for a real `Date` and a real `Calendar`, and marked rather than guessed at: a
+        // caller cannot tell the difference between a component that failed and midnight.
+        guard let hour = parts.hour, let minute = parts.minute else { return NotProvided.mark }
+
+        switch format {
+        case .twentyFourHour:
+            return String(format: "%02d:%02d", hour, minute)
+        case .twelveHour:
+            let display = hour % 12 == 0 ? 12 : hour % 12
+            return String(format: "%d:%02d %@", display, minute, hour < 12 ? "AM" : "PM")
+        }
+    }
+
+    /// The publisher's clock, which is the one the City's own line is written on.
+    ///
+    /// A fixed zone rather than the reader's, and named rather than inferred: one instant is a
+    /// different wall clock in every zone, and the clock this data is written on is Toronto's. The
+    /// fallback is GMT rather than `.current` so that the answer never depends on the device — a
+    /// rendering that quietly followed the reader would make the tests depend on the machine they run
+    /// on, which is the thing the `calendar:` parameters in this type exist to prevent.
+    public static var torontoCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Toronto") ?? .gmt
+        return calendar
+    }
+
+    /// An instant in the shape the City publishes its own refresh tick in: `2026-10-05 14:00:02`.
+    ///
+    /// **Toronto's clock, not the reader's.** The fire feed's status line quotes the City's string,
+    /// which is Toronto wall-clock and unshifted by where the reader is; the police feed has an instant
+    /// and no string, so it is rendered on the publisher's clock to match. Two lines a reader compares
+    /// should be on one clock as well as in one shape.
+    ///
+    /// By hand rather than with a `DateFormatter`, for this type's usual reason and one more: a
+    /// formatter would put the calendar in a locale's hands, and a reader whose device is set to a
+    /// non-Gregorian calendar would see the Service's clock in a year it has never published.
+    public static func publishedStamp(
+        _ instant: Date,
+        calendar: Calendar = torontoCalendar
+    ) -> String {
+        let parts = calendar.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: instant
+        )
+        // Unreachable for a real `Date` and a real `Calendar`, and marked rather than guessed at — the
+        // same judgement the instant-based clock time above makes.
+        guard let year = parts.year,
+              let month = parts.month,
+              let day = parts.day,
+              let hour = parts.hour,
+              let minute = parts.minute,
+              let second = parts.second
+        else {
+            return NotProvided.mark
+        }
+
+        let date = "\(padded(year, to: 4))-\(padded(month, to: 2))-\(padded(day, to: 2))"
+        let time = "\(padded(hour, to: 2)):\(padded(minute, to: 2)):\(padded(second, to: 2))"
+        return "\(date) \(time)"
+    }
+
+    /// Padded by hand rather than with `String(format:)`, which is the judgement the published-string
+    /// path in this type already records: an `Int` against `%d` is a width mismatch on a 64-bit
+    /// platform, and it is the kind that produces a plausible wrong answer rather than a crash.
+    private static func padded(_ value: Int, to width: Int) -> String {
+        let text = String(value)
+        return String(repeating: "0", count: max(0, width - text.count)) + text
     }
 
     private struct Parts {
