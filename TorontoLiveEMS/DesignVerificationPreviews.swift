@@ -73,54 +73,85 @@ private let previewStatus = FeedStatus(
 // disagree with the app about the thing it exists to show — which the first draft of this
 // file did, in both layouts at once.
 
+/// The real table over the sample incidents, so a preview cannot show a layout the app does not
+/// have. The columns are the fire feed's own, from the package — the previews do not carry a second
+/// copy of them, which is what the eight call sites below used to do.
+private func fireTable(
+    _ timeFormat: DispatchTimeFormat,
+    status: FeedStatus = previewStatus
+) -> some View {
+    CompactTableList(
+        rows: PreviewIncidents.all,
+        columns: CompactColumn<Incident>.fire,
+        timeFormat: timeFormat,
+        status: status
+    ) { incident in
+        IncidentDetailView(incident: incident)
+    }
+}
+
+/// The real cards over the same data, in the fire feed's card order.
+private func fireCards(
+    _ timeFormat: DispatchTimeFormat,
+    status: FeedStatus = previewStatus
+) -> some View {
+    CardsList(
+        rows: PreviewIncidents.all,
+        columns: CompactColumn<Incident>.fireCard,
+        timeFormat: timeFormat,
+        status: status
+    ) { incident in
+        IncidentDetailView(incident: incident)
+    }
+}
+
 #Preview("Table — light") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
 }
 
 #Preview("Table — dark") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .preferredColorScheme(.dark)
 }
 
 #Preview("Table — 24-hour") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twentyFourHour, status: previewStatus)
+    fireTable(.twentyFourHour)
 }
 
 /// What the accessibility layout does, which is otherwise only reachable by changing a
 /// system setting and then finding it.
 #Preview("Table — accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 
 /// The largest size the system offers. This is the one issue #9 is about.
 #Preview("Table — largest accessibility text") {
-    CompactTableList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireTable(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 #Preview("Cards — light") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
 }
 
 #Preview("Cards — dark") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
         .preferredColorScheme(.dark)
 }
 
 /// Cards are already a stack of two lines, so there is no separate accessibility layout
 /// for them — this is what they do at those sizes, which should simply be bigger.
 #Preview("Cards — largest accessibility text") {
-    CardsList(incidents: PreviewIncidents.all, timeFormat: .twelveHour, status: previewStatus)
+    fireCards(.twelveHour)
         .environment(\.dynamicTypeSize, .accessibility5)
 }
 
 /// The status line's warning state, which is otherwise only reachable by breaking the
 /// network mid-session.
 #Preview("Cards — last result kept") {
-    CardsList(
-        incidents: PreviewIncidents.all,
-        timeFormat: .twelveHour,
+    fireCards(
+        .twelveHour,
         status: FeedStatus(
             text: "City data as of 2026-09-29 20:00:01 · showing the last result",
             isStale: true
