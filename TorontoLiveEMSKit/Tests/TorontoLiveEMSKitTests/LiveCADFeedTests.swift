@@ -44,4 +44,14 @@ struct LiveCADFeedTests {
     func pageNameIsTheCitysOwn() {
         #expect(LiveCADFeed.pageName == "Toronto Fire Active Incidents")
     }
+
+    @Test("offers the page as a URL the screens can link to")
+    func pageURLIsUsable() throws {
+        // The test above checks the string parses. This checks the property the views actually use,
+        // because a link built from a URL that did not parse is a row that does nothing at all —
+        // which is why the view does not force-unwrap it.
+        let url = try #require(LiveCADFeed.pageURL)
+        #expect(url.scheme == "https")
+        #expect(url.host() == "www.toronto.ca")
+    }
 }

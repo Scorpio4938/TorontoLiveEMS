@@ -1,3 +1,5 @@
+import Foundation
+
 /// The live active-incident feed published by Toronto Fire Services.
 ///
 /// This endpoint is undocumented. It is not on the City's Open Data portal and
@@ -31,6 +33,16 @@ public enum LiveCADFeed {
     /// undocumented and was never offered for readers.
     public static let pageURLString =
         "https://www.toronto.ca/community-people/public-safety-alerts/alerts-notifications/toronto-fire-active-incidents/"
+
+    /// The same page as a URL, for the places that need one.
+    ///
+    /// Optional because `URL(string:)` is, not because this one can fail — and the test asserts it
+    /// parses, so a typo in the string above is caught where a typo belongs, rather than by a link
+    /// that quietly does nothing when a reader taps it. That is the whole reason this exists rather
+    /// than a `URL(string:)!` in a view: a force-unwrap in a screen is an assertion nobody tested.
+    public static var pageURL: URL? {
+        URL(string: pageURLString)
+    }
 
     /// The live feed's URL.
     ///
