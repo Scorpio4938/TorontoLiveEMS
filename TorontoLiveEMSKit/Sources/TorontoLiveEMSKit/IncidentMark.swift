@@ -159,14 +159,15 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return .alarm
             case "SEEAM":
                 return .medical
-            case "MISVU":
+            case "JUVLO", "MISCH", "MISEL", "MISVU":
                 return .rescue
             case "HAZ":
                 return .hazard
-            case "IMPDR", "PDACC", "PIACC", "WRWAY":
+            case "IMPDR", "PDACC", "PIACC", "TRAOB", "WRWAY":
                 return .traffic
-            case "ARR", "ASS", "ASSJU", "ASSPR", "ATTBR", "BREEN", "DAM", "EXPJU", "FRA",
-                 "INDEX", "PERGU", "THEAU", "THEJU", "THEPR", "TRE":
+            case "ARR", "ASS", "ASSJU", "ASSPR", "ATTBR", "BREEN", "BREJU", "BREPR", "DAM",
+                 "DAMPR", "EXPJU", "FRA", "FRAPR", "INDEX", "PERGU", "PERKN", "ROB", "THE",
+                 "THEAU", "THEJU", "THEPR", "THEVE", "TRE":
                 return .crime
             case "DEMO", "DIS", "DISPU", "FIG":
                 return .disturbance
@@ -253,18 +254,24 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         ///
         /// `UNKTR` is `.unknown` because the Service's own word for it is that it does not know, and so
         /// is any code this table has not met, because then it is this app that does not.
+        ///
+        /// **The rule the entries follow, stated so it can be disagreed with**: something *in progress*
+        /// or *just occurred*, or a weapon in somebody's hand, is at least elevated and often critical;
+        /// a plain report of something that has already happened is elevated or routine. It is applied
+        /// by hand, one code at a time — the entries are a table rather than a rule because the codes
+        /// are not compositional, and `ROB` sitting beside `PERKN` is a decision rather than a parsing.
         public init(callTypeCode code: String) {
             switch code {
-            case "PERGU", "ASSPR", "ASSJU", "FIR", "HAZ", "WRWAY":
+            case "PERGU", "PERKN", "ASSPR", "ASSJU", "FIR", "HAZ", "MISCH", "WRWAY":
                 // A person with a gun, an assault in progress, a fire, a hazard, a car driving the
                 // wrong way up a road: the ones where somebody may be in danger as the call arrives.
                 self = .critical
-            case "ASS", "ATTBR", "BREEN", "EXPJU", "FIG", "IMPDR", "INDEX", "MISVU", "PIACC",
-                 "SEEAM", "THEJU", "THEPR":
+            case "ASS", "ATTBR", "BREEN", "BREJU", "BREPR", "DAMPR", "EXPJU", "FIG", "FRAPR",
+                 "IMPDR", "INDEX", "MISEL", "MISVU", "PIACC", "ROB", "SEEAM", "THEJU", "THEPR":
                 // Serious, and already happened, or happening to property rather than to a person.
                 self = .elevated
-            case "ARR", "DAM", "DEMO", "DIS", "DISPU", "FIRAL", "FOUPR", "FRA", "PDACC",
-                 "THEAU", "TRE":
+            case "ARR", "DAM", "DEMO", "DIS", "DISPU", "FIRAL", "FOUPR", "FRA", "JUVLO", "PDACC",
+                 "THE", "THEAU", "THEVE", "TRAOB", "TRE":
                 self = .routine
             case "UNKTR":
                 self = .unknown

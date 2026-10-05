@@ -206,6 +206,16 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "ASSPR")).urgency == .critical)
         #expect(IncidentMark(call: Self.call(code: "ASS")).urgency == .elevated)
         #expect(IncidentMark(call: Self.call(code: "DIS")).urgency == .routine)
+
+        // The twelve that arrived in a later window, of which two were seen on a map as question marks.
+        #expect(IncidentMark(call: Self.call(code: "ROB")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "ROB")).urgency == .elevated)
+        #expect(IncidentMark(call: Self.call(code: "PERKN")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "PERKN")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "MISCH")).category == .rescue)
+        #expect(IncidentMark(call: Self.call(code: "MISCH")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "TRAOB")).category == .traffic)
+        #expect(IncidentMark(call: Self.call(code: "TRAOB")).urgency == .routine)
     }
 
     @Test("a call nobody named is unknown, not ordinary")

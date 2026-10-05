@@ -20,10 +20,12 @@ struct PoliceCallTypeTests {
 
     @Test("the count is pinned, so changing the list is deliberate")
     func countIsPinned() {
-        // The list is static and was gathered once, from the ninety-six calls the Service held on
-        // 2026-10-05. A change to it should be a decision somebody made rather than something that
-        // drifted in, which is what this assertion is for.
-        #expect(PoliceCallType.documented.count == 30)
+        // The list is static and was gathered from two windows of the Service's four hours — ninety-six
+        // calls that yielded thirty codes, and a later one that yielded twelve more. A change to it
+        // should be a decision somebody made rather than something that drifted in, which is what this
+        // assertion is for. The count is not a target: it is a record of what has been seen, and it will
+        // be wrong the moment the Service uses something new.
+        #expect(PoliceCallType.documented.count == 42)
     }
 
     @Test("no entry is blank")
@@ -42,6 +44,10 @@ struct PoliceCallTypeTests {
         #expect(byCode["DIS"] == "DISORDERLIES")
         #expect(byCode["PERGU"] == "PERSON WITH A GUN")
         #expect(byCode["UNKTR"] == "UNKNOWN TROUBLE")
+        // The two that arrived second, and the reason there was a second gathering at all: a robbery and
+        // a person with a knife were both drawn as question marks because their codes were unknown.
+        #expect(byCode["ROB"] == "ROBBERY")
+        #expect(byCode["PERKN"] == "PERSON WITH A KNIFE")
     }
 
     @Test("the codes cannot be read as abbreviations, which is why they are listed")
