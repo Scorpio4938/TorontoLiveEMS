@@ -270,12 +270,20 @@ struct IncidentMarkTests {
                 "\(category.symbol) is not a symbol this system knows"
             )
         }
-        // And the filter's, which are drawn in the chrome rather than on the map: `all` wears a glyph
-        // nothing else in the app uses, so it is the one of these that has never been drawn before.
+        // And the chrome's, which are drawn in a capsule rather than on the map: the filter's three, and
+        // the map kinds' two. These are the ones a change of mind edits — `map.fill` became `map` the
+        // day the standard kind's glyph was looked at on a device — so they are the ones most worth
+        // asking the catalogue about.
         for option in MapFilter.allCases {
             #expect(
                 UIImage(systemName: option.systemImage) != nil,
                 "\(option.systemImage) is not a symbol this system knows"
+            )
+        }
+        for kind in MapKind.allCases {
+            #expect(
+                UIImage(systemName: kind.systemImage) != nil,
+                "\(kind.systemImage) is not a symbol this system knows"
             )
         }
     }
