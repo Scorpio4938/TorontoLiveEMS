@@ -5,9 +5,14 @@ import TorontoLiveEMSKit
 ///
 /// **Named for whose data it is, not for what it shows.** The feed is Toronto Fire Services' — the
 /// City's own page for it is *"Toronto Fire Active Incidents"* — and police data is coming, which
-/// will want a screen of its own. So the screen, its tab and its title are all **Fire**, and the
-/// descriptive phrase lives in *About this Data*, where the City's words belong anyway. Two list
-/// screens cannot both be titled "Active Incidents".
+/// will want a screen of its own. So the screen and its tab are **Fire**, and the title says what
+/// the screen holds: **Active Fire Incidents**. Two list screens cannot both be titled "Active
+/// Incidents", and naming each by its source is what tells them apart.
+///
+/// **Why the title is not just "Fire".** It was, for a few minutes, to match the tab — and the tab
+/// is the right place for the short name, because a tab is a label in a bar. The title is a
+/// sentence above the table, where there is room to say whose incidents these are and that they are
+/// active, which is what a reader arriving on this screen wants to know.
 ///
 /// This used to be the whole app's body. The chrome that surrounded it — the title, the toolbar,
 /// the sheets, the alert — is the *app's* rather than this screen's, and lives in `RootView` now.

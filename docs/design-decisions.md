@@ -650,13 +650,16 @@ say which of them mattered.
   own bar — which is also what carries that view's back button.
 
 - **The list page is named for whose data it is.** It was "Incidents", which was true while there
-  was one feed and stopped being true the moment a second was planned. It is **Fire** now — the
-  screen, its tab and its title — because the feed is Toronto Fire Services', whose own page for it
-  is *"Toronto Fire Active Incidents"*, and because a police feed is coming which will want a
-  screen of its own. Two list screens cannot both be titled "Active Incidents", so the descriptive
-  phrase lives in *About this Data*, where the City's words belong anyway. **The map keeps its
-  generic name on purpose**: it is not a feed's screen, and when the police feed arrives it will
-  show both.
+  was one feed and stopped being true the moment a second was planned. The screen and its tab are
+  **Fire** now, and its title is **Active Fire Incidents** — because the feed is Toronto Fire
+  Services', whose own page for it is *"Toronto Fire Active Incidents"*, and because a police feed
+  is coming which will want a screen of its own. Two list screens cannot both be titled "Active
+  Incidents", and naming each by its source is what tells them apart.
+- **The tab is short and the title is not, on purpose.** The tab is a label in a busy bar, so it is
+  one word; the title is a sentence above the table, where there is room to say whose incidents
+  these are and that they are active. A title of just "Fire" says less than the screen knows.
+  **The map keeps its generic name**, and for the same reason: it is not a feed's screen, and when
+  the police feed arrives it will show both.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
 `.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and

@@ -151,7 +151,7 @@ struct RootView: View {
                 // here rather than once around the whole `TabView`.
                 NavigationStack {
                     FirePage(feed: feed)
-                        .navigationTitle("Fire")
+                        .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
                 }
@@ -190,7 +190,7 @@ struct RootView: View {
                 // this ever is on screen, it does not claim to be a page of its own.
                 NavigationStack {
                     FirePage(feed: feed)
-                        .navigationTitle("Fire")
+                        .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                 }
             }
