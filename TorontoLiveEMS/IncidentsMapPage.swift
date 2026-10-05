@@ -125,7 +125,7 @@ struct IncidentsMapPage: View {
                     // mark, so an area is coloured by what is in it rather than by being an area.
                     // The orange that used to be painted on every postal area was the shape's
                     // colour, which meant the map said "look here" about a quiet neighbourhood.
-                    let colour = MarkColour.of(warrantsAttention: place.mark.warrantsAttention)
+                    let colour = MarkColour.of(place.mark.urgency)
 
                     if case .area(let pieces, _) = place.geometry {
                         // The area the City named, drawn as the area it is. All of it: twenty of
@@ -349,13 +349,12 @@ struct IncidentsMapPage: View {
 
     /// The mark a place wears: its most serious incident's.
     ///
-    /// Chosen by whether an incident warrants attention, because that is what the colour means — and
-    /// otherwise the first, which is the order the feed published them in. A place with one incident
-    /// has one answer, and a place with two has the more serious of them, which is the judgement this
-    /// page made about colour before it had marks at all.
+    /// The most serious of them, by `Urgency.rank`. A place with one record has one answer, and a
+    /// place with two has the more serious of the two — the judgement this page made about colour
+    /// before it had marks at all, now made against the severity rather than against a flag.
     private func mostSeriousMark(among incidents: [Incident]) -> IncidentMark? {
         let marks = incidents.map(IncidentMark.init(incident:))
-        return marks.first { $0.warrantsAttention } ?? marks.first
+        return marks.min { $0.urgency.rank < $1.urgency.rank }
     }
 
     private var selectedPlace: Place? {
@@ -578,6 +577,9 @@ struct IncidentsMapPage: View {
         // and what a mark on the map looks like cannot drift apart: there is one answer to "does this
         // warrant attention", and it is the mark's.
         let mark = IncidentMark(incident: incident)
+        // Critical and nothing else: this is a line of text in a card, and the two-step question is
+        // the right one for a row — the same one the table's tint asks.
+        let isCritical = mark.urgency == .critical
 
         return VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
@@ -588,12 +590,12 @@ struct IncidentsMapPage: View {
                     Image(systemName: "arrow.left.and.right")
                         .font(.caption2)
                 }
-                if mark.warrantsAttention {
+                if isCritical {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2)
                 }
             }
-            .foregroundStyle(mark.warrantsAttention ? MarkColour.urgent : Color.primary)
+            .foregroundStyle(isCritical ? MarkColour.critical : Color.primary)
 
             Text([type.text, time.text].compactMap { $0 }.joined(separator: " · "))
                 .font(.caption2)
@@ -625,7 +627,7 @@ private struct MapPin: View {
     let mark: IncidentMark
 
     private var colour: Color {
-        MarkColour.of(warrantsAttention: mark.warrantsAttention)
+        MarkColour.of(mark.urgency)
     }
 
     var body: some View {

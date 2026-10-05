@@ -82,22 +82,33 @@ struct IncidentMarkTests {
 
     // MARK: - What the colour is allowed to mean
 
-    @Test("attention is the incident's rule, not a re-reading of its category")
-    func attentionComesFromTheIncident() {
-        // A mark that derived this from its category alone would call a major response to an ordinary
-        // medical call nothing to look at. The incident's own rule weighs the Alarm Level as well,
-        // which is why the mark carries the answer rather than working it out again.
+    @Test("severity is the incident's rule, not a re-reading of its category")
+    func severityComesFromTheIncident() {
+        // A mark deriving this from its category alone would call a major response to an ordinary
+        // medical call nothing to look at. The severity weighs the Alarm Level too, which is why the
+        // mark carries the answer rather than working it out again — and it is two steps rather than a
+        // flag now, so the escalation has somewhere to land other than in with the fires.
         let quiet = Self.incident(type: "Medical", alarmLevel: "1")
-        #expect(!IncidentMark(incident: quiet).warrantsAttention)
+        #expect(IncidentMark(incident: quiet).urgency == .routine)
 
         let escalated = Self.incident(type: "Medical", alarmLevel: "2")
-        #expect(IncidentMark(incident: escalated).warrantsAttention)
+        #expect(IncidentMark(incident: escalated).urgency == .elevated)
     }
 
-    @Test("a fire is urgent without needing an alarm level")
-    func dangerousCategoriesAreUrgentOnTheirOwn() {
+    @Test("a fire is critical without needing an alarm level")
+    func dangerousCategoriesAreCriticalOnTheirOwn() {
         let fire = Self.incident(type: "Fire - Residential", alarmLevel: "1")
-        #expect(IncidentMark(incident: fire).warrantsAttention)
+        #expect(IncidentMark(incident: fire).urgency == .critical)
+    }
+
+    @Test("the severities are ordered, and unknown is not the least serious")
+    func severitiesHaveAnOrder() {
+        // The order exists to choose between two records at one place. `unknown` sits last without
+        // being a claim about danger: where two calls share a point, one that says something beats one
+        // that says nothing.
+        #expect(IncidentMark.Urgency.critical.rank < IncidentMark.Urgency.elevated.rank)
+        #expect(IncidentMark.Urgency.elevated.rank < IncidentMark.Urgency.routine.rank)
+        #expect(IncidentMark.Urgency.routine.rank < IncidentMark.Urgency.unknown.rank)
     }
 
     // MARK: - What the filter will read, and what the marks look like
@@ -182,14 +193,40 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "BRANDNEW")).category == .other)
     }
 
-    @Test("a police call never claims to warrant attention")
-    func policeCallsCarryNoUrgency() {
-        // The Service publishes no urgency, and this app will not decide on its behalf which kinds of
-        // call are serious. Checked across every code the app knows rather than on a sample.
+    @Test("a police call's severity is inferred from its code, and inferred here")
+    func policeSeverityIsInferred() {
+        // **This reverses an earlier decision, deliberately and on the reader's instruction.** The
+        // Service publishes no severity for a call, and an earlier version of this file refused to
+        // supply one — which was honest and useless, because an assault and a found bicycle then looked
+        // identical on the map. What is left is an inference, made here rather than by the Service, and
+        // written down where it can be argued with. The three spot checks below are the argument in
+        // miniature: violence where somebody may be in danger now, violence that has already happened,
+        // and an ordinary call.
+        #expect(IncidentMark(call: Self.call(code: "PERGU")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "ASSPR")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "ASS")).urgency == .elevated)
+        #expect(IncidentMark(call: Self.call(code: "DIS")).urgency == .routine)
+    }
+
+    @Test("a call nobody named is unknown, not ordinary")
+    func anUnnamedCallIsUnknown() {
+        // The Service's own word for `UNKTR` is that it does not know; for a code it has started using
+        // since, it is this app that does not. Both are `.unknown` rather than `.routine`, because "we
+        // cannot say how serious this is" is a different claim from "this is ordinary".
+        #expect(IncidentMark(call: Self.call(code: "UNKTR")).urgency == .unknown)
+        #expect(IncidentMark(call: Self.call(code: "BRANDNEW")).urgency == .unknown)
+    }
+
+    @Test("every code in the app's list has a severity")
+    func everyDocumentedCodeHasASeverity() {
+        // The table has a default, so an unmapped code is not a crash — it is `.unknown`. That is the
+        // right answer for a code the Service has just started using and the wrong one for a code the
+        // app itself lists, so the list is walked: adding a code forces a decision about how serious it
+        // is, rather than quietly filing it as unknown.
         for type in PoliceCallType.documented {
             #expect(
-                !IncidentMark(call: Self.call(code: type.code)).warrantsAttention,
-                "\(type.code) claimed an urgency nobody published"
+                IncidentMark.Urgency(callTypeCode: type.code) != .unknown || type.code == "UNKTR",
+                "\(type.code) (\(type.name)) fell through to unknown"
             )
         }
     }

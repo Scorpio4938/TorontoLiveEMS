@@ -8,7 +8,7 @@ import Foundation
 /// colours, and two chances to disagree about what a thing looks like. Everything the map needs in
 /// order to draw now comes from here, and the map stops knowing what a fire incident is.
 ///
-/// **Colour is deliberately not part of a mark's identity.** A mark's colour is `warrantsAttention`'s
+/// **Colour is deliberately not part of a mark's identity.** A mark's colour is `urgency`'s
 /// business — state, not taxonomy — and `MarkColour` holds that rule in one place. The **symbol**
 /// carries the kind, so "this is a medical call" and "this one is urgent" stay two facts instead of
 /// one fact made to do both jobs. `IncidentCategory`'s own note records the same decision from the
@@ -183,36 +183,108 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
     public let source: Source
     public let category: Category
 
-    /// Whether this warrants attention, which is what the mark's colour shows.
+    /// How much this incident matters, which is what the mark's colour shows.
     ///
-    /// **Not derivable from `category` alone**, which is why the mark carries it: the fire feed's rule
-    /// also weighs an Alarm Level, and that is a property of one response rather than of a kind of
-    /// incident. `Incident.warrantsAttention` is the one home of the rule. Police calls answer `false`
-    /// because the Service publishes no urgency for them — a judgement this app would otherwise be
-    /// inventing.
-    public let warrantsAttention: Bool
+    /// The **symbol** carries the kind; this carries the weight. Keeping them apart is the rule the
+    /// fire side already recorded — colour marks state, not taxonomy — and the reason the two live in
+    /// different properties.
+    public let urgency: Urgency
 
     public var id: String {
         "\(source.rawValue).\(category.rawValue)"
     }
 
-    public init(source: Source, category: Category, warrantsAttention: Bool) {
+    public init(source: Source, category: Category, urgency: Urgency) {
         self.source = source
         self.category = category
-        self.warrantsAttention = warrantsAttention
+        self.urgency = urgency
+    }
+
+    /// How much an incident matters.
+    ///
+    /// **Four steps, three tones.** `routine` and `unknown` are different claims — "this is ordinary"
+    /// and "nobody has said how serious this is" — and they are drawn the same colour, because the
+    /// map's job is to say what is alarming and neither of them is. What tells them apart is the
+    /// symbol, which is where a kind belongs.
+    public enum Urgency: String, CaseIterable, Sendable {
+        case critical
+        case elevated
+        case routine
+        case unknown
+
+        /// Where a severity sits in the order, for choosing between two records at one place.
+        ///
+        /// `critical` first, `unknown` after `routine` — which is not a claim that an unnamed call is
+        /// the least serious. It is that where two records share a place, one that says something beats
+        /// one that says nothing.
+        public var rank: Int {
+            switch self {
+            case .critical: return 0
+            case .elevated: return 1
+            case .routine: return 2
+            case .unknown: return 3
+            }
+        }
+
+        /// The severity of a fire incident, from the two halves of the rule the app already had.
+        ///
+        /// **Nothing new is judged here.** `Incident.warrantsAttention` is a dangerous *category* or a
+        /// *major response*, and those are two different amounts of attention — which is exactly what
+        /// collapsing them into one yes-or-no hid. A fire is critical; ten vehicles sent to a medical
+        /// call is elevated; the rest is routine.
+        public init(incident: Incident) {
+            if IncidentCategory.from(incidentType: incident.incidentType)?.warrantsAttention == true {
+                self = .critical
+            } else if AlarmLevel.isMajorResponse(incident.alarmLevel) {
+                self = .elevated
+            } else {
+                self = .routine
+            }
+        }
+
+        /// The severity of a police call, inferred from the Service's own code.
+        ///
+        /// **Inferred, and this app is the one inferring it.** The Service publishes no severity and
+        /// nothing in a call says how serious it is. An earlier version of this file refused the
+        /// judgement altogether and left every police mark neutral; that was honest and useless, because
+        /// an assault and a found bicycle then looked identical. What replaced it is an inference from
+        /// the same kind of judgement the categories already come from, written down here where it can
+        /// be argued with — which is the whole of the mitigation available.
+        ///
+        /// `UNKTR` is `.unknown` because the Service's own word for it is that it does not know, and so
+        /// is any code this table has not met, because then it is this app that does not.
+        public init(callTypeCode code: String) {
+            switch code {
+            case "PERGU", "ASSPR", "ASSJU", "FIR", "HAZ", "WRWAY":
+                // A person with a gun, an assault in progress, a fire, a hazard, a car driving the
+                // wrong way up a road: the ones where somebody may be in danger as the call arrives.
+                self = .critical
+            case "ASS", "ATTBR", "BREEN", "EXPJU", "FIG", "IMPDR", "INDEX", "MISVU", "PIACC",
+                 "SEEAM", "THEJU", "THEPR":
+                // Serious, and already happened, or happening to property rather than to a person.
+                self = .elevated
+            case "ARR", "DAM", "DEMO", "DIS", "DISPU", "FIRAL", "FOUPR", "FRA", "PDACC",
+                 "THEAU", "TRE":
+                self = .routine
+            case "UNKTR":
+                self = .unknown
+            default:
+                // A code the app has never seen. `.unknown` rather than `.routine`, because "we do not
+                // know this one" is not the same claim as "this one is ordinary".
+                self = .unknown
+            }
+        }
     }
 
     /// The mark for a police call.
     ///
-    /// **No urgency, because the Service publishes none.** `warrantsAttention` is `false` for every
-    /// police call: the fire feed's rule weighs an Alarm Level the Service does not have, and deciding
-    /// for ourselves which kinds of call are "serious" would be putting a judgement on the screen that
-    /// nobody made. The colour says nothing about a police mark, which is the honest answer.
+    /// The severity is inferred from the code, which is the one judgement in this file that is not the
+    /// Service's. See `Urgency.init(callTypeCode:)` for what it infers and why.
     public init(call: PoliceCall) {
         self.init(
             source: .police,
             category: Category.from(callTypeCode: call.callTypeCode) ?? .other,
-            warrantsAttention: false
+            urgency: Urgency(callTypeCode: call.callTypeCode)
         )
     }
 
@@ -225,7 +297,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         self.init(
             source: .fire,
             category: category.map(Category.init(incidentCategory:)) ?? .other,
-            warrantsAttention: incident.warrantsAttention
+            urgency: Urgency(incident: incident)
         )
     }
 }

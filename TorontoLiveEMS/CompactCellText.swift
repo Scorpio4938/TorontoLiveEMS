@@ -18,7 +18,7 @@ import TorontoLiveEMSKit
 enum CompactAttention {
 
     static func colour(for cell: CompactCell) -> Color? {
-        cell.warrantsAttention ? MarkColour.urgent : nil
+        cell.warrantsAttention ? MarkColour.critical : nil
     }
 }
 
