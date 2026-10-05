@@ -15,10 +15,10 @@ import TorontoLiveEMSKit
 /// map tab needs it either way; nothing else reads the police calls, so asking for them before
 /// anybody looks would be a request made for nobody. See ADR-0006 on politeness.
 ///
-/// **And it refreshes by pulling.** This is the one place the two pages differ, and it is deliberate:
-/// the fire page has the prominent refresh tab because that is where its refresh control was asked
-/// for, and a reader who has pulled a list to refresh it will pull this one. Pulling is the
-/// platform's own affordance for a list, so it needs no control of ours and no room on the screen.
+/// **It refreshes from the shared control, not by pulling.** The chrome's refresh control acts on the
+/// tab the reader is on, so it serves this page the way it serves the fire one. Pulling was
+/// deliberately left off both pages: the control is the app's one way to ask, and a second way to do
+/// one thing is a second thing to keep working and a second thing to explain.
 struct PolicePage: View {
 
     let feed: PoliceCallFeed
@@ -34,7 +34,6 @@ struct PolicePage: View {
 
     var body: some View {
         content
-            .refreshable { await feed.load() }
             .task {
                 // Nothing to show and nothing to say about why: the reader has just opened this for
                 // the first time.
