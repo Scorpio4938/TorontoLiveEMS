@@ -26,7 +26,7 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 
 ```
 TorontoLiveEMS/         the app — the views, and the table's measurements
-TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 104 tests
+TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 181 tests
 scripts/check_swift.py  a structural check, see below
 docs/                   the decisions
 ```
@@ -60,7 +60,7 @@ cross-reference check only sees types declared in the roots it was given.
 ## Building and testing
 
 ```bash
-cd TorontoLiveEMSKit && swift test        # the 104 tests
+cd TorontoLiveEMSKit && swift test        # the 181 tests
 ```
 
 Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.
@@ -114,6 +114,7 @@ rather than trusting.
 | `v0.0.8-fire-page` | `aa130e7` | **Not built.** The incidents page renamed and retitled Fire, and a fire extinguisher on its tab. |
 | `v0.0.9` | `58668fe` | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
 | `v0.0.10` | `1f4d003` | **Not built.** Settings says the version, the build and the stage — the build number back where it was, and the sentence under it explaining which number is which. |
+| `v0.0.11` | `f468581` | Builds, and ran: the police page. A second source and a second tab over the same table and cards as the fire page, so the two feeds share one presentation layer and differ only in their columns, their detail screen and their data. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
