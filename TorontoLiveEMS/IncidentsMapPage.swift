@@ -664,6 +664,100 @@ private struct MapPin: View {
     }
 }
 
+/// The map's own legend: what a symbol means, and what a colour means.
+///
+/// **Reached from the chrome's info button on the map tab**, which used to open the fire feed's data
+/// screen — a page about a feed that is only half of what this map draws.
+///
+/// **Rendered from the tables, never from a copy of them.** The symbols come from
+/// `IncidentMark.Category`, the colours from `MarkColour` through `IncidentMark.Urgency`, and the
+/// police codes in each severity are *looked up* — the documented list filtered by what the code table
+/// says each one is. A legend that restates a mapping is a legend that can come to disagree with it,
+/// which is the failure the fire screen's own note about its apparatus legend was written to avoid.
+struct MapInformationContent: View {
+
+    var body: some View {
+        List {
+            Section {
+                Text("Both feeds on one map: the City's fire incidents as the areas and points it publishes, and the Service's police calls as the points it publishes. Every mark is a symbol for what kind of incident it is, in a colour for how much it matters.")
+            } header: {
+                Text("The Map")
+            }
+
+            Section {
+                ForEach(IncidentMark.Category.allCases, id: \.self) { kind in
+                    HStack(alignment: .firstTextBaseline, spacing: 14) {
+                        Image(systemName: kind.symbol)
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(width: 22)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.label)
+                            Text(kind.note)
+                                .font(.caption)
+                                .foregroundStyle(Color.secondary)
+                        }
+                    }
+                }
+            } header: {
+                Text("Symbols")
+            } footer: {
+                Text("The symbol says what kind of incident it is, and the nine are shared by both feeds — which is why a fire alarm and a police call about a fire wear the same bell. A call this app has no kind for is drawn as a question mark.")
+            }
+
+            Section {
+                ForEach(IncidentMark.Urgency.allCases, id: \.self) { urgency in
+                    HStack(alignment: .firstTextBaseline, spacing: 14) {
+                        Circle()
+                            .fill(MarkColour.of(urgency))
+                            .frame(width: 14, height: 14)
+                            .frame(width: 22)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(urgency.label)
+                            Text(urgency.fireRule)
+                                .font(.caption)
+                                .foregroundStyle(Color.secondary)
+                            let codes = PoliceCallType.documented
+                                .filter { IncidentMark.Urgency(callTypeCode: $0.code) == urgency }
+                                .map(\.code)
+                            if !codes.isEmpty {
+                                Text("Police: " + codes.joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundStyle(Color.secondary)
+                            }
+                        }
+                    }
+                }
+            } header: {
+                Text("Colours")
+            } footer: {
+                Text("The colour says how much an incident matters, and never what kind it is. Grey is most of the map on purpose: a colour that marks exceptions has to leave the majority quiet, or it marks nothing.\n\nThe fire severities are the City's own — a dangerous kind of call, or a response of ten or more vehicles. The police severities are this app's inference from the call type, because the Service publishes none and nothing in a call says how serious it is. A police code this app has not met yet is Unknown as well.")
+            }
+        }
+        .navigationTitle("About the Map")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+}
+
+/// The same screen, presented rather than pushed, for the reason the fire one is: a sheet needs a way
+/// out of its own, and a pushed screen takes it from the navigation bar.
+struct MapInformationView: View {
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            MapInformationContent()
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                }
+        }
+    }
+}
+
 #Preview("Map — bare") {
     IncidentsMapPage(
         feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),

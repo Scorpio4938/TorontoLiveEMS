@@ -147,9 +147,12 @@ struct RootView: View {
             // information they want is that tab's. A sheet covers the tab bar, so `screen` cannot
             // move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                if screen == .police {
+                switch screen {
+                case .police:
                     PoliceCallsInformationView()
-                } else {
+                case .map:
+                    MapInformationView()
+                default:
                     AboutThisDataView()
                 }
             }

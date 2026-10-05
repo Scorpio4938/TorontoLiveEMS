@@ -272,4 +272,37 @@ struct IncidentMarkTests {
         }
     }
     #endif
+
+    // MARK: - What the legend shows
+
+    @Test("every kind and every severity has something to say for itself")
+    func theLegendHasNoBlankRows() {
+        // The map's information screen renders these directly, so an empty one would be a blank line in
+        // a legend a reader is looking at to find out what a symbol means.
+        for kind in IncidentMark.Category.allCases {
+            #expect(!kind.label.isEmpty, "\(kind) has no name")
+            #expect(!kind.note.isEmpty, "\(kind) has no description")
+            #expect(!kind.symbol.isEmpty, "\(kind) has no symbol")
+        }
+        for urgency in IncidentMark.Urgency.allCases {
+            #expect(!urgency.label.isEmpty, "\(urgency) has no name")
+            #expect(!urgency.fireRule.isEmpty, "\(urgency) has no description")
+        }
+    }
+
+    @Test("the legend's police codes come from the tables, one severity each")
+    func theLegendListsEachPoliceCodeOnce() {
+        // The screen does not carry a copy of the mapping — it filters the documented list by what the
+        // code table says. This asserts that the result is a partition: every code appears under exactly
+        // one severity, and none is left out of the legend entirely.
+        var seen: [String: Int] = [:]
+        for urgency in IncidentMark.Urgency.allCases {
+            for type in PoliceCallType.documented
+            where IncidentMark.Urgency(callTypeCode: type.code) == urgency {
+                seen[type.code, default: 0] += 1
+            }
+        }
+        #expect(seen.count == PoliceCallType.documented.count, "a documented code is in no severity")
+        #expect(seen.values.allSatisfy { $0 == 1 }, "a documented code is in more than one severity")
+    }
 }

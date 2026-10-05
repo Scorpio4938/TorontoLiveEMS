@@ -109,6 +109,34 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
             }
         }
 
+        /// What lands in this kind, in one line, for the legend the map's information screen shows.
+        ///
+        /// **Here rather than written into that screen**, for the reason the fire screen's prose lives
+        /// beside its fields: a legend that restates a table is a legend that can come to disagree with
+        /// it, and the screen renders these the same way it renders the table.
+        public var note: String {
+            switch self {
+            case .fire:
+                return "A fire of any kind — residential, commercial, grass, a vehicle."
+            case .medical:
+                return "A medical call. The City's most common incident by a long way."
+            case .alarm:
+                return "A fire alarm. Kept apart from Fire because the City's own codes are, and because they are overwhelmingly benign."
+            case .rescue:
+                return "Somebody who needs finding or getting out — a water rescue, a missing person."
+            case .hazard:
+                return "Something to keep away from: carbon monoxide, a gas leak, a spill, wires down, water."
+            case .traffic:
+                return "A collision, an impaired driver, a vehicle going the wrong way, an obstruction."
+            case .crime:
+                return "A crime or a weapon: robbery, assault, break and enter, theft, a person with a gun or a knife. Police calls only."
+            case .disturbance:
+                return "A dispute, a fight, disorderlies, a demonstration, an unknown trouble. Police calls only."
+            case .other:
+                return "A call that is none of the above, or one this app has no kind for yet."
+            }
+        }
+
         /// The coarse kind a fire incident's own finer category belongs to.
         ///
         /// **The fine table survives; only its output is regrouped.** `IncidentCategory` maps
@@ -212,6 +240,35 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         case elevated
         case routine
         case unknown
+
+        /// The name a reader sees in the legend.
+        public var label: String {
+            switch self {
+            case .critical: return "Critical"
+            case .elevated: return "Elevated"
+            case .routine: return "Routine"
+            case .unknown: return "Unknown"
+            }
+        }
+
+        /// What puts an incident here, in the app's own words.
+        ///
+        /// The fire half is the rule itself rather than a list of incidents, because the rule is what
+        /// makes a fire critical — the City publishes sixty-nine types and enumerating them here would
+        /// be the drift this avoids. The police half is not stated at all: the screen asks the code
+        /// table which codes are in each severity, so that list cannot disagree with the marks.
+        public var fireRule: String {
+            switch self {
+            case .critical:
+                return "A fire, a hazmat or carbon monoxide call, or a rescue."
+            case .elevated:
+                return "Any incident the City answered with ten or more vehicles — an Alarm Level of 2 or higher."
+            case .routine:
+                return "Everything else the City publishes."
+            case .unknown:
+                return "The City has no such case: its incidents are always named."
+            }
+        }
 
         /// Where a severity sits in the order, for choosing between two records at one place.
         ///
