@@ -190,7 +190,10 @@ public final class PoliceCallFeed {
     /// No case for having read nothing yet: the screens say that with a spinner and a sentence in the
     /// list's place, which is where a reader looks for it — the same judgement `IncidentFeed` makes.
     public var status: FeedStatus {
-        let published = publishedAt.map(DispatchTimestamp.publishedStamp) ?? "an unknown time"
+        // A closure rather than the bare function name: `publishedStamp` also takes a calendar, and a
+        // default argument applies at a *call site*, not to the function's type — so as a reference it
+        // is `(Date, Calendar) -> String` and `map` cannot take it.
+        let published = publishedAt.map { DispatchTimestamp.publishedStamp($0) } ?? "an unknown time"
         let base = "TPS data as of \(published)"
 
         if isShowingStaleResult {
