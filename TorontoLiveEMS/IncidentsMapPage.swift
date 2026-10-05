@@ -464,18 +464,43 @@ struct IncidentsMapPage: View {
     /// rather than the box coming back.
     private var notice: some View {
         HStack(spacing: 6) {
-            if feed.status.isStale {
+            if isStale {
                 Image(systemName: "exclamationmark.triangle")
             }
-            Text(feed.status.text)
+            Text(noticeText)
             if pendingPlaces > 0 {
                 Text("· Finding \(pendingPlaces) more…")
             }
         }
         .font(.caption2)
-        .foregroundStyle(feed.status.isStale ? Color.orange : Color.secondary)
+        .foregroundStyle(isStale ? Color.orange : Color.secondary)
         .padding(.trailing, 12)
         .padding(.bottom, 10)
+    }
+
+    /// The line the map carries: whose data this is, and how old it is.
+    ///
+    /// **"City/TPS", where the fire feed's own sentence says "City".** That sentence is shown on the
+    /// fire page and in the fire table, where "City" is exactly right because there is nothing else
+    /// on screen. This map draws both feeds, so the line has to name both — and it is written here
+    /// rather than by changing `IncidentFeed`, which would have relabelled the fire page's line as
+    /// well and made it say something untrue about a screen that holds no police data at all.
+    ///
+    /// **The time beside it is still the City's own tick**, which is the only republish time this
+    /// page reads. The police feed states its own and the map does not yet show it; naming both
+    /// sources while quoting one clock is the honest half of that, and a second time is what the line
+    /// still needs before it is exact.
+    private var noticeText: String {
+        let updated = feed.snapshot?.updatedFromDatabaseAt ?? "an unknown time"
+        return "City/TPS data as of \(updated)"
+    }
+
+    /// Whether anything on the map is known to be out of date.
+    ///
+    /// Either feed being stale is enough: the line describes the map, and a map with one old feed on
+    /// it is a map showing something old, whichever side it came from.
+    private var isStale: Bool {
+        feed.status.isStale || policeFeed.isShowingStaleResult
     }
 
     /// One place's card: every incident there, each a way into its own detail view.
