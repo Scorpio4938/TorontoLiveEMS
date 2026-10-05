@@ -97,10 +97,14 @@ position ADR-0004 already takes for the fire feed.
   the data's age and promises no cadence** — the fire feed's discipline, where the feed's own
   timestamp is the only thing the status line reads.
 
-  > **Neither number is reproducible on 2026-10-05 either.** The item metadata today carries a
-  > one-line snippet about the dataset and no cadence at all. The contradiction was read from
-  > rendered text in the Service's web application. What the app says is what can be measured: a
-  > call stays four hours, the screen shows when the app last read, and no cadence is claimed.
+  > **The item metadata carries no cadence on 2026-10-05, but the layer's own clock does.** The
+  > contradiction above was read from rendered text in the Service's web application; the item and
+  > its layer both leave `description` empty, and neither states a refresh interval. What *is*
+  > measurable is the layer's edit time, and it moves with the data: sampled twice six minutes
+  > apart, the stamp went from `17:31:16Z` to `17:50:47Z` — **19.5 minutes**, the first hard support
+  > for the twenty-minute figure, and **one interval rather than a schedule.** Note the phase: the
+  > stamp is not on a :00/:20/:40 grid, so the next change cannot be predicted to the minute, only
+  > observed after the fact. The app therefore still claims no cadence.
 - **The layer does publish a last-edit time, and an earlier reading of it was wrong.** An earlier
   version of this file's companion code said the layer "carries no time info at all". It does: the
   layer's `editingInfo.dataLastEditDate` moves with the data — measured 2026-10-05 at 17:31:16Z,
