@@ -49,16 +49,36 @@ struct PoliceCallDetailView: View {
                 // the whole of what it said about where the call was.
                 LabeledContent("Intersection", value: call.crossStreets ?? NotProvided.mark)
 
-                // A row of its own rather than inside the row above, the way the fire detail view
+                // **The published point, as numbers as well as a dot.**
+                //
+                // On the police detail view and not on the fire one, and the difference is not a
+                // preference: the Service publishes a latitude and a longitude and the City
+                // publishes neither. The fire detail view's map is drawn from a coordinate the
+                // *app* worked out by asking Apple where a street is, and a number this app derived
+                // has no business being dressed up as a published one. Here the number is the datum,
+                // and a reader who wants to check it somewhere else can read it off.
+                LabeledContent("Latitude", value: coordinateText(call.latitude))
+                LabeledContent("Longitude", value: coordinateText(call.longitude))
+
+                // A row of its own rather than inside the rows above, the way the fire detail view
                 // does it. The map is a place, not a field.
                 LocationMap(coordinate: coordinate)
             } header: {
                 Text("Location")
             } footer: {
-                Text("Calls are published at the nearest intersection, and some are withheld entirely — for domestic violence, sexual assault and medical distress, and for ongoing police operations. A call that is not here is not evidence that nothing happened.")
+                Text("The point is the Service's own, as published. Calls are published at the nearest intersection, and some are withheld entirely — for domestic violence, sexual assault and medical distress, and for ongoing police operations. A call that is not here is not evidence that nothing happened.")
             }
         }
         .navigationTitle(call.callType)
+    }
+
+    /// Six decimal places — about a tenth of a metre.
+    ///
+    /// Finer than any map this app draws, and no finer than that: the Service publishes an
+    /// intersection, so a coordinate given to fourteen places would dress a published point up as a
+    /// survey. The full double is in the model for anything that needs it.
+    private func coordinateText(_ value: Double) -> String {
+        String(format: "%.6f", value)
     }
 }
 

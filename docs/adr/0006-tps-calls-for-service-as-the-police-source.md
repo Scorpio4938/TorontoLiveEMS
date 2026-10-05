@@ -46,6 +46,12 @@ One point layer, nine fields, and **no geocoding**:
 | `CROSS_STREETS` | the nearest intersection |
 | `OCCURRENCE_TIME_AGOL` | a second copy of the time, kept by the platform |
 
+**The point is a published value, so the detail view shows it as numbers as well as a dot.** The
+fire feed publishes a street and makes the app ask Apple where it is; this one publishes a latitude
+and a longitude outright, and a published number is something a screen may state. The fire detail
+view's map comes from a coordinate this app derived, which is why no coordinate appears there — a
+number we worked out has no business being dressed as one the City sent.
+
 **It is a four-hour rolling window.** The service held 80 records spanning 4.2 hours when it was
 checked, oldest to newest, and the publisher's own description says a dot is visible for four
 hours. So the whole of it arrives in one request and `maxRecordCount` of 2000 is never approached.
