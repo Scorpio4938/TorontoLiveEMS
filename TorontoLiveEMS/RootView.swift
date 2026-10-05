@@ -55,6 +55,9 @@ struct RootView: View {
         /// The fire feed's list. Named for the source rather than the content, because a police
         /// one is coming and two screens cannot both be called "Active Incidents".
         case fire
+        /// The police incidents, which have no source yet. A screen of its own rather than a section
+        /// of the fire one: when the data arrives it will be a second feed, not a second list.
+        case police
         case map
         /// Not a page. See the refresh tab, which is put back the moment it is chosen.
         case refresh
@@ -152,6 +155,15 @@ struct RootView: View {
                 NavigationStack {
                     FirePage(feed: feed)
                         .navigationTitle("Active Fire Incidents")
+                        .inlineNavigationTitle()
+                        .barControls { toolbar }
+                }
+            }
+
+            Tab("Police", systemImage: "shield", value: Screen.police) {
+                NavigationStack {
+                    PolicePage()
+                        .navigationTitle("Police")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
                 }
