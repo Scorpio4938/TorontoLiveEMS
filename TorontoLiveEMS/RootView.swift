@@ -148,9 +148,7 @@ struct RootView: View {
             // move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
                 if screen == .police {
-                    PoliceCallsInformationView(
-                        callTypes: PoliceCallType.published(in: policeFeed.calls ?? [])
-                    )
+                    PoliceCallsInformationView()
                 } else {
                     AboutThisDataView()
                 }

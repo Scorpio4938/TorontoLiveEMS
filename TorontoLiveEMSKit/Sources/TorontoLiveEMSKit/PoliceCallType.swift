@@ -1,52 +1,72 @@
 import Foundation
 
-/// One call type the Service has used, as the Service published it.
-///
-/// **Derived from the calls, because the Service publishes no legend.** Checked rather than assumed,
-/// and checked everywhere a legend could have been: the item's `description` is empty, its
-/// `licenseInfo` is the licence alone, no field on the layer carries a coded-value domain, and the
-/// Service's own web application — all 144 KB of its configuration — contains no list of codes. What
-/// the Service *does* publish is both halves of the mapping, on every call: a code, and the words it
-/// stands for. So the app collects them, which is what this type is.
-///
-/// **A record rather than a vocabulary.** It holds the codes in the calls the app has read, which is
-/// the Service's own four-hour window — so it is as complete as the last four hours were busy, and a
-/// code that has not come up yet cannot be in it. That limit is the reason the screen showing it says
-/// so in its own words, rather than presenting a list that looks complete because it has no gaps.
+/// One call type, as the Service publishes it: a code, and the words that go with it.
 public struct PoliceCallType: Identifiable, Equatable, Sendable {
 
     /// The Service's own code, spelled exactly as published.
     public let code: String
 
-    /// The words the Service sent beside that code.
+    /// The words the Service sends beside that code, exactly as published.
     ///
-    /// Almost always one. More than one means the Service has used different words for the same code
-    /// while the app was watching, and that is shown rather than silently reconciled: picking one
-    /// would be this app deciding which of the Service's names is right.
-    public let names: [String]
+    /// Upper case, because that is what a reader sees on a call in the table and in the detail view,
+    /// and the same string in both places is the point — a code looked up here has to match the call
+    /// it came from.
+    public let name: String
 
     public var id: String {
         code
     }
 
-    public init(code: String, names: [String]) {
+    public init(code: String, name: String) {
         self.code = code
-        self.names = names
+        self.name = name
     }
 
-    /// Every code in these calls, with the Service's words beside it.
+    /// The codes the Service has been observed using, and what each one means.
     ///
-    /// Ordered by code, which is how the fire screen's own legend is ordered and how someone looking
-    /// one up will look. Duplicates are not possible: a code appears once however many calls carried
-    /// it, which is the whole point of collecting rather than listing.
-    public static func published(in calls: [PoliceCall]) -> [PoliceCallType] {
-        var names: [String: Set<String>] = [:]
-        for call in calls {
-            names[call.callTypeCode, default: []].insert(call.callType)
-        }
-
-        return names
-            .map { PoliceCallType(code: $0.key, names: $0.value.sorted()) }
-            .sorted { $0.code < $1.code }
-    }
+    /// **Gathered from the Service, not invented, and static.** Every call carries both halves of this
+    /// mapping, so it was collected from the calls themselves: the ninety-six the Service held on
+    /// 2026-10-05 yielded these thirty. Adopting a code the Service is not using, or guessing at one,
+    /// would be this app inventing the Service's vocabulary — and guessing is not even possible here:
+    /// `INDEX` means *indecent exposure* while `EXPJU` means *indecent exposure just occurred*, so the
+    /// codes are not compositional.
+    ///
+    /// **A reference rather than a lookup, which is what makes an incomplete list harmless.** No screen
+    /// resolves a call's code through this: the table and the detail view show the words the Service
+    /// sent with the call, so a code missing here is still shown correctly there. A missing row costs a
+    /// reader one unanswered question; it cannot make the app wrong.
+    ///
+    /// Ordered by code, which is how somebody looking one up looks.
+    public static let documented: [PoliceCallType] = [
+        PoliceCallType(code: "ARR", name: "ARREST"),
+        PoliceCallType(code: "ASS", name: "ASSAULT"),
+        PoliceCallType(code: "ASSJU", name: "ASSAULT JUST OCCURRED"),
+        PoliceCallType(code: "ASSPR", name: "ASSAULT IN PROGRESS"),
+        PoliceCallType(code: "ATTBR", name: "ATTEMPT BREAK & ENTER"),
+        PoliceCallType(code: "BREEN", name: "BREAK & ENTER"),
+        PoliceCallType(code: "DAM", name: "DAMAGE"),
+        PoliceCallType(code: "DEMO", name: "DEMONSTRATION"),
+        PoliceCallType(code: "DIS", name: "DISORDERLIES"),
+        PoliceCallType(code: "DISPU", name: "DISPUTE"),
+        PoliceCallType(code: "EXPJU", name: "INDECENT EXPOSURE JUST OCCURRED"),
+        PoliceCallType(code: "FIG", name: "FIGHT"),
+        PoliceCallType(code: "FIR", name: "FIRE"),
+        PoliceCallType(code: "FIRAL", name: "FIRE ALARM"),
+        PoliceCallType(code: "FOUPR", name: "FOUND PROPERTY"),
+        PoliceCallType(code: "FRA", name: "FRAUD"),
+        PoliceCallType(code: "HAZ", name: "HAZARD"),
+        PoliceCallType(code: "IMPDR", name: "IMPAIRED DRIVER"),
+        PoliceCallType(code: "INDEX", name: "INDECENT EXPOSURE"),
+        PoliceCallType(code: "MISVU", name: "MISSING VULNERABLE PERSON"),
+        PoliceCallType(code: "PDACC", name: "PROPERTY DAMAGE COLLISION"),
+        PoliceCallType(code: "PERGU", name: "PERSON WITH A GUN"),
+        PoliceCallType(code: "PIACC", name: "PERSONAL INJURY COLLISION"),
+        PoliceCallType(code: "SEEAM", name: "SEE AMBULANCE"),
+        PoliceCallType(code: "THEAU", name: "THEFT FROM AUTO"),
+        PoliceCallType(code: "THEJU", name: "THEFT JUST OCCURRED"),
+        PoliceCallType(code: "THEPR", name: "THEFT IN PROGRESS"),
+        PoliceCallType(code: "TRE", name: "TRESPASS"),
+        PoliceCallType(code: "UNKTR", name: "UNKNOWN TROUBLE"),
+        PoliceCallType(code: "WRWAY", name: "WRONG WAY VEHICLE"),
+    ]
 }

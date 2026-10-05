@@ -106,18 +106,25 @@ position ADR-0004 already takes for the fire feed.
   > stamp is not on a :00/:20/:40 grid, so the next change cannot be predicted to the minute, only
   > observed after the fact. That is why the app *asks* rather than counting down, and why the gate is
   > checked again after a fetch.
-- **There is no published legend for the call type codes, so the app collects its own.** Checked
+- **There is no published legend for the call type codes, so the app carries its own.** Checked
   everywhere one could have been: the item's `description` is empty, its `licenseInfo` is the licence
-  alone, no field on the layer carries a coded-value domain, and the Service's own web application —
-  **all 144 KB of its configuration** — contains no list of codes. What the Service publishes is both
-  halves of the mapping, on every call. So the app gathers them, and both screens that name a code
-  lead to the list: a call's detail view and the information screen. **The list says what it is**, on
-  the list: the codes in the calls the app has read, which is the Service's four-hour window, with the
-  Service's own words beside each. A code that has not come up yet cannot be in it, and the sentence
-  above it exists so that a short list reads as the window rather than as a fault in the app.
+  alone, no field on the layer carries a coded-value domain, the service has no other layer or table,
+  the Service's web application — **all 144 KB of its configuration** — contains no list of codes, and
+  neither does any of **the 481 items in the Service's own ArcGIS organisation** or a portal search
+  across the rest.
 
-  Where a code has carried two names the entry keeps both, sorted, rather than choosing: picking one
-  would be this app deciding which of the Service's names is right.
+  What the Service does publish is both halves of the mapping, on every call. So the list was gathered
+  from the calls themselves, once, and is **static**: `PoliceCallType.documented`, thirty codes from
+  the ninety-six calls the Service held on 2026-10-05. Guessing is not even available as an option —
+  `INDEX` means *indecent exposure* while `EXPJU` means *indecent exposure just occurred*, so the codes
+  are not compositional.
+
+  **A reference rather than a lookup, which is what makes an incomplete list harmless.** No screen
+  resolves a call's code through it: the table and the detail view show the words the Service sent
+  with the call, so a code missing from the list is still shown correctly on the call. A missing row
+  costs a reader one unanswered question; it cannot make the app wrong. Both places that name a code
+  lead to it — a call's detail view and the information screen — and the screen is the mapping and
+  nothing else.
 - **The status line is the fire line's shape, on the fire line's clock.** Fire quotes the City's own
   `2026-10-05 14:00:02` verbatim, which is Toronto wall-clock and unshifted by where the reader is.
   This Service publishes an *instant* and no string, so the app writes one:

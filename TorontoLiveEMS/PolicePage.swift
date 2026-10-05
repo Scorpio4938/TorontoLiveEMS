@@ -29,14 +29,6 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.presentation)
     private var presentation: IncidentPresentation = .standard
 
-    /// The codes in the calls on screen, for the detail view's list.
-    ///
-    /// Computed rather than stored: it is a fact about the calls, and a second copy of it is a second
-    /// thing that can disagree with them.
-    private var callTypes: [PoliceCallType] {
-        PoliceCallType.published(in: feed.calls ?? [])
-    }
-
     var body: some View {
         content
             .refreshable { await feed.load() }
@@ -62,7 +54,7 @@ struct PolicePage: View {
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { call in
-                    PoliceCallDetailView(call: call, callTypes: callTypes)
+                    PoliceCallDetailView(call: call)
                 }
             case .cards:
                 CardsList(
@@ -71,7 +63,7 @@ struct PolicePage: View {
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { call in
-                    PoliceCallDetailView(call: call, callTypes: callTypes)
+                    PoliceCallDetailView(call: call)
                 }
             }
         } else if let failureMessage = feed.failureMessage {

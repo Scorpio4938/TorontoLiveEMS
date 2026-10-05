@@ -16,12 +16,6 @@ struct PoliceCallDetailView: View {
 
     let call: PoliceCall
 
-    /// The codes the app has read, for the list the Code row opens.
-    ///
-    /// Passed in from the page rather than looked up here, because a view of one call has no way to
-    /// know what else has arrived — and the list is only worth opening if it is more than this call.
-    let callTypes: [PoliceCallType]
-
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
@@ -35,9 +29,9 @@ struct PoliceCallDetailView: View {
                 LabeledContent("Call Type", value: call.callType)
 
                 // Tappable, so the code is something a reader can follow rather than something they
-                // are told about. The screen behind it says what the list is and is not.
+                // are told about.
                 NavigationLink {
-                    CallTypeCodeList(callTypes: callTypes)
+                    CallTypeCodeList()
                 } label: {
                     LabeledContent("Code", value: call.callTypeCode)
                 }
@@ -55,8 +49,6 @@ struct PoliceCallDetailView: View {
                 )
             } header: {
                 Text("Call")
-            } footer: {
-                Text("The code is the Service's own, shown as published. There is no published legend for these codes — tapping the code lists the ones this app has read, with the Service's own words beside each.")
             }
 
             Section {
