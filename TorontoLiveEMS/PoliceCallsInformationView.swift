@@ -30,14 +30,14 @@ struct PoliceCallsInformationContent: View {
             }
 
             Section {
-                Text("Call Type")
-
-                // The one row on this screen that leads somewhere: the codes themselves are a list
-                // rather than a sentence, and a list belongs on its own screen.
+                // **Call Type and Code are one row here, because they are one fact.** The Service
+                // publishes a code and the words for it together, on every call, and the list behind
+                // this row is where the whole mapping lives. It is also the only row on this screen
+                // that leads anywhere, so the two are the same row rather than neighbours.
                 NavigationLink {
                     CallTypeCodeList()
                 } label: {
-                    Text("Code")
+                    Text("Call Type & Code")
                 }
 
                 Text("Division")
