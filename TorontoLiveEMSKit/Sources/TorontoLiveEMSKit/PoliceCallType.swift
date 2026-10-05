@@ -77,7 +77,7 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
     /// reader one unanswered question; it cannot make the app wrong.
     ///
     /// Ordered by code, which is how somebody looking one up looks.
-    public static let documented: [
+    public static let documented: [PoliceCallType] = [
         PoliceCallType(code: "ARR", name: "ARREST"),
         PoliceCallType(code: "ASS", name: "ASSAULT"),
         PoliceCallType(code: "ASSJU", name: "ASSAULT JUST OCCURRED"),
@@ -120,6 +120,5 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "TRE", name: "TRESPASS"),
         PoliceCallType(code: "UNKTR", name: "UNKNOWN TROUBLE"),
         PoliceCallType(code: "WRWAY", name: "WRONG WAY VEHICLE"),
-
     ]
 }
