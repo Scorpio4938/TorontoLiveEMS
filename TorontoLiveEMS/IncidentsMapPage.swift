@@ -586,10 +586,15 @@ struct IncidentsMapPage: View {
 /// a mark from a second publisher is the same kind of thing as one from the first. It replaces a pin
 /// that was a bare coloured dot — the one thing a dot cannot do is say what it is.
 ///
-/// The disc is `Color.background` rather than white so that it holds up over a satellite map as well
-/// as a light one. The **shape** carries the kind and the **colour** carries whether the incident
-/// warrants attention; neither is asked to do both jobs, which is the rule the fire side already
-/// recorded and the reason the two live in different places.
+/// The disc is white, which is the convention `IncidentPin` already uses for the ring around a dot:
+/// a coloured mark on a coloured map needs an edge that is not the map's colour, and white reads over
+/// a satellite map and a light one alike. It is written as `Color.white` rather than as a bare
+/// `.background` style, because a bare `.background` in this position resolves to `View.background(_:)`
+/// — a method, not a style — and the compiler says so rather than drawing something else.
+///
+/// The **shape** carries the kind and the **colour** carries whether the incident warrants attention;
+/// neither is asked to do both jobs, which is the rule the fire side already recorded and the reason
+/// the two live in different places.
 private struct MapPin: View {
 
     let mark: IncidentMark
@@ -601,7 +606,7 @@ private struct MapPin: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.background)
+                .fill(Color.white)
                 .frame(width: 22, height: 22)
             Image(systemName: mark.category.symbol)
                 .font(.system(size: 12, weight: .semibold))
