@@ -649,6 +649,18 @@ say which of them mattered.
   `RootView` beside the sheets they open, and a detail view pushed from a callout carries its
   own bar — which is also what carries that view's back button.
 
+- **The list page is named for whose data it is.** It was "Incidents", which was true while there
+  was one feed and stopped being true the moment a second was planned. The screen and its tab are
+  **Fire** now, and its title is **Active Fire Incidents** — because the feed is Toronto Fire
+  Services', whose own page for it is *"Toronto Fire Active Incidents"*, and because a police feed
+  is coming which will want a screen of its own. Two list screens cannot both be titled "Active
+  Incidents", and naming each by its source is what tells them apart.
+- **The tab is short and the title is not, on purpose.** The tab is a label in a busy bar, so it is
+  one word; the title is a sentence above the table, where there is room to say whose incidents
+  these are and that they are active. A title of just "Fire" says less than the screen knows.
+  **The map keeps its generic name**, and for the same reason: it is not a feed's screen, and when
+  the police feed arrives it will show both.
+
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
 `.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
 `MapCompass` are evidenced only by code that has already compiled in this project. For the

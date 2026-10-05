@@ -52,14 +52,16 @@ struct RootView: View {
     ///
     /// Named `Screen` rather than `Section`, which is a SwiftUI type.
     private enum Screen: Hashable {
-        case incidents
+        /// The fire feed's list. Named for the source rather than the content, because a police
+        /// one is coming and two screens cannot both be called "Active Incidents".
+        case fire
         case map
         /// Not a page. See the refresh tab, which is put back the moment it is chosen.
         case refresh
     }
 
     @State private var feed: IncidentFeed
-    @State private var screen: Screen = .incidents
+    @State private var screen: Screen = .fire
 
     /// Which kind of map the map page draws.
     ///
@@ -143,13 +145,13 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $screen) {
-            Tab("Incidents", systemImage: "list.bullet", value: Screen.incidents) {
+            Tab("Fire", systemImage: "fire.extinguisher", value: Screen.fire) {
                 // Each tab carries its own `NavigationStack`, which is what gives it its own
                 // title and its own navigation bar. That is the reason the toolbar is applied
                 // here rather than once around the whole `TabView`.
                 NavigationStack {
-                    IncidentsPage(feed: feed)
-                        .navigationTitle("Active Incidents")
+                    FirePage(feed: feed)
+                        .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
                 }
@@ -187,8 +189,8 @@ struct RootView: View {
                 // has to have *some* content, and the incidents again is the honest choice — if
                 // this ever is on screen, it does not claim to be a page of its own.
                 NavigationStack {
-                    IncidentsPage(feed: feed)
-                        .navigationTitle("Active Incidents")
+                    FirePage(feed: feed)
+                        .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                 }
             }

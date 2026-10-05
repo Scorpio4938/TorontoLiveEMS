@@ -47,7 +47,7 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("Active Incidents")
+                    Text("Fire")
                 } footer: {
                     Text("The table fits more incidents on a screen. Cards give each one a block of its own.")
                 }
