@@ -43,12 +43,6 @@ struct PoliceCallFeedTests {
     /// 16:54:19 UTC, when the feed reads, and when the Service last wrote.
     private static let readAt = Date(timeIntervalSince1970: 1_791_219_259)
 
-    private static var utc: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
-        return calendar
-    }
-
     private static func call(_ objectID: Int) -> PoliceCall {
         PoliceCall(
             objectID: objectID,
@@ -128,8 +122,8 @@ struct PoliceCallFeedTests {
         #expect(feed.failureMessage == nil, "the message does not replace them")
         #expect(feed.isShowingStaleResult, "the line says they are old instead")
 
-        let line = feed.status(format: .twentyFourHour, calendar: Self.utc)
-        #expect(line.text == "TPS data as of 16:54 · showing the last result")
+        let line = feed.status
+        #expect(line.text == "TPS data as of 2026-10-05 12:54:19 · showing the last result")
         #expect(line.isStale)
     }
 
@@ -242,21 +236,17 @@ struct PoliceCallFeedTests {
 
     // MARK: - The line
 
-    @Test("says when the Service last published, in the reader's clock")
+    @Test("says when the Service last published, in the City's own shape and on its clock")
     func saysWhenTheServiceLastPublished() async {
+        // **Not the reader's clock and not the reader's 12- or 24-hour setting.** The fire feed's line
+        // beside it quotes the City's `2026-10-05 14:00:02`, and two lines a reader compares should be
+        // in one shape on one clock. The fixture's 16:54:19 UTC is 12:54:19 in Toronto.
         let service = CallsService([[Self.call(1)]])
         let feed = Self.feed(readingCalls: service)
         await feed.load()
 
-        #expect(
-            feed.status(format: .twentyFourHour, calendar: Self.utc).text
-                == "TPS data as of 16:54"
-        )
-        #expect(
-            feed.status(format: .twelveHour, calendar: Self.utc).text
-                == "TPS data as of 4:54 PM"
-        )
-        #expect(!feed.status(format: .twelveHour, calendar: Self.utc).isStale)
+        #expect(feed.status.text == "TPS data as of 2026-10-05 12:54:19")
+        #expect(!feed.status.isStale)
     }
 
     @Test("with no stamp, the line says so rather than inventing one")
@@ -265,27 +255,19 @@ struct PoliceCallFeedTests {
         let feed = Self.feed(readingCalls: service, publishedAt: nil)
         await feed.load()
 
-        #expect(
-            feed.status(format: .twentyFourHour, calendar: Self.utc).text
-                == "TPS data as of an unknown time"
-        )
+        #expect(feed.status.text == "TPS data as of an unknown time")
     }
 
     // MARK: - What the alert says
 
-    @Test("the sentence for a skip names the Service's own time")
+    @Test("the sentence for a skip names the Service's own time, in the same shape")
     func nothingNewerNamesTheServicesTime() async {
+        // The same value in the same shape as the line, so the alert and the line cannot describe two
+        // different times.
         let service = CallsService([[Self.call(1)]])
         let feed = Self.feed(readingCalls: service)
         await feed.load()
 
-        #expect(
-            feed.nothingNewerMessage(format: .twentyFourHour, calendar: Self.utc)
-                == "Nothing newer than 16:54."
-        )
-        #expect(
-            feed.nothingNewerMessage(format: .twelveHour, calendar: Self.utc)
-                == "Nothing newer than 4:54 PM."
-        )
+        #expect(feed.nothingNewerMessage == "Nothing newer than 2026-10-05 12:54:19.")
     }
 }

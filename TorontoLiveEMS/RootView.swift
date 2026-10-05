@@ -93,9 +93,6 @@ struct RootView: View {
     /// the wrong feed.
     @State private var nothingNewerMessage = ""
 
-    @AppStorage(SettingsKey.dispatchTimeFormat)
-    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
-
     /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
     /// never touch the City's server.
     ///
@@ -304,7 +301,7 @@ struct RootView: View {
         switch screen {
         case .police:
             outcome = await policeFeed.refresh()
-            message = policeFeed.nothingNewerMessage(format: dispatchTimeFormat)
+            message = policeFeed.nothingNewerMessage
         default:
             outcome = await feed.refresh()
             message = feed.nothingNewerMessage

@@ -52,7 +52,7 @@ struct PolicePage: View {
                     rows: calls,
                     columns: CompactColumn<PoliceCall>.police,
                     timeFormat: dispatchTimeFormat,
-                    status: feed.status(format: dispatchTimeFormat)
+                    status: feed.status
                 ) { call in
                     PoliceCallDetailView(call: call)
                 }
@@ -61,7 +61,7 @@ struct PolicePage: View {
                     rows: calls,
                     columns: CompactColumn<PoliceCall>.policeCard,
                     timeFormat: dispatchTimeFormat,
-                    status: feed.status(format: dispatchTimeFormat)
+                    status: feed.status
                 ) { call in
                     PoliceCallDetailView(call: call)
                 }

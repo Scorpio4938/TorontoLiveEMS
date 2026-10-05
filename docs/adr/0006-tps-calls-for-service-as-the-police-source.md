@@ -106,6 +106,16 @@ position ADR-0004 already takes for the fire feed.
   > stamp is not on a :00/:20/:40 grid, so the next change cannot be predicted to the minute, only
   > observed after the fact. That is why the app *asks* rather than counting down, and why the gate is
   > checked again after a fetch.
+- **The status line is the fire line's shape, on the fire line's clock.** Fire quotes the City's own
+  `2026-10-05 14:00:02` verbatim, which is Toronto wall-clock and unshifted by where the reader is.
+  This Service publishes an *instant* and no string, so the app writes one:
+  `2026-10-05 17:50:47`, rendered on **Toronto's** clock rather than the reader's, so that two lines a
+  reader compares are in one shape and on one clock. The reader's 12- or 24-hour setting still governs
+  the *calls*, where a table cell shows a time of day and a clock and a preference are what is wanted;
+  this line states the age of the data, where a date is. Written by hand from calendar components
+  rather than with a `DateFormatter`, for the reason this type gives throughout and one more: a
+  formatter would put the calendar in a locale's hands, and a device set to a non-Gregorian calendar
+  would render the Service's clock in a year the Service has never published.
 - **The layer does publish a last-edit time, and the app gates on it.** An earlier version of the
   companion code said the layer "carries no time info at all". It does: `editingInfo.dataLastEditDate`
   moves with the data — measured 2026-10-05 at 17:31:16Z, fifteen minutes old while the newest call

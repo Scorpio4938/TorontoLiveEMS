@@ -167,47 +167,31 @@ public final class PoliceCallFeed {
     /// The sentence for a refresh that was skipped.
     ///
     /// Fire's version names the City's tick, because fire has a tick. This one names the Service's own
-    /// last-edit time — the same value the status line leads with — so the alert and the line cannot
-    /// say different things. A method rather than a property for `status`'s reason: it formats a date,
-    /// and the format is the reader's setting rather than this package's.
-    public func nothingNewerMessage(
-        format: DispatchTimeFormat,
-        calendar: Calendar = .current
-    ) -> String {
+    /// last-edit time — the same value and the same shape the status line leads with, so the alert and
+    /// the line cannot say different things.
+    public var nothingNewerMessage: String {
         guard let publishedAt else {
             return "Nothing newer than the calls already on screen."
         }
-        let clock = DispatchTimestamp.clockTime(publishedAt, format: format, calendar: calendar)
-        return "Nothing newer than \(clock)."
+        return "Nothing newer than \(DispatchTimestamp.publishedStamp(publishedAt))."
     }
 
     /// The line above the calls: when the Service last published, and what is happening to them.
     ///
-    /// **"TPS data as of", which is the fire line's shape.** The time is the Service's own — the
-    /// layer's last-edit time, which is what it states about its own data — and not the moment the app
-    /// read it. "Read at" left that open to exactly the wrong reading, and two feeds that say the same
-    /// kind of thing should say it the same way round.
+    /// **"TPS data as of", in the fire line's shape and on the fire line's clock.** The time is the
+    /// Service's own — the layer's last-edit time, which is what it states about its own data — and it
+    /// is written the way the City writes its own: `2026-10-05 12:54:19`, on Toronto's clock, not the
+    /// reader's and not in the reader's 12- or 24-hour setting. A reader comparing this screen with the
+    /// fire one should not have to work out that two lines in the same place are in two shapes.
     ///
-    /// **The clock format is an argument rather than a stored property**, where the fire feed's status
-    /// is a property. The City sends a wall-clock string that fire quotes verbatim; this Service sends
-    /// an instant, which has to be *formatted*, and the format belongs to the reader's setting — which
-    /// is the app target's business, not this package's. Passing it keeps the sentence here, where it
-    /// can be tested, and the preference there.
-    ///
-    /// The calendar is an argument for the same reason and one more: a test that formats an instant
-    /// cannot pin the answer without one, and an assertion that only holds in one time zone is not an
-    /// assertion.
+    /// The setting still governs the *calls*: a table cell shows a time of day, where a clock and a
+    /// preference are what a reader wants, and a line stating the age of the data wants a date.
     ///
     /// No case for having read nothing yet: the screens say that with a spinner and a sentence in the
     /// list's place, which is where a reader looks for it — the same judgement `IncidentFeed` makes.
-    public func status(
-        format: DispatchTimeFormat,
-        calendar: Calendar = .current
-    ) -> FeedStatus {
-        let published = publishedAt.map {
-            DispatchTimestamp.clockTime($0, format: format, calendar: calendar)
-        }
-        let base = "TPS data as of \(published ?? "an unknown time")"
+    public var status: FeedStatus {
+        let published = publishedAt.map(DispatchTimestamp.publishedStamp) ?? "an unknown time"
+        let base = "TPS data as of \(published)"
 
         if isShowingStaleResult {
             return FeedStatus(text: "\(base) · showing the last result", isStale: true)
