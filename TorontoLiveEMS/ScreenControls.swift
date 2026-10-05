@@ -93,12 +93,15 @@ struct MapKindControl: View {
 /// carries the platform's own checkmark and the menu states the current filter as well as offering the
 /// other two — which a flat list of actions cannot do without this code drawing the mark itself.
 ///
-/// **The label is the filter's own glyph, not the current option's.** A map kind can wear the glyph of
-/// the kind in force, because there are three map glyphs and each means one thing. There is no glyph
-/// that means "both feeds" or "police only" — the sources' glyphs are already the *kinds* flame and
-/// shield — so the control says what it is, and where the filter is in force it also says so in the
-/// map's own small print. A filtered map with nothing on screen to explain it is the confusion this
-/// avoids.
+/// **The button wears the glyph of the option in force**, exactly as the map kind control beside it
+/// does. `all` wears the filter's own glyph, outlined, because unfiltered is the state the control is
+/// named for; the two sources wear the glyphs they already wear as *kinds* on the map — a flame and a
+/// shield, both filled — so choosing one changes the control from an outline to a solid and the glyph
+/// says which feed is being shown. A filter that is on is visible in the control itself, which is the
+/// reason to prefer this over a fixed glyph plus a sentence elsewhere.
+///
+/// The map's small print names the filter in words as well, because a glyph is a hint and a word is
+/// not. Both are cheap; one of them is unambiguous.
 struct MapFilterControl: View {
 
     @Binding var mapFilter: MapFilter
@@ -112,7 +115,7 @@ struct MapFilterControl: View {
                 }
             }
         } label: {
-            Image(systemName: MapFilter.all.systemImage)
+            Image(systemName: mapFilter.systemImage)
                 .foregroundStyle(Color.primary)
         }
         // The state, for anyone who cannot see the small print.

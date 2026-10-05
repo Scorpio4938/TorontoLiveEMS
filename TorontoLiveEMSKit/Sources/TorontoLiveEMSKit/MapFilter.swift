@@ -27,9 +27,10 @@ public enum MapFilter: String, CaseIterable, Sendable {
 
     /// The glyph beside it.
     ///
-    /// `all` wears the filter's own glyph, so the control says what it is. The two sources wear the
-    /// glyph they already wear as a *kind* on the map — a flame and a shield — which is one word doing
-    /// one job rather than two.
+    /// `all` wears the filter's own glyph, **outlined**, because unfiltered is the state the control is
+    /// named for. The two sources wear the glyphs they already wear as a *kind* on the map — a flame and
+    /// a shield, **both filled** — so choosing either turns the control from an outline into a solid,
+    /// and the glyph says which feed is on screen rather than merely that something is filtered.
     public var systemImage: String {
         switch self {
         case .all: return "line.3.horizontal.decrease.circle"
