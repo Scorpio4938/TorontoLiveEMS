@@ -31,10 +31,35 @@ public enum CallsForServiceFeed {
     public static let pageURLString =
         "https://experience.arcgis.com/experience/a22f5295933e48a5b0a4c90cd3c4cae1"
 
-    /// Same as a URL, for the screens that link to it.
+    /// The same page as a URL, for the screens that link to it.
     public static var pageURL: URL? {
         URL(string: pageURLString)
     }
+
+    /// Where the layer describes itself, which is where its own clock is.
+    ///
+    /// **Not the query endpoint.** A `query` cannot be asked for the layer's edit time — this
+    /// service's `advancedQueryCapabilities` offers no `returnEditMoment`, checked — so the app asks
+    /// the layer what it is and reads `editingInfo.dataLastEditDate` out of the answer. That response
+    /// is 10.5 KB against 22.7 KB for the calls themselves. See `interval` for why it is worth it.
+    public static let layerURLString =
+        "https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/C4S_Public_NoGO/FeatureServer/0"
+
+    /// The same layer as a URL, for the client.
+    public static var layerURL: URL? {
+        URL(string: layerURLString)
+    }
+
+    /// How often the Service writes to the layer.
+    ///
+    /// **Twenty minutes, and it is what makes a gate possible at all.** Measured once: the layer's
+    /// own stamp moved from 17:31:16Z to 17:50:47Z — nineteen and a half minutes — between two samples
+    /// six minutes apart. That supports the figure the Service states for itself, and it is one
+    /// interval rather than a schedule, which is why the gate is checked after a fetch as well as
+    /// before one.
+    ///
+    /// Kept beside this feed rather than in `FeedRefresh`, whose five minutes are Toronto Fire's.
+    public static let interval: TimeInterval = 20 * 60
 
     /// What the dataset is, in the Service's own words.
     ///
@@ -45,16 +70,17 @@ public enum CallsForServiceFeed {
         Calls for Service dataset prepared for public use.
         """
 
-    /// How current the data is, in this app's words rather than the Service's.
+    /// How current the data is, in this app's words.
     ///
-    /// **The app promises no cadence, because the Service states none it will stand behind.** What
-    /// this says instead is what can be measured. The fire feed can say "City data as of" because
-    /// the City publishes a tick to quote; this feed has no such tick on offer for the price of one
-    /// request, so the screen shows the app's own last read rather than a Service time.
+    /// **It names the Service's own pace, because the app now depends on it.** Nothing in the layer's
+    /// metadata states an interval; twenty minutes is the figure the app measured and now gates on, so
+    /// a screen saying "we claim no cadence" would be describing a design that no longer exists. What
+    /// it must not do is promise a *schedule* — the writes are roughly twenty minutes apart and not on
+    /// a grid, which is why the app asks when the last one was rather than counting down to the next.
     public static let cadenceNote = """
-        A call stays here for four hours and then goes. The Service does not say how often it \
-        refreshes, so this app claims no cadence: it shows when it last read, and reading again is \
-        up to you.
+        A call stays here for four hours and then goes. The Service writes about every twenty \
+        minutes, and this app asks it when it last did before fetching anything: between two of its \
+        writes there is nothing new to fetch, and the app says so rather than pretending to work.
         """
 
     /// How far back a read reaches.

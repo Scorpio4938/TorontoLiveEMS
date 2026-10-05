@@ -37,4 +37,28 @@ public struct CallsForServiceClient: Sendable {
 
         return try CallsForServiceParser.parse(data)
     }
+
+    /// When the Service last wrote to the layer.
+    ///
+    /// **A request of its own, and the one that makes the gate possible.** The time is in the layer's
+    /// metadata rather than in a query response, so this asks the layer about itself: 10.5 KB, against
+    /// 22.7 KB for the calls. It is worth the price because the same answer is what the status line
+    /// quotes — the request buys the gate and the sentence together.
+    ///
+    /// Answered as an optional: a layer that has stopped stating a time means "no gate", not
+    /// "a failure". A network failure still throws, because that is a different thing.
+    public func publishedAt() async throws -> Date? {
+        guard let url = CallsForServiceFeed.layerURL else {
+            throw CallsForServiceClientError.invalidURL
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        if let http = response as? HTTPURLResponse,
+           !(200..<300).contains(http.statusCode) {
+            throw CallsForServiceClientError.unexpectedStatus(http.statusCode)
+        }
+
+        return CallsForServiceParser.publishedAt(from: data)
+    }
 }

@@ -93,9 +93,9 @@ position ADR-0004 already takes for the fire feed.
 
 - **Twenty minutes, or five, or neither.** The item's summary says the data is updated every 20
   minutes; the application's own description says it is refreshed every five. The publisher
-  contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. So the app **shows
-  the data's age and promises no cadence** — the fire feed's discipline, where the feed's own
-  timestamp is the only thing the status line reads.
+  contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. **Twenty is the figure
+  the app now gates on**, and the reason is below: it is the one the layer's own clock supports, and a
+  gate is only as good as the interval behind it.
 
   > **The item metadata carries no cadence on 2026-10-05, but the layer's own clock does.** The
   > contradiction above was read from rendered text in the Service's web application; the item and
@@ -104,15 +104,18 @@ position ADR-0004 already takes for the fire feed.
   > apart, the stamp went from `17:31:16Z` to `17:50:47Z` — **19.5 minutes**, the first hard support
   > for the twenty-minute figure, and **one interval rather than a schedule.** Note the phase: the
   > stamp is not on a :00/:20/:40 grid, so the next change cannot be predicted to the minute, only
-  > observed after the fact. The app therefore still claims no cadence.
-- **The layer does publish a last-edit time, and an earlier reading of it was wrong.** An earlier
-  version of this file's companion code said the layer "carries no time info at all". It does: the
-  layer's `editingInfo.dataLastEditDate` moves with the data — measured 2026-10-05 at 17:31:16Z,
-  fifteen minutes old while the newest call the layer held was thirty. Gating a refresh on it is
-  therefore *possible*, but it costs a **second request** to decide whether to make the first: a
-  `query` cannot be asked for it, because `advancedQueryCapabilities` offers no `returnEditMoment`.
-  So the gate stays off — one request per explicit refresh — and the status line still reads the
-  app's own clock rather than quoting a Service time nobody asked it for.
+  > observed after the fact. That is why the app *asks* rather than counting down, and why the gate is
+  > checked again after a fetch.
+- **The layer does publish a last-edit time, and the app gates on it.** An earlier version of the
+  companion code said the layer "carries no time info at all". It does: `editingInfo.dataLastEditDate`
+  moves with the data — measured 2026-10-05 at 17:31:16Z, fifteen minutes old while the newest call
+  the layer held was thirty, and again at 17:50:47Z, nineteen and a half minutes later. A `query`
+  cannot be asked for it, because `advancedQueryCapabilities` offers no `returnEditMoment`, so it
+  costs a request of its own: **10.5 KB, against 22.7 KB for the calls.** That price is worth paying
+  because the same response is what the status line needs — one request buys the gate *and* the
+  sentence, and without it no screen could say "TPS data as of 17:31" at all. So the gate is before
+  the fetch, as fire's is, and it is checked **again** after one, because twenty minutes is the
+  Service's pace rather than a promise and a late write must not be reported as a change.
 - **Traps the client has to handle.** A time filter needs a literal: `OCCURRENCE_TIME > TIMESTAMP
   '…'` works and a bare millisecond number answers 400 — and the literal is read as **UTC**, which
   was measured too. A value standing in for nothing is recognised by the fire feed's own rule, that
@@ -126,7 +129,10 @@ position ADR-0004 already takes for the fire feed.
 - **`returnCountOnly` is not supported**, so counting means fetching. At eighty records that is not
   a hardship.
 - **Politeness.** It is a public service on somebody else's infrastructure, read on the fire feed's
-  terms: once at launch, once per explicit refresh, and never on a timer of its own.
+  terms: once at launch, once per explicit refresh, and never on a timer of its own. A refresh now
+  costs one request inside the Service's twenty minutes and two outside it — the metadata to decide,
+  then the calls — which is a smaller ask than fetching the calls every time, and the only way the
+  screen can say when the Service last wrote.
 - **A second feed, not a second list.** The police page owns its own client, its own clock and its
   own age. See `docs/design-decisions.md` for why the fire feed is not copied.
 

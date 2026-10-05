@@ -178,14 +178,29 @@ struct PoliceCallTests {
         #expect(CallsForServiceFeed.sourceNote.contains("prepared for public use"))
     }
 
-    @Test("the cadence note and the window say the same four hours")
-    func theNoteAgreesWithTheWindow() {
-        // Tied together on purpose: the sentence on screen and the interval the query asks for are
-        // the same claim, and a change to one that leaves the other behind is a lie with a test
-        // missing. The second assertion is the one that matters — ADR-0006 records that the Service's
-        // refresh rate could not be verified, so the app must not claim one.
+    @Test("the note and the interval say the same twenty minutes")
+    func theNoteAgreesWithTheInterval() {
+        // Tied together on purpose. The sentence on screen, the interval the query asks for, and the
+        // interval the *gate* reasons with are one claim in three places, and a change to any of them
+        // that leaves the others behind is a lie with a test missing.
         #expect(CallsForServiceFeed.window == 4 * 60 * 60)
+        #expect(CallsForServiceFeed.interval == 20 * 60)
         #expect(CallsForServiceFeed.cadenceNote.contains("four hours"))
-        #expect(CallsForServiceFeed.cadenceNote.contains("no cadence"))
+        #expect(CallsForServiceFeed.cadenceNote.contains("twenty minutes"))
+    }
+
+    @Test("the layer the Service's clock is read from is a real URL, and is not the query endpoint")
+    func theLayerURLIsUsable() throws {
+        // Two endpoints of one service, and the difference matters: a `query` cannot return the layer's
+        // edit time, so a client that reached for the wrong one would silently never gate.
+        let url = try #require(CallsForServiceFeed.layerURL)
+        #expect(url.scheme == "https")
+        #expect(url.absoluteString.hasSuffix("/FeatureServer/0"))
+        #expect(url.absoluteString != CallsForServiceFeed.endpointURLString)
+    }
+
+    @Test("the Service's interval is the twenty minutes it writes on")
+    func theIntervalIsTwentyMinutes() {
+        #expect(CallsForServiceFeed.interval == 20 * 60)
     }
 }

@@ -33,6 +33,35 @@ public enum CallsForServiceParser {
         let features: [Feature]
     }
 
+    /// The layer's own last-edit time, out of the layer's metadata.
+    ///
+    /// A second response from the same service, and the only place the app can learn when the Service
+    /// last wrote — a `query` cannot be asked for it.
+    ///
+    /// `dataLastEditDate` rather than `lastEditDate`: both are present and equal in this service, and
+    /// the one whose name says "the data" is the one whose meaning can be stated.
+    ///
+    /// **Non-throwing, and optional.** A response without a stamp means "no gate and no time to
+    /// quote", which is a state the feed handles; it is not a failure worth putting in front of a
+    /// reader, and it must not be confused with a network failure, which the client reports.
+    public static func publishedAt(from data: Data) -> Date? {
+        guard let layer = try? JSONDecoder().decode(Layer.self, from: data),
+              let milliseconds = layer.editingInfo?.dataLastEditDate
+        else {
+            return nil
+        }
+        // Milliseconds since 1970, as published — the same unit as OCCURRENCE_TIME.
+        return Date(timeIntervalSince1970: milliseconds / 1000)
+    }
+
+    private struct Layer: Decodable {
+        let editingInfo: EditingInfo?
+
+        struct EditingInfo: Decodable {
+            let dataLastEditDate: Double?
+        }
+    }
+
     private struct Feature: Decodable {
         let attributes: Attributes
 
