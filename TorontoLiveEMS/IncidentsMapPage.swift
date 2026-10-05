@@ -186,7 +186,7 @@ struct IncidentsMapPage: View {
             // on nothing puts the card away. The second half is the dismissal, which is why this
             // sets the selection whether or not something was hit.
             .onTapGesture(coordinateSpace: .local) { point in
-                selected = place(at: point, in: proxy)?.location
+                selected = place(at: point, in: proxy)?.id
             }
             // **This page sits under no bar; its title and controls float, from `RootView`.**
             //
