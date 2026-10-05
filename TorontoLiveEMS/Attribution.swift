@@ -46,10 +46,32 @@ enum Attribution {
         )
     }
 
+    /// The police calls' licence, which is a third one and has to be shown on the police screens.
+    ///
+    /// **Three licences, three providers, three places.** The fire feed is the City of Toronto's,
+    /// the postal-area shapes are Statistics Canada's under the Canadian licence, and the police
+    /// calls are the Toronto Police Service's under Ontario's. Each is stated where its data is
+    /// explained, and none is stated generically — a licence that names the wrong provider is
+    /// worse than one that is missing, because it reads as compliance.
+    ///
+    /// The attribution string is the provider's own: *Toronto Police Service*, which is what the
+    /// item's `accessInformation` says.
+    static var policeCalls: AttributedString {
+        .fromMarkdown(
+            "Calls for service: Toronto Police Service. Contains information licensed under the "
+                + "[Open Government Licence – Ontario](\(ontarioLicenceURL))"
+        )
+    }
+
     /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
     /// Statistics Canada's own metadata names it in exactly these terms.
     private static let canadaLicenceURL =
         "https://open.canada.ca/en/open-government-licence-canada"
+
+    /// The Government of Ontario's open licence, which the police calls are published under.
+    /// Checked rather than assumed: it answers 200 to a plain request.
+    private static let ontarioLicenceURL =
+        "https://www.ontario.ca/page/open-government-licence-ontario"
 
     /// The sentence with its link parsed.
     ///

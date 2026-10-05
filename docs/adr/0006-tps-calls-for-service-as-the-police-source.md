@@ -94,8 +94,14 @@ position ADR-0004 already takes for the fire feed.
 
 ## What this does not decide
 
-- **The fifth column.** The compact table is fixed at five columns by design, and police offers
-  four obvious ones: Time, Call Type, Division, Cross Streets. The fifth is not obvious — the code
-  is redundant beside the type, and latitude and longitude mean nothing to a reader.
-- **The page's name.** These calls are not *active*; they are *recent*, within four hours. "Active
-  Police Incidents" would repeat a mistake this project has already corrected once.
+- **The page's name is decided: *Recent*, not *Active*.** These calls are not active; they are
+  recent, within a four-hour window, and the fire page's word cannot be borrowed for them.
+- **Four columns, not five.** Fire's compact table is fixed at five because its data has five
+  things worth a column; police has four — Time, Call Type, Division, Cross Streets. The fifth was
+  never missing: it does not exist. So the table's column count is a property of the source's
+  column set rather than a constant of the layout, which is a change to the shared table rather
+  than a decision about police.
+- **The police information screen, and where the licence goes.** The information button on the
+  police tab leads to a police screen, not to the fire one: what a call, a call type and a division
+  mean, and the Ontario licence, in `Attribution.policeCalls`. Three licences, three providers,
+  each stated where its own data is explained.
