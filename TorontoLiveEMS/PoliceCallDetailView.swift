@@ -9,9 +9,9 @@ import TorontoLiveEMSKit
 /// value is the honest one. The same rule the fire detail view follows, for the same reason.
 ///
 /// **The code is shown beside the words rather than instead of them.** It is what the Service
-/// publishes, and this app does not decode it: the Service publishes no legend for these codes, so
-/// the app gathers the ones it reads and shows the Service's own words beside each rather than
-/// inventing any. The Code row opens that list. See ADR-0006.
+/// publishes, and this app does not decode it: the Service publishes no legend, and the list the app
+/// carries was gathered from the calls themselves rather than invented. The Code row opens it. See
+/// ADR-0006.
 struct PoliceCallDetailView: View {
 
     let call: PoliceCall
