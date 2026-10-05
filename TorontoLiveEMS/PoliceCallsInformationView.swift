@@ -4,8 +4,9 @@ import TorontoLiveEMSKit
 /// Everything the Service says about these calls, in one place.
 ///
 /// The police counterpart of `AboutThisDataContent`, and reached the same way — the info button in
-/// the chrome, on the tab it belongs to. It is a reference screen rather than a setting: what the
-/// fields mean, how long a call stays, and what the licence requires of an app that shows them.
+/// the chrome, on the tab it belongs to. It is a reference screen rather than a setting: which fields
+/// the Service publishes, how long a call stays, and what the licence requires of an app that shows
+/// them.
 ///
 /// **What is here is what could be checked.** The Service's item and layer both leave `description`
 /// empty, so `CallsForServiceFeed.sourceNote` is the whole of what it says about its own data in
@@ -29,21 +30,21 @@ struct PoliceCallsInformationContent: View {
             }
 
             Section {
-                LabeledContent("Call Type", value: "What the call was, in words")
+                Text("Call Type")
 
                 // The one row on this screen that leads somewhere: the codes themselves are a list
                 // rather than a sentence, and a list belongs on its own screen.
                 NavigationLink {
                     CallTypeCodeList()
                 } label: {
-                    LabeledContent("Code", value: "The Service's own code for it")
+                    Text("Code")
                 }
 
-                LabeledContent("Division", value: "The police division it belongs to")
-                LabeledContent("Intersection", value: "The nearest intersection")
-                LabeledContent("Latitude", value: "The point, as published")
-                LabeledContent("Longitude", value: "The point, as published")
-                LabeledContent("Occurrence Time", value: "When the call happened")
+                Text("Division")
+                Text("Intersection")
+                Text("Latitude")
+                Text("Longitude")
+                Text("Occurrence Time")
             } header: {
                 Text("Fields")
             }
