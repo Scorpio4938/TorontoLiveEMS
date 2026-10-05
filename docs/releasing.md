@@ -38,11 +38,10 @@ history stays legible as the app's history.
 distribute. TestFlight and the App Store want a new build number for *every* upload, even at the
 same marketing version, so it belongs to the act of shipping rather than to the checkpoint.
 
-**Settings reports all of this**, and in the same terms: the row shows the number and the stage the
-number implies — `0.0.9 · Alpha` — read from the bundle rather than typed into the screen, and
-without the build number, because that number is not maintained until the first upload. The
-sentence under it explains what the stage means, and both come from `VersionStage` in the package
-so that the words a test pins are the words a reader sees.
+**Settings reports all of this**, and in the same terms: the row shows the version and the build —
+`0.0.9 (1)` — read from the bundle rather than typed into the screen, and the sentence beneath it
+says which number is which and what the stage means. The stage's words come from `VersionStage` in
+the package, so the words a test pins are the words a reader sees.
 
 ## At a release
 

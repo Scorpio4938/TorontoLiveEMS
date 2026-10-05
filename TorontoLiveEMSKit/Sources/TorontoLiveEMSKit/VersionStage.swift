@@ -30,22 +30,18 @@ public enum VersionStage: String, Sendable, CaseIterable {
         return major == 0 ? .alpha : .released
     }
 
-    /// What to call it on screen.
-    public var label: String {
-        switch self {
-        case .alpha: return "Alpha"
-        case .released: return "Released"
-        }
-    }
-
     /// The sentence a screen shows beside the version, when it has one to show.
     ///
-    /// Written for a reader who has just found the version number and is wondering what it means
-    /// about the app in their hand, which is the question the number is there to answer.
+    /// Written for a reader who has just found the version number and is wondering what it says
+    /// about the app in their hand, which is the question the number is there to answer. The word
+    /// *alpha* is in here rather than in a `label` of its own, because this is the only sentence
+    /// that shows it and a second name for the same thing is a second thing to keep true.
     public var note: String {
         switch self {
         case .alpha:
-            return "Usable, unfinished, and promised to nobody — the leading 0 is what says so."
+            return """
+                Alpha: usable, unfinished, and promised to nobody — the leading 0 is what says so.
+                """
         case .released:
             return "A version meant to be used."
         }

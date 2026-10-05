@@ -31,13 +31,13 @@ struct VersionStageTests {
         #expect(VersionStage.of(".9") == nil)
     }
 
-    @Test("every stage has a name and an explanation of its own")
-    func labelsAndNotesAreDistinct() {
-        let labels = VersionStage.allCases.map(\.label)
+    @Test("every stage has an explanation of its own")
+    func notesAreDistinct() {
         let notes = VersionStage.allCases.map(\.note)
-        #expect(labels.allSatisfy { !$0.isEmpty })
         #expect(notes.allSatisfy { !$0.isEmpty })
-        #expect(Set(labels).count == labels.count)
         #expect(Set(notes).count == notes.count)
+        // The word a reader sees, in the sentence that explains it. There is no separate label,
+        // so this is the one place it lives and the one place it can go wrong.
+        #expect(VersionStage.alpha.note.contains("Alpha"))
     }
 }

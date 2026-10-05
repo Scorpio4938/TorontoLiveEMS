@@ -26,40 +26,42 @@ struct SettingsView: View {
 
     /// The number the bundle carries, which is `MARKETING_VERSION` in the project.
     ///
-    /// Read, never written: the project file is the source of the number and this only reports it.
+    /// **Read, never written, and that is what the row is for.** A version typed into a screen is
+    /// one that will one day disagree with the project it was built from — so that sentence lives
+    /// here, with the decision, rather than in the footer, where a reader is looking for what their
+    /// version *means* rather than for why this code is written the way it is.
+    ///
     /// Whether a *tag* carries the same number is `scripts/version_check.py`'s business rather
-    /// than this screen's — a screen cannot check a repository — and `docs/releasing.md` is where
-    /// the scheme itself is written down.
+    /// than this screen's — a screen cannot check a repository — and `docs/releasing.md` holds the
+    /// scheme itself.
     private static var bundleVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? "unknown"
     }
 
-    /// The version as a reader should see it: the number, and the stage the number reports.
+    /// The version as a reader should see it: the checkpoint, and the build.
     ///
-    /// **The build number is deliberately not shown.** Nothing has been distributed, and
-    /// `CURRENT_PROJECT_VERSION` is not maintained until there is something to distribute — the
-    /// scheme puts it with the act of shipping. A row reading "0.0.9 (1)" claims a build one, which
-    /// is neither true in any useful sense nor a number anyone chose. It comes back when it means
-    /// something, and the first upload is when it means something.
+    /// **The build is shown even though it stays at 1 until the app is distributed.** It is the one
+    /// number that changes with every upload, so it is the number someone reporting a problem will
+    /// be asked for — and a version row that conceals a number the app has is a row that leaves the
+    /// reader wondering what else it is not saying.
     private static var version: String {
-        guard let stage = VersionStage.of(bundleVersion) else { return bundleVersion }
-        return "\(bundleVersion) · \(stage.label)"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "unknown"
+        return "\(bundleVersion) (\(build))"
     }
 
-    /// What the version means, in the two sentences a reader has room for.
+    /// What the two numbers are, and what the version says about the app.
     ///
-    /// The first is the reason this row exists at all. The second comes from the package, so the
-    /// words a test pins are the words a reader sees — the same rule the layout names above follow.
-    /// A version with no stage gets the first sentence alone, which is the honest answer for a
-    /// number this cannot read.
+    /// The first sentence is for a reader looking at two numbers and wondering which is which. The
+    /// second comes from the package, so the words a test pins are the words a reader sees — the
+    /// same rule the layout names above follow. A version with no stage gets the first sentence
+    /// alone, which is the honest answer for a number this cannot read.
     private static var versionNote: String {
-        let provenance = """
-            Read from the app rather than written into this screen: a version typed here is one \
-            that will one day disagree with the project it was built from.
-            """
-        guard let stage = VersionStage.of(bundleVersion) else { return provenance }
-        return "\(provenance) \(stage.note)"
+        let whatTheNumbersAre =
+            "The version is the checkpoint, and the number in brackets is the build."
+        guard let stage = VersionStage.of(bundleVersion) else { return whatTheNumbersAre }
+        return "\(whatTheNumbersAre) \(stage.note)"
     }
 
     var body: some View {
