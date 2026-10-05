@@ -1,35 +1,85 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The police incidents, when there are any.
+/// The police calls, arranged the way the reader chose.
 ///
-/// **A placeholder, and an empty one on purpose.** The City does not publish police incidents the
-/// way it publishes fire ones — that is the first thing to establish, and until it is settled a
-/// table here would be a table of invented columns. So the screen says the one true thing: there is
-/// no source yet, and nothing is being guessed at in the meantime.
+/// **The same two arrangements as the fire page, over a different model.** One table, one card, one
+/// column header, one status line, one accessibility fallback — the code is shared, and what differs
+/// is four columns instead of five and a detail screen of its own. That is the whole point of the
+/// presentation layer being generic: two feeds cannot come to look like two apps.
 ///
-/// **The table and the cards are not built here.** They are the fire page's, and they are going to
-/// be moved somewhere both pages call rather than copied into a second set — which is the work that
-/// comes before anything on this screen, because two copies of a five-column grid are two things to
-/// keep aligned, and the header alignment was already broken twice by one of them.
+/// **It reads the feed; it does not own it.** The feed lives at the root with the fire one, because
+/// the reader should not be able to see two different answers to "how current is this".
 ///
-/// It is a `ContentUnavailableView` rather than a hand-drawn empty state: the platform has a shape
-/// for "there is nothing to show", and it already knows how to lay it out.
+/// **It loads when the reader arrives, not at launch.** The fire feed is read at launch because the
+/// map tab needs it either way; nothing else reads the police calls, so asking for them before
+/// anybody looks would be a request made for nobody. See ADR-0006 on politeness.
+///
+/// **And it refreshes by pulling.** This is the one place the two pages differ, and it is deliberate:
+/// the fire page has the prominent refresh tab because that is where its refresh control was asked
+/// for, and a reader who has pulled a list to refresh it will pull this one. Pulling is the
+/// platform's own affordance for a list, so it needs no control of ours and no room on the screen.
 struct PolicePage: View {
 
+    let feed: PoliceCallFeed
+
+    @AppStorage(SettingsKey.dispatchTimeFormat)
+    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
+
+    @AppStorage(SettingsKey.presentation)
+    private var presentation: IncidentPresentation = .standard
+
     var body: some View {
-        ContentUnavailableView(
-            "No Police Incidents Yet",
-            image: "shield",
-            description: Text(
-                "The City does not publish police incidents the way it publishes fire ones. This screen is waiting for a source."
+        content
+            .refreshable { await feed.load() }
+            .task {
+                // Nothing to show and nothing to say about why: the reader has just opened this for
+                // the first time.
+                if feed.calls == nil {
+                    await feed.load()
+                }
+            }
+    }
+
+    /// Three states, in the order a reader meets them: nothing yet, something, or a failure with
+    /// nothing to put in its place. The fire page's shape, over this feed's vocabulary.
+    @ViewBuilder
+    private var content: some View {
+        if let calls = feed.calls {
+            switch presentation {
+            case .compactTable:
+                CompactTableList(
+                    rows: calls,
+                    columns: CompactColumn<PoliceCall>.police,
+                    timeFormat: dispatchTimeFormat,
+                    status: feed.status(format: dispatchTimeFormat)
+                ) { call in
+                    PoliceCallDetailView(call: call)
+                }
+            case .cards:
+                CardsList(
+                    rows: calls,
+                    columns: CompactColumn<PoliceCall>.policeCard,
+                    timeFormat: dispatchTimeFormat,
+                    status: feed.status(format: dispatchTimeFormat)
+                ) { call in
+                    PoliceCallDetailView(call: call)
+                }
+            }
+        } else if let failureMessage = feed.failureMessage {
+            ContentUnavailableView(
+                "Police calls unavailable",
+                systemImage: "exclamationmark.triangle",
+                description: Text(failureMessage)
             )
-        )
+        } else {
+            ProgressView("Loading police calls")
+        }
     }
 }
 
 #Preview {
     NavigationStack {
-        PolicePage()
+        PolicePage(feed: PreviewCalls.feed())
     }
 }

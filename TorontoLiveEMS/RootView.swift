@@ -66,6 +66,13 @@ struct RootView: View {
     @State private var feed: IncidentFeed
     @State private var screen: Screen = .fire
 
+    /// The police calls, owned here for the same reason the fire feed is: two screens reading two
+    /// copies could disagree about what is happening, and about how current it is.
+    ///
+    /// It is read when the reader opens the police tab rather than at launch — nothing else shows
+    /// these calls — and that load lives on the page.
+    @State private var policeFeed: PoliceCallFeed
+
     /// Which kind of map the map page draws.
     ///
     /// **Stored rather than passed.** Two views read it and neither owns the other: the page draws
@@ -91,8 +98,9 @@ struct RootView: View {
     /// "call to main actor-isolated initializer 'init(fetch:now:)' in a synchronous nonisolated
     /// context". Every caller here — the app entry point and the preview — is already a main
     /// actor context, so they can pass it themselves. Found by the compiler, not by thinking.
-    init(feed: IncidentFeed) {
+    init(feed: IncidentFeed, policeFeed: PoliceCallFeed) {
         _feed = State(initialValue: feed)
+        _policeFeed = State(initialValue: policeFeed)
     }
 
     var body: some View {
@@ -162,8 +170,8 @@ struct RootView: View {
 
             Tab("Police", systemImage: "shield", value: Screen.police) {
                 NavigationStack {
-                    PolicePage()
-                        .navigationTitle("Police")
+                    PolicePage(feed: policeFeed)
+                        .navigationTitle("Recent Police Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
                 }
@@ -334,5 +342,8 @@ private extension View {
 }
 
 #Preview("App — sample data") {
-    RootView(feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }))
+    RootView(
+        feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
+        policeFeed: PreviewCalls.feed()
+    )
 }
