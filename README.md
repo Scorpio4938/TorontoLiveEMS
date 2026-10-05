@@ -117,6 +117,7 @@ rather than trusting.
 | `v0.0.11` | `f468581` | Builds, and ran: the police page. A second source and a second tab over the same table and cards as the fire page, so the two feeds share one presentation layer and differ only in their columns, their detail screen and their data. |
 | `v0.0.12` | `2fa91a4` | **Not yet run as it stands.** The police page finished: a static code list behind every code, the reader's choice of words or code in the table, an information screen that is fields and licence without padding, and a refresh that answers from the clock it already holds rather than spending a network round trip to decide there is nothing to fetch. |
 | `v0.0.13` | `8684d3e` | Builds and runs. Police calls on the map — grouped by point, each pin wearing its incident kind's symbol — over one shared mark vocabulary that both feeds produce, and a map tab whose refresh asks both. **The filter is not in yet**, and a busy window puts a hundred pins on one map without it. |
+| `v0.0.14` | `2fff7f9` | **Not yet run as it stands.** The map stops shouting: three tones — dark red, orange, and grey for the majority — over four severities, the police's inferred from their call codes and `unknown` for a call nobody named. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
@@ -129,12 +130,15 @@ whether it was ever *run* as well as whether it was ever *built*.
 
 ## Status
 
-**The app builds and runs on an iPhone**, most recently the branch that put police calls on the
-map: it was built there repeatedly, which is where the two compile errors on that branch were found
-and fixed. What has *not* been looked at on a device is how the map reads with both feeds' marks on
-it at once — which is the judgement the filter is waiting on.
+**The app builds and runs on an iPhone.** The branch that put police calls on the map was exercised
+there repeatedly, which is where its two compile errors were found and fixed, and the map was looked
+at with both feeds' marks on it — which is what prompted the colours to be redone.
 
-**`swift test` has still never been run.** There are 206 tests, and they are the only thing that can
+**Not yet run: the two commits after that.** The three tones and four severities have been written,
+not seen. Neither has the question they were written for — whether the map now reads as quiet with
+its serious marks standing out — which is a judgement only looking at it can settle.
+
+**`swift test` has still never been run.** There are 209 tests, and they are the only thing that can
 check the parsers, the query builders, the gates, the projections and the sentences.
 
 ## Documentation
