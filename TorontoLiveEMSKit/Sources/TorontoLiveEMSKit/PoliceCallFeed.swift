@@ -3,18 +3,20 @@ import Observation
 
 /// The police calls the app is showing, and everything about how they got here.
 ///
-/// **The fire feed's shape, with one deliberate difference: there is no gate.** `IncidentFeed` can
-/// skip a refresh because the City publishes the timestamp of its own last republish, and between
-/// two of its five-minute boundaries there is provably nothing to fetch. This service *does* publish
-/// such a time — the layer's `editingInfo.dataLastEditDate` moves with the data — but a `query`
-/// cannot be asked for it, so gating on it would cost a second request to decide whether to make the
-/// first. One request per explicit refresh is the better trade, and the politeness rule is the
-/// reader's: once at launch, once per explicit tap, and never on a timer.
+/// **The fire feed's shape, with one difference that is forced rather than chosen.** `IncidentFeed`
+/// can decline to ask at all: the City's republish tick arrives *inside* the XML it already fetches,
+/// so between two of its five-minute boundaries there is provably nothing to ask for. This Service
+/// publishes a last-edit time too — the layer's `editingInfo.dataLastEditDate`, measured moving —
+/// but a `query` cannot be asked for it: it comes in a separate 10.5 KB metadata response, against
+/// 22.7 KB for the calls themselves. Declining to ask would therefore cost about half a fetch every
+/// time, and more than a fetch when something *had* changed. So the gate is *after* the fact: fetch,
+/// compare, and say "nothing newer" only when the calls that came back are exactly the ones already
+/// on screen. That is free, and it is a fact rather than an inference. See ADR-0006.
 ///
-/// **The age it shows is ours, not the Service's.** It could quote the Service's own edit time, for
-/// the price of a second request — a price not worth paying to say something the reader already
-/// knows. So the status line says when the app last read the calls, which is the one thing the app
-/// actually knows, rather than implying it knows when the Service republished. See ADR-0006.
+/// **Two times, and only one of them is the Service's.** The line says when the newest published call
+/// happened, which is the only "as of" this feed can honestly state, and when the app read it. It
+/// does not quote the Service's own edit time: that would cost a request on every refresh, and it
+/// names a moment *later* than the newest call — deleting an expired call edits the layer too.
 ///
 /// `@Observable` and `@MainActor`, the same shape as `IncidentFeed`, passed as an ordinary property
 /// and **never through `@Environment`**, where a missing key traps rather than degrading.
@@ -83,7 +85,52 @@ public final class PoliceCallFeed {
         }
     }
 
-    /// The line above the calls: when they were read, and what is happening to them.
+    /// Refreshes, and answers whether what came back was already on screen.
+    ///
+    /// **A gate after the fact, because this feed has no gate before it.** The reasoning is in the
+    /// type's documentation above; the short version is that asking the Service whether anything
+    /// changed costs about as much as asking for the calls.
+    ///
+    /// A read that **failed** is not "nothing newer". `load()` keeps the last good calls in place
+    /// when an attempt fails, so an unchanged array is only evidence when the read actually happened
+    /// — otherwise a dropped connection would be reported to the reader as reassurance.
+    public func refresh() async -> RefreshOutcome {
+        let before = calls
+        await load()
+
+        guard failureMessage == nil,
+              !isShowingStaleResult,
+              let after = calls,
+              after != before
+        else {
+            return .refreshed
+        }
+        return .skipped
+    }
+
+    /// The newest instant the Service published, which is the only "as of" this feed can state.
+    private var newestCallAt: Date? {
+        calls?.map(\.occurrenceTime).max()
+    }
+
+    /// The sentence for a refresh that came back with exactly what was already there.
+    ///
+    /// Fire's version names the City's tick, because fire has a tick. This one names the newest call
+    /// it holds — the same thing the status line leads with, and the only time the Service actually
+    /// published. A method rather than a property for `status`'s reason: it formats a date, and the
+    /// format is the reader's setting rather than the package's.
+    public func nothingNewerMessage(
+        format: DispatchTimeFormat,
+        calendar: Calendar = .current
+    ) -> String {
+        guard let newest = newestCallAt else {
+            return "Nothing newer than the calls already on screen."
+        }
+        let clock = DispatchTimestamp.clockTime(newest, format: format, calendar: calendar)
+        return "Nothing newer than \(clock)."
+    }
+
+    /// The line above the calls: what the Service last published, and when the app read it.
     ///
     /// **The clock format is an argument rather than a stored property.** The fire feed's status is a
     /// property because the City's own timestamp is a string it can quote; this one has to *format* a
@@ -95,6 +142,12 @@ public final class PoliceCallFeed {
     /// pin the answer without one, and an assertion that only holds in one time zone is not an
     /// assertion.
     ///
+    /// **"Newest call", not "as of".** The Service publishes no republish time in anything the app
+    /// fetches — the layer's edit time is a request of its own, and it names a moment later than the
+    /// newest call anyway — so the honest "as of" is the newest call the Service published. What the
+    /// reader most needs beside it is when *this app* looked, which is the one thing it knows first
+    /// hand, and which the fire feed cannot say because it is busy quoting the City.
+    ///
     /// No case for having read nothing yet: the screens say that with a spinner and a sentence in the
     /// list's place, which is where a reader looks for it — the same judgement `IncidentFeed` makes.
     public func status(
@@ -105,18 +158,28 @@ public final class PoliceCallFeed {
             return FeedStatus(text: "Reading…", isStale: false)
         }
 
-        // "Read at", not "as of". The Service publishes no republish time, so a phrase that implied
-        // one would be claiming knowledge the app does not have — where the fire feed *can* say
-        // "City data as of", because the City publishes exactly that.
-        let clock = DispatchTimestamp.clockTime(lastReadAt, format: format, calendar: calendar)
-        let base = "Read at \(clock)"
+        var parts: [String] = []
+        let newest = newestCallAt.map {
+            DispatchTimestamp.clockTime($0, format: format, calendar: calendar)
+        }
+        let read = DispatchTimestamp.clockTime(lastReadAt, format: format, calendar: calendar)
+
+        // Two sentences in one line, and the first one has to stand on its own when there is nothing
+        // to lead with: a quiet four hours leaves the read time as the whole of what there is to say,
+        // and it must not arrive as "read at 16:54" in lower case as though something came before it.
+        if let newest {
+            parts.append("Newest call \(newest)")
+            parts.append("read at \(read)")
+        } else {
+            parts.append("Read at \(read)")
+        }
 
         if isShowingStaleResult {
-            return FeedStatus(text: "\(base) · showing the last result", isStale: true)
+            parts.append("showing the last result")
+        } else if isRefreshing {
+            parts.append("checking…")
         }
-        if isRefreshing {
-            return FeedStatus(text: "\(base) · checking…", isStale: false)
-        }
-        return FeedStatus(text: base, isStale: false)
+
+        return FeedStatus(text: parts.joined(separator: " · "), isStale: isShowingStaleResult)
     }
 }
