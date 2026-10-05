@@ -1,4 +1,5 @@
 import SwiftUI
+import TorontoLiveEMSKit
 
 /// The Info control, drawn once and used wherever it appears.
 ///
@@ -46,7 +47,47 @@ struct SettingsControl: View {
     }
 }
 
-/// The two controls in the app's own capsule — drawn once, above every page.
+/// The map's own control: which kind of map to draw.
+///
+/// **The button wears the icon of the kind in force**, which is Apple's own behaviour in its Maps:
+/// the control is not a generic "change the map" glyph but the glyph of the map you are looking at,
+/// so it states the current mode as well as offering the others. Tap it and the menu lists all
+/// three with their glyphs, the current one carrying the platform's checkmark.
+///
+/// **A `Menu` holding a `Picker`, not a list of buttons.** The picker gives the current kind the
+/// platform's own checkmark, so the menu says which of the three is in force as well as offering
+/// the other two — which a flat list of actions cannot do without this code drawing the mark
+/// itself.
+///
+/// **Why a menu and not Apple's sheet, which is the question worth answering.** Apple's map-mode
+/// chooser slides up from the bottom because it carries *previews*: a thumbnail of each style, so
+/// you choose by looking rather than by reading. That is the whole reason it is that large. We have
+/// no thumbnails to show — rendering one per option means snapshotting the map in each style, which
+/// is a network fetch per presentation for a picture of a map the reader is already looking at — so
+/// a sheet would be a large container holding three words, covering the map it exists to change.
+/// The menu carries the same information, in the same place the reader tapped, without covering
+/// anything.
+struct MapKindControl: View {
+
+    @Binding var mapKind: MapKind
+
+    var body: some View {
+        Menu {
+            Picker("Map Type", selection: $mapKind) {
+                ForEach(MapKind.allCases, id: \.self) { kind in
+                    Label(kind.label, systemImage: kind.systemImage)
+                        .tag(kind)
+                }
+            }
+        } label: {
+            Image(systemName: mapKind.systemImage)
+                .foregroundStyle(Color.primary)
+        }
+        .accessibilityLabel("Map Type")
+    }
+}
+
+/// The controls in the app's own capsule — drawn once, above every page.
 ///
 /// **One layer, like the tab bar.** The tab bar is not part of either page: the container draws
 /// it, and that is exactly why it cannot differ between them. This is the same arrangement at the
@@ -71,13 +112,30 @@ struct SettingsControl: View {
 /// Order is ours, not asserted: the `HStack` puts Settings in the rightmost slot it has always
 /// had, where the group it replaced relied on the platform laying items out in declaration order
 /// and nothing here could check that it did.
+///
+/// **One exception, and it is on trial.** `mapKind` puts a *map* control in this capsule, which is
+/// app-wide chrome. It is here to test the claim that adding a page's own control to one shared
+/// layer is cheap and invisible to what is already there — the cost being that one capsule then
+/// means two things: facts about the app, and a setting about a map.
 struct ScreenControls: View {
 
     let onInfo: () -> Void
     let onSettings: () -> Void
 
+    /// The map's own switch, present only where a map is on screen.
+    ///
+    /// **Leading rather than trailing, and that is the whole of the trick.** The capsule is
+    /// trailing-aligned, so it grows to the left; putting the new control *first* leaves Info and
+    /// Settings exactly where they were, and only the capsule's left edge moves. Appending it at
+    /// the end would shift both of them by its width — which would be the one way this arrangement
+    /// could disturb something that was already right.
+    var mapKind: Binding<MapKind>? = nil
+
     var body: some View {
         HStack(spacing: 16) {
+            if let mapKind {
+                MapKindControl(mapKind: mapKind)
+            }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)
         }

@@ -80,6 +80,30 @@ enum IncidentMapScale {
     }
 }
 
+extension MapKind {
+
+    /// The style this kind asks the map for.
+    ///
+    /// **The whole of the app's knowledge about turning a stored preference into a map**, in one
+    /// place, next to the maps it applies to. The enum itself is in the package, because that is
+    /// where the app's stored preferences live and where they can be tested; `MapStyle` is here
+    /// because it is MapKit's and the package holds no MapKit at all.
+    ///
+    /// Every return is written `MapStyle.…` rather than bare, because this switch has cases named
+    /// the same as MapKit's styles and a bare `.standard` would be a question rather than a lookup.
+    var style: MapStyle {
+        switch self {
+        case .standard:
+            return MapStyle.standard
+
+        // `.hybrid`, deliberately, and not `.imagery`: imagery carries no labels at all, which is
+        // a map with no street names on it. Looked at, and rejected in exactly those terms.
+        case .satellite:
+            return MapStyle.hybrid
+        }
+    }
+}
+
 extension PostalAreas.Point {
 
     /// The same point, in the type the maps draw with.
