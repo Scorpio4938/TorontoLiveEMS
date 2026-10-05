@@ -31,17 +31,37 @@ public enum CallsForServiceFeed {
     public static let pageURLString =
         "https://experience.arcgis.com/experience/a22f5295933e48a5b0a4c90cd3c4cae1"
 
-    /// The same page as a URL, for the screens that link to it.
+    /// Same as a URL, for the screens that link to it.
     public static var pageURL: URL? {
         URL(string: pageURLString)
     }
 
+    /// What the dataset is, in the Service's own words.
+    ///
+    /// Quoted verbatim from the item that publishes it, which is the whole of what the Service says
+    /// about its own data in machine-readable form: the item and its layer both leave `description`
+    /// empty. There is no cadence statement anywhere in either — see `cadenceNote`.
+    public static let sourceNote = """
+        Calls for Service dataset prepared for public use.
+        """
+
+    /// How current the data is, in this app's words rather than the Service's.
+    ///
+    /// **The app promises no cadence, because the Service states none it will stand behind.** What
+    /// this says instead is what can be measured. The fire feed can say "City data as of" because
+    /// the City publishes a tick to quote; this feed has no such tick on offer for the price of one
+    /// request, so the screen shows the app's own last read rather than a Service time.
+    public static let cadenceNote = """
+        A call stays here for four hours and then goes. The Service does not say how often it \
+        refreshes, so this app claims no cadence: it shows when it last read, and reading again is \
+        up to you.
+        """
+
     /// How far back a read reaches.
     ///
     /// **Four hours, which is what the service holds.** Checked rather than assumed: the layer held
-    /// eighty records spanning 4.2 hours, oldest to newest, and the Service's own description says a
-    /// dot is visible for four hours. Asking for more would return the same records; asking for less
-    /// would hide calls that are still there.
+    /// eighty records spanning 4.2 hours, oldest to newest, on 2026-10-05. Asking for more would
+    /// return the same records; asking for less would hide calls that are still there.
     public static let window: TimeInterval = 4 * 60 * 60
 
     /// The fields to read, named rather than asked for wholesale.

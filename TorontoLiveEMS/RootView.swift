@@ -134,8 +134,16 @@ struct RootView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
+            // Which screen the info button opens is decided here rather than in the toolbar, because
+            // there is one button and two answers: the reader is looking at a tab, and the
+            // information they want is that tab's. A sheet covers the tab bar, so `screen` cannot
+            // move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                AboutThisDataView()
+                if screen == .police {
+                    PoliceCallsInformationView()
+                } else {
+                    AboutThisDataView()
+                }
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }

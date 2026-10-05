@@ -66,7 +66,7 @@ struct PoliceCallDetailView: View {
             } header: {
                 Text("Location")
             } footer: {
-                Text("The point is the Service's own, as published. Calls are published at the nearest intersection, and some are withheld entirely — for domestic violence, sexual assault and medical distress, and for ongoing police operations. A call that is not here is not evidence that nothing happened.")
+                Text("The point is the Service's own, as published. Calls are published at the nearest intersection rather than at an address, and a call that is not here is not evidence that nothing happened.")
             }
         }
         .navigationTitle(call.callType)

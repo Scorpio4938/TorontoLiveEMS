@@ -168,4 +168,24 @@ struct PoliceCallTests {
         #expect(cell.text == NotProvided.mark)
         #expect(!cell.isFallback, "there is no substitute here, so nothing is marked as one")
     }
+
+    @Test("the note a screen quotes is the Service's own words")
+    func theSourceNoteIsTheServicesOwnWords() {
+        // Quoted rather than paraphrased, and short because short is all there was: the item and its
+        // layer both leave `description` empty, so this sentence is the whole of what the Service
+        // says about its own data in machine-readable form.
+        #expect(!CallsForServiceFeed.sourceNote.isEmpty)
+        #expect(CallsForServiceFeed.sourceNote.contains("prepared for public use"))
+    }
+
+    @Test("the cadence note and the window say the same four hours")
+    func theNoteAgreesWithTheWindow() {
+        // Tied together on purpose: the sentence on screen and the interval the query asks for are
+        // the same claim, and a change to one that leaves the other behind is a lie with a test
+        // missing. The second assertion is the one that matters — ADR-0006 records that the Service's
+        // refresh rate could not be verified, so the app must not claim one.
+        #expect(CallsForServiceFeed.window == 4 * 60 * 60)
+        #expect(CallsForServiceFeed.cadenceNote.contains("four hours"))
+        #expect(CallsForServiceFeed.cadenceNote.contains("no cadence"))
+    }
 }

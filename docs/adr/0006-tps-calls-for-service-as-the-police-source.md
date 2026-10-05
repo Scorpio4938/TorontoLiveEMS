@@ -62,7 +62,10 @@ point, where the fire feed publishes a street and makes the app ask Apple where 
 
 **Open Government Licence – Ontario**, attributed to the Toronto Police Service. That is a third
 licence — Toronto's for the fire feed, Canada's for the postal-area shapes, Ontario's here — so the
-attribution screen carries all three.
+attribution screen carries all three. The clauses quoted below are read from the item's own
+`licenseInfo` field rather than from memory: version 1.1, information provider "Her Majesty the
+Queen in right of Ontario", and an exemptions clause granting no right to personal information at
+all.
 
 Two of the licence's restrictions are not footnotes, because they constrain what this app may be:
 
@@ -79,6 +82,13 @@ distress, and for ongoing police operations. **A call that is not there is not e
 nothing happened** — so the police page has to read as a view of what was published, which is the
 position ADR-0004 already takes for the fire feed.
 
+> **The list itself could not be reproduced on 2026-10-05, and no screen repeats it.** It was read
+> from the Service's public web application, whose text is rendered in the browser and cannot be
+> fetched: the item and its layer both leave `description` empty, and the item's `licenseInfo` names
+> no exclusion. What the app states is the **caution** above — that a call's absence is not evidence
+> — and the police detail view says only that calls are published at an intersection. **Check the
+> list in a browser before putting it on a screen again.**
+
 ## Consequences we accept
 
 - **Twenty minutes, or five, or neither.** The item's summary says the data is updated every 20
@@ -86,6 +96,19 @@ position ADR-0004 already takes for the fire feed.
   contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. So the app **shows
   the data's age and promises no cadence** — the fire feed's discipline, where the feed's own
   timestamp is the only thing the status line reads.
+
+  > **Neither number is reproducible on 2026-10-05 either.** The item metadata today carries a
+  > one-line snippet about the dataset and no cadence at all. The contradiction was read from
+  > rendered text in the Service's web application. What the app says is what can be measured: a
+  > call stays four hours, the screen shows when the app last read, and no cadence is claimed.
+- **The layer does publish a last-edit time, and an earlier reading of it was wrong.** An earlier
+  version of this file's companion code said the layer "carries no time info at all". It does: the
+  layer's `editingInfo.dataLastEditDate` moves with the data — measured 2026-10-05 at 17:31:16Z,
+  fifteen minutes old while the newest call the layer held was thirty. Gating a refresh on it is
+  therefore *possible*, but it costs a **second request** to decide whether to make the first: a
+  `query` cannot be asked for it, because `advancedQueryCapabilities` offers no `returnEditMoment`.
+  So the gate stays off — one request per explicit refresh — and the status line still reads the
+  app's own clock rather than quoting a Service time nobody asked it for.
 - **Traps the client has to handle.** A time filter needs a literal: `OCCURRENCE_TIME > TIMESTAMP
   '…'` works and a bare millisecond number answers 400 — and the literal is read as **UTC**, which
   was measured too. A value standing in for nothing is recognised by the fire feed's own rule, that

@@ -5,14 +5,16 @@ import Observation
 ///
 /// **The fire feed's shape, with one deliberate difference: there is no gate.** `IncidentFeed` can
 /// skip a refresh because the City publishes the timestamp of its own last republish, and between
-/// two of its five-minute boundaries there is provably nothing to fetch. This service publishes no
-/// such timestamp — its layer carries no time info at all, and asking for the layer's edit date
-/// would be a second request to learn when to make the first. So a refresh here always fetches, and
-/// the politeness rule is the reader's: once at launch, once per explicit tap, and never on a timer.
+/// two of its five-minute boundaries there is provably nothing to fetch. This service *does* publish
+/// such a time — the layer's `editingInfo.dataLastEditDate` moves with the data — but a `query`
+/// cannot be asked for it, so gating on it would cost a second request to decide whether to make the
+/// first. One request per explicit refresh is the better trade, and the politeness rule is the
+/// reader's: once at launch, once per explicit tap, and never on a timer.
 ///
-/// **The age it shows is ours, not the Service's.** There is no published tick to quote, so the
-/// status line says when the app last read the calls — which is the one thing the app actually
-/// knows — rather than implying it knows when the Service republished.
+/// **The age it shows is ours, not the Service's.** It could quote the Service's own edit time, for
+/// the price of a second request — a price not worth paying to say something the reader already
+/// knows. So the status line says when the app last read the calls, which is the one thing the app
+/// actually knows, rather than implying it knows when the Service republished. See ADR-0006.
 ///
 /// `@Observable` and `@MainActor`, the same shape as `IncidentFeed`, passed as an ordinary property
 /// and **never through `@Environment`**, where a missing key traps rather than degrading.
