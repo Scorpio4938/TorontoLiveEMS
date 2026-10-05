@@ -115,6 +115,7 @@ rather than trusting.
 | `v0.0.9` | `58668fe` | **Not built.** The version scheme itself, and the first tag whose own tree carries its number. |
 | `v0.0.10` | `1f4d003` | **Not built.** Settings says the version, the build and the stage — the build number back where it was, and the sentence under it explaining which number is which. |
 | `v0.0.11` | `f468581` | Builds, and ran: the police page. A second source and a second tab over the same table and cards as the fire page, so the two feeds share one presentation layer and differ only in their columns, their detail screen and their data. |
+| `v0.0.12` | `2fa91a4` | **Not yet run as it stands.** The police page finished: a static code list behind every code, the reader's choice of words or code in the table, an information screen that is fields and licence without padding, and a refresh that answers from the clock it already holds rather than spending a network round trip to decide there is nothing to fetch. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
@@ -127,19 +128,13 @@ whether it was ever *run* as well as whether it was ever *built*.
 
 ## Status
 
-**The app built and ran in the iOS Simulator at `3cb40f2`, and `swift test` passes in the
-package.** Four APIs that were the main compile risk — `LabeledContent` in the detail view,
-`@AppStorage` over a `RawRepresentable` in Settings, `AttributedString(markdown:)` in the
-attribution, and `scrollEdgeEffectStyle` — are therefore known to build.
+**The app builds and runs on an iPhone.** The police page was exercised on a device throughout,
+which is where the refresh freeze was found and reported; everything the branch carried up to
+that point was run there. The last few commits before this merge have not been run since: the
+freeze fix itself, the two Fields merges on the information screen, and the reverted detail view.
 
-The current `master` has not been built since the reset, so its status is unverified rather
-than known. Nothing in it is new work: it is `v0.0.2`'s code, plus a fix to a line that never
-compiled, plus a map that did.
-
-"It builds" is not the same as "it has been looked at under every setting", and the
-difference is tracked rather than assumed. The system's appearance and accessibility
-settings — dark mode, Reduce Transparency, Increase Contrast, Reduce Motion — have not been
-exercised; that is #11 in the tracker.
+**`swift test` has still never been run.** There are 190 tests, and they are the only thing that
+can check the parsers, the query builders, the gates and the sentences.
 
 ## Documentation
 
