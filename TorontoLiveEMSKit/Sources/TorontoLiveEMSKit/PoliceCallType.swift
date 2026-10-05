@@ -25,11 +25,15 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
     /// The codes the Service has been observed using, and what each one means.
     ///
     /// **Gathered from the Service, not invented, and static.** Every call carries both halves of this
-    /// mapping, so it was collected from the calls themselves: the ninety-six the Service held on
-    /// 2026-10-05 yielded these thirty. Adopting a code the Service is not using, or guessing at one,
-    /// would be this app inventing the Service's vocabulary — and guessing is not even possible here:
-    /// `INDEX` means *indecent exposure* while `EXPJU` means *indecent exposure just occurred*, so the
-    /// codes are not compositional.
+    /// mapping, so it was collected from the calls themselves — and the two numbers involved are worth
+    /// keeping apart. On 2026-10-05 the Service held **ninety-six calls**, which are individual
+    /// incidents; among them were **thirty distinct codes**, which are kinds of incident. One code
+    /// appears on many calls: `DIS` alone was seventeen of the ninety-six. So this list is thirty
+    /// entries because thirty kinds of thing happened in four hours, not because the Service has only
+    /// thirty kinds of call — and it is a starting point rather than an inventory. Adopting a code the
+    /// Service is not using, or guessing at one, would be this app inventing the Service's vocabulary;
+    /// guessing is not even possible, since `INDEX` means *indecent exposure* while `EXPJU` means
+    /// *indecent exposure just occurred*.
     ///
     /// **A reference rather than a lookup, which is what makes an incomplete list harmless.** No screen
     /// resolves a call's code through this: the table and the detail view show the words the Service
