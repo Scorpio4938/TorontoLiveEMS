@@ -118,7 +118,7 @@ struct PoliceCallTests {
 
     @Test("four columns, in fire's rhythm: where, when, what, who")
     func theColumnSet() {
-        #expect(CompactColumn<PoliceCall>.police.map(\.label) == [
+        #expect(CompactColumn<PoliceCall>.police(style: .words).map(\.label) == [
             "Cross Streets",
             "Occurrence Time",
             "Call Type",
@@ -128,7 +128,7 @@ struct PoliceCallTests {
 
     @Test("the card reads a different order from the table, as fire's does")
     func theCardOrder() {
-        #expect(CompactColumn<PoliceCall>.policeCard.map(\.label) == [
+        #expect(CompactColumn<PoliceCall>.policeCard(style: .words).map(\.label) == [
             "Cross Streets",
             "Call Type",
             "Occurrence Time",
@@ -236,5 +236,42 @@ struct PoliceCallTests {
     @Test("the Service's interval is the twenty minutes it writes on")
     func theIntervalIsTwentyMinutes() {
         #expect(CallsForServiceFeed.interval == 20 * 60)
+    }
+
+    @Test("the call type column hears the reader's setting")
+    func theCallTypeColumnHearsTheSetting() throws {
+        // The column is the only place the choice shows: a call's detail view has room for both and
+        // shows both. Words is the default because it is what the table showed before there was a
+        // choice — a new setting must not change what an existing reader sees.
+        let call = try Self.calls()[0]
+        let words = CompactColumn<PoliceCall>.callType(style: .words).cell(call, .twelveHour)
+        let code = CompactColumn<PoliceCall>.callType(style: .code).cell(call, .twelveHour)
+
+        #expect(words.text == call.callType)
+        #expect(code.text == call.callTypeCode)
+        #expect(
+            words.text != code.text,
+            "the fixture's words and its code have to differ for this assertion to mean anything"
+        )
+    }
+
+    @Test("both arrangements carry the setting, not just the table")
+    func bothArrangementsCarryTheSetting() throws {
+        // The table and the card differ only in order, so the call type column sitting at a different
+        // index in each is exactly how one arrangement could be given the setting and the other missed.
+        // Looked up by label rather than by index, for that reason.
+        let call = try Self.calls()[0]
+
+        for style in PoliceCallTypeStyle.allCases {
+            let expected = style == .words ? call.callType : call.callTypeCode
+            let arrangements = [
+                CompactColumn<PoliceCall>.police(style: style),
+                CompactColumn<PoliceCall>.policeCard(style: style),
+            ]
+            for columns in arrangements {
+                let column = try #require(columns.first { $0.label == "Call Type" })
+                #expect(column.cell(call, .twelveHour).text == expected)
+            }
+        }
     }
 }

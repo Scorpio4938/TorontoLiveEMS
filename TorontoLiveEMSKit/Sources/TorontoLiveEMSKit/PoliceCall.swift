@@ -96,9 +96,21 @@ extension CompactColumn where Row == PoliceCall {
         CompactCell(DispatchTimestamp.clockTime(call.occurrenceTime, format: timeFormat))
     }
 
-    /// What the call was, in the Service's words.
-    public static let callType = CompactColumn<PoliceCall>(label: "Call Type") { call, _ in
-        CompactCell(call.callType)
+    /// What the call was: the Service's words for it, or the Service's code.
+    ///
+    /// **A function rather than a value, because the reader chooses which of the two.** The column is
+    /// the only place the choice shows — a call's detail view has room for both and shows both, and a
+    /// column has room for one. The cell closure captures the choice, so `CompactColumn`'s signature is
+    /// untouched and the shared table learns nothing about police preferences.
+    public static func callType(style: PoliceCallTypeStyle) -> CompactColumn<PoliceCall> {
+        CompactColumn<PoliceCall>(label: "Call Type") { call, _ in
+            switch style {
+            case .words:
+                return CompactCell(call.callType)
+            case .code:
+                return CompactCell(call.callTypeCode)
+            }
+        }
     }
 
     /// Which division responded.
@@ -109,24 +121,18 @@ extension CompactColumn where Row == PoliceCall {
     /// The police calls' columns, in the order the table shows them.
     ///
     /// **Four, where fire has five**, and that is this source's count rather than the table's: these
-    /// are the fields the Service publishes that are worth a column. The call type *code* is not one
-    /// of them — it says the same thing as the words beside it — and latitude and longitude mean
-    /// nothing to a reader.
+    /// are the fields the Service publishes that are worth a column. Latitude and longitude are not
+    /// among them — they mean nothing to a reader, and the detail view states them as numbers for
+    /// anyone who wants them.
     ///
     /// The order follows fire's rhythm so the two tables read alike: where, then when, then what,
     /// then who responded.
-    public static let police: [CompactColumn<PoliceCall>] = [
-        crossStreets,
-        occurrenceTime,
-        callType,
-        division,
-    ]
+    public static func police(style: PoliceCallTypeStyle) -> [CompactColumn<PoliceCall>] {
+        [crossStreets, occurrenceTime, callType(style: style), division]
+    }
 
     /// The same four in the order the card reads them: where and what, then when and who.
-    public static let policeCard: [CompactColumn<PoliceCall>] = [
-        crossStreets,
-        callType,
-        occurrenceTime,
-        division,
-    ]
+    public static func policeCard(style: PoliceCallTypeStyle) -> [CompactColumn<PoliceCall>] {
+        [crossStreets, callType(style: style), occurrenceTime, division]
+    }
 }

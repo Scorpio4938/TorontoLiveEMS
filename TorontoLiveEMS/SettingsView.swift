@@ -5,10 +5,12 @@ import TorontoLiveEMSKit
 ///
 /// `@AppStorage` is the platform's own lightweight preference store, and
 /// `DispatchTimeFormat` is `RawRepresentable` over `String`, which is what it wants.
-/// There is no settings model and no synchronisation, because there are two preferences.
+/// There is no settings model and no synchronisation: a preference is a key and a default.
 enum SettingsKey {
     static let dispatchTimeFormat = "dispatchTimeFormat"
     static let presentation = "incidentPresentation"
+    /// Which half of a police call's type the table and the card show.
+    static let policeCallTypeStyle = "policeCallTypeStyle"
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"
@@ -34,6 +36,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.presentation)
     private var presentation: IncidentPresentation = .standard
 
+    @AppStorage(SettingsKey.policeCallTypeStyle)
+    private var policeCallTypeStyle: PoliceCallTypeStyle = .words
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -48,9 +53,9 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("Fire")
+                    Text("Incidents")
                 } footer: {
-                    Text("The table fits more incidents on a screen. Cards give each one a block of its own.")
+                    Text("The table fits more incidents on a screen. Cards give each one a block of its own. This applies to the fire and police pages alike.")
                 }
 
                 Section {
@@ -62,6 +67,18 @@ struct SettingsView: View {
                     Text("Dispatch Time")
                 } footer: {
                     Text("How the time of day is shown.")
+                }
+
+                Section {
+                    Picker("Call Type", selection: $policeCallTypeStyle) {
+                        ForEach(PoliceCallTypeStyle.allCases, id: \.self) { style in
+                            Text(style.label).tag(style)
+                        }
+                    }
+                } header: {
+                    Text("Police")
+                } footer: {
+                    Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
                 }
 
                 Section {

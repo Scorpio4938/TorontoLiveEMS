@@ -1,5 +1,35 @@
 import Foundation
 
+/// Which half of a call's type a column shows.
+///
+/// **The choice exists because a call has two names and a table cell has room for one.** The Service
+/// publishes a code and the words it stands for, and a call's own detail view shows both; a column can
+/// show one of them, and which one is useful depends on the reader — the words for someone reading what
+/// is happening, the code for someone comparing against the Service's own output.
+///
+/// `RawRepresentable` over `String`, like `DispatchTimeFormat`, which is what `@AppStorage` wants.
+public enum PoliceCallTypeStyle: String, CaseIterable, Sendable {
+
+    /// `PERSON WITH A GUN` — what the Service says the call is.
+    case words
+
+    /// `PERGU` — the Service's own code for it.
+    case code
+
+    /// The name a reader sees in Settings.
+    ///
+    /// Here rather than written into the picker, for the reason `IncidentPresentation.label` is: the
+    /// strings a test pins are then the strings a reader sees.
+    public var label: String {
+        switch self {
+        case .words:
+            return "Words"
+        case .code:
+            return "Code"
+        }
+    }
+}
+
 /// One call type, as the Service publishes it: a code, and the words that go with it.
 public struct PoliceCallType: Identifiable, Equatable, Sendable {
 

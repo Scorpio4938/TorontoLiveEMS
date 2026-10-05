@@ -29,6 +29,9 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.presentation)
     private var presentation: IncidentPresentation = .standard
 
+    @AppStorage(SettingsKey.policeCallTypeStyle)
+    private var policeCallTypeStyle: PoliceCallTypeStyle = .words
+
     var body: some View {
         content
             .refreshable { await feed.load() }
@@ -50,7 +53,7 @@ struct PolicePage: View {
             case .compactTable:
                 CompactTableList(
                     rows: calls,
-                    columns: CompactColumn<PoliceCall>.police,
+                    columns: CompactColumn<PoliceCall>.police(style: policeCallTypeStyle),
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { call in
@@ -59,7 +62,7 @@ struct PolicePage: View {
             case .cards:
                 CardsList(
                     rows: calls,
-                    columns: CompactColumn<PoliceCall>.policeCard,
+                    columns: CompactColumn<PoliceCall>.policeCard(style: policeCallTypeStyle),
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { call in

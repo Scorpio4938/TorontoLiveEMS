@@ -54,4 +54,14 @@ struct PoliceCallTypeTests {
         #expect(byCode["INDEX"] == "INDECENT EXPOSURE")
         #expect(byCode["EXPJU"] == "INDECENT EXPOSURE JUST OCCURRED")
     }
+
+    @Test("the names a reader sees in Settings are the ones a test pins")
+    func labelsArePinned() {
+        #expect(PoliceCallTypeStyle.words.label == "Words")
+        #expect(PoliceCallTypeStyle.code.label == "Code")
+        #expect(
+            PoliceCallTypeStyle.allCases.count == 2,
+            "a third option would need somewhere in the column to go"
+        )
+    }
 }
