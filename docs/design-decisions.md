@@ -335,6 +335,27 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **The City's `10-14` stays `10–14`.** Their list uses a hyphen and the app uses an en dash.
   Ours is typographically right and theirs is what they published; the difference is a
   deliberate one, not a transcription slip.
+- **Settings holds preferences; everything else sits behind a row.** The version, the app's own
+  description and the attribution had collected into sections of Settings, which is a screen for
+  *choosing* things and had become a screen for reading them too. Settings keeps its two pickers and
+  gains one row — *About* — with a chevron, and what a reader might want to read lives one push
+  away. That is the judgement this project had already made once for *About this Data*, applied to
+  the rest of what had gathered here.
+- **Two About screens, because they answer different questions.** *About* is about the app: its
+  name, which version is in the reader's hand, what it is for, and the City's page it reads. *About
+  this Data* is about the feed: what each field means, and the licences the data and the postal-area
+  shapes come under. The second is reached *from* the first, so the licences keep one home instead
+  of being copied into a second screen to save a tap.
+- **The source repository is not linked, and that is a fact about the repository rather than a
+  preference.** `github.com/Scorpio4938/TorontoLiveEMS` answers **404** to anyone not signed in as
+  its owner — checked, with the account itself answering 200 to the same request — so a row
+  pointing at it would be a link a reader cannot open. It belongs in *About* on the day the
+  repository is public, which a release will make it.
+- **Everything on *About* is read rather than typed**: the name from the bundle, the version from
+  the bundle, the City's page from the package. The app sets no `CFBundleDisplayName`, so its name
+  there is the target's — `TorontoLiveEMS`, without the spaces it is called by in prose. Setting
+  `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is the whole of that change, and then
+  the row and the Home screen agree without either being told.
 
 ## The map
 
