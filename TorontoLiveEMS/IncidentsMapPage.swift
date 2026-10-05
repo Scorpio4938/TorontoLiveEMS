@@ -626,14 +626,34 @@ private struct MapPin: View {
 
     let mark: IncidentMark
 
+    @Environment(\.colorScheme) private var colourScheme
+
     private var colour: Color {
         MarkColour.of(mark.urgency)
+    }
+
+    /// The surface the glyph sits on.
+    ///
+    /// **It has to follow the appearance, and it did not.** `MarkColour.routine` — the tone most marks
+    /// wear, by design — is `Color.secondary`, which is a *dark* grey in light mode and a *light* grey in
+    /// dark mode. On a disc that was always white, every ordinary mark became a pale glyph on a white
+    /// disc after dark: the map looked empty at night, with only the reds and oranges left visible, and
+    /// grey rings around nothing.
+    ///
+    /// Two explicit colours rather than the system's own background, which is the spelling one would
+    /// reach for first: that initialiser takes a UIKit colour, and this target builds for macOS as well
+    /// as iOS. A pair chosen here is dull and portable, where a cleverer spelling would be neither.
+    ///
+    /// The ring does the other half of the work: a dark disc on a dark map is still findable, because
+    /// the ring is the tone rather than the disc.
+    private var disc: Color {
+        colourScheme == .dark ? Color(white: 0.12) : Color.white
     }
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.white)
+                .fill(disc)
                 .frame(width: 22, height: 22)
             Image(systemName: mark.category.symbol)
                 .font(.system(size: 12, weight: .semibold))
