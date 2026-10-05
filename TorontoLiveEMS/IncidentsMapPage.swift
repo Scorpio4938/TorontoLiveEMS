@@ -47,11 +47,17 @@ struct IncidentsMapPage: View {
 
     /// What a place is drawn as.
     ///
+    /// **Geometry, not identity.** This says what shape the *published location* justifies — the
+    /// City's boundary, a circle where there is none, or a point the feed named — which is a fact
+    /// about the place. What kind of incident it is, and whether it warrants attention, is
+    /// `IncidentMark`'s business and now arrives separately. The two used to be one value, which is
+    /// how a page came to hold a private copy of the app's colour rule.
+    ///
     /// **The published area first, and the geocoder only for what it alone can answer.** A postal
     /// area needs no lookup now: the boundary file ships in the bundle, so a postal incident costs
     /// no network at all and the map shows the area the City published rather than a circle around
     /// wherever Apple's geocoder landed.
-    private enum Mark {
+    private enum Geometry {
         /// The area the City named, as the pieces it is made of.
         case area(pieces: [PostalAreas.Area], bounds: PostalAreas.Bounds)
         /// A postal area the boundary file does not know, drawn the way the app drew every one of
@@ -64,17 +70,20 @@ struct IncidentsMapPage: View {
     /// A place the feed named, once, with however many incidents are there.
     private struct Place: Identifiable {
         let location: IncidentLocation
-        let mark: Mark
+        let geometry: Geometry
         let incidents: [Incident]
 
-        var id: IncidentLocation { location }
-
-        /// Whether anything at this place warrants attention.
+        /// What the place is drawn as: its kind and its colour, from its most serious incident.
         ///
-        /// A place takes the colour of its most serious incident, because a mark is one mark: two
-        /// of the thirteen places in the live capture hold two incidents each, and a neighbourhood
-        /// holding a fire must not be drawn as though it held only the medical call beside it.
-        var isUrgent: Bool { incidents.contains(where: \.warrantsAttention) }
+        /// **A place takes one incident's mark, because a mark is one mark.** Two of the thirteen
+        /// places in the live capture hold two incidents each, and a neighbourhood holding a fire
+        /// must not be drawn as though it held only the medical call beside it. The mark is built by
+        /// `IncidentMark`, which is the one place that knows what a kind or an urgency is; this page
+        /// no longer reads either, and that is what lets a second feed arrive without a second way of
+        /// drawing a dot.
+        let mark: IncidentMark
+
+        var id: IncidentLocation { location }
     }
 
     var body: some View {
@@ -87,9 +96,9 @@ struct IncidentsMapPage: View {
                     // mark, so an area is coloured by what is in it rather than by being an area.
                     // The orange that used to be painted on every postal area was the shape's
                     // colour, which meant the map said "look here" about a quiet neighbourhood.
-                    let colour = MarkColour.of(warrantsAttention: place.isUrgent)
+                    let colour = MarkColour.of(warrantsAttention: place.mark.warrantsAttention)
 
-                    if case .area(let pieces, _) = place.mark {
+                    if case .area(let pieces, _) = place.geometry {
                         // The area the City named, drawn as the area it is. All of it: twenty of
                         // Toronto's FSAs are in more than one piece, and drawing the largest and
                         // calling it the area would be the same kind of claim as a pin.
@@ -101,7 +110,7 @@ struct IncidentsMapPage: View {
                                 .foregroundStyle(colour.opacity(0.20))
                                 .stroke(colour, lineWidth: 1)
                         }
-                    } else if case .circle(let centre) = place.mark {
+                    } else if case .circle(let centre) = place.geometry {
                         // A postal area the boundary file does not know. Drawing it as a pin would
                         // put a medical incident at the centre of a neighbourhood and call it a
                         // location, which is the narrowing ADR-0004 forbids; a circle says
@@ -109,13 +118,13 @@ struct IncidentsMapPage: View {
                         MapCircle(center: centre, radius: IncidentMapScale.postalAreaRadius)
                             .foregroundStyle(colour.opacity(0.20))
                             .stroke(colour, lineWidth: 1)
-                    } else if case .pin(let coordinate) = place.mark {
+                    } else if case .pin(let coordinate) = place.geometry {
                         // **Untagged, and that is the fix for a card that flashed and went.** A tag
                         // here made MapKit select the pin on a tap while this page's own gesture was
                         // also running, so the two answers raced: the card appeared and was then
                         // wiped by whichever lost. One mechanism, one answer.
                         Annotation("", coordinate: coordinate) {
-                            IncidentPin(warrantsAttention: place.isUrgent)
+                            IncidentPin(warrantsAttention: place.mark.warrantsAttention)
                         }
                         .annotationTitles(.hidden)
                     }
@@ -209,28 +218,45 @@ struct IncidentsMapPage: View {
         return (pieces, bounds)
     }
 
-    /// The places that can be drawn: a location, and something to draw for it.
+    /// The places that can be drawn: a location, something to draw for it, and its mark.
     private var places: [Place] {
         let incidents = feed.snapshot?.incidents ?? []
         return namedPlaces.compactMap { location in
             let here = incidents.filter { IncidentLocation.from($0) == location }
+            // The mark first, because a place with no incidents at it is not a place. It cannot happen
+            // — `namedPlaces` is built from these same incidents — and it is checked rather than
+            // asserted, so that if it ever did, a mark would be missing rather than wrong.
+            guard let mark = mostSeriousMark(among: here) else { return nil }
 
             if let published = publishedArea(for: location) {
                 return Place(
                     location: location,
-                    mark: .area(pieces: published.pieces, bounds: published.bounds),
-                    incidents: here
+                    geometry: .area(pieces: published.pieces, bounds: published.bounds),
+                    incidents: here,
+                    mark: mark
                 )
             }
             guard let resolved = geocoder.known(location) else { return nil }
             return Place(
                 location: location,
-                mark: resolved.isArea
+                geometry: resolved.isArea
                     ? .circle(centre: resolved.coordinate)
                     : .pin(resolved.coordinate),
-                incidents: here
+                incidents: here,
+                mark: mark
             )
         }
+    }
+
+    /// The mark a place wears: its most serious incident's.
+    ///
+    /// Chosen by whether an incident warrants attention, because that is what the colour means — and
+    /// otherwise the first, which is the order the feed published them in. A place with one incident
+    /// has one answer, and a place with two has the more serious of them, which is the judgement this
+    /// page made about colour before it had marks at all.
+    private func mostSeriousMark(among incidents: [Incident]) -> IncidentMark? {
+        let marks = incidents.map(IncidentMark.init(incident:))
+        return marks.first { $0.warrantsAttention } ?? marks.first
     }
 
     private var selectedPlace: Place? {
@@ -249,7 +275,7 @@ struct IncidentsMapPage: View {
     /// For a published area that is the top of its own box, above the box's middle — the same
     /// place the fallback circle's northern rim gives, for a shape that is not a circle.
     private func anchor(for place: Place) -> CLLocationCoordinate2D {
-        switch place.mark {
+        switch place.geometry {
         case .area(_, let bounds):
             return bounds.northCentre.coordinate
         case .circle(let centre):
@@ -286,7 +312,7 @@ struct IncidentsMapPage: View {
     private func place(at point: CGPoint, in proxy: MapProxy) -> Place? {
         for place in places {
             guard
-                case .pin(let coordinate) = place.mark,
+                case .pin(let coordinate) = place.geometry,
                 let centre = proxy.convert(coordinate, to: .local)
             else { continue }
             if hypot(centre.x - point.x, centre.y - point.y) <= 22 {
@@ -300,7 +326,7 @@ struct IncidentsMapPage: View {
             longitude: coordinate.longitude
         )
         return places.first { place in
-            switch place.mark {
+            switch place.geometry {
             case .area(let pieces, _):
                 return pieces.contains { PostalAreas.contains(tapped, in: $0) }
             case .circle(let centre):
@@ -389,6 +415,10 @@ struct IncidentsMapPage: View {
         let location = CompactColumn<Incident>.primeStreet.cell(incident, dispatchTimeFormat)
         let type = CompactColumn<Incident>.incidentType.cell(incident, dispatchTimeFormat)
         let time = CompactColumn<Incident>.dispatchTime.cell(incident, dispatchTimeFormat)
+        // Through the mark rather than through the incident's own rule, so that what a row looks like
+        // and what a mark on the map looks like cannot drift apart: there is one answer to "does this
+        // warrant attention", and it is the mark's.
+        let mark = IncidentMark(incident: incident)
 
         return VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
@@ -399,12 +429,12 @@ struct IncidentsMapPage: View {
                     Image(systemName: "arrow.left.and.right")
                         .font(.caption2)
                 }
-                if incident.warrantsAttention {
+                if mark.warrantsAttention {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2)
                 }
             }
-            .foregroundStyle(incident.warrantsAttention ? MarkColour.urgent : Color.primary)
+            .foregroundStyle(mark.warrantsAttention ? MarkColour.urgent : Color.primary)
 
             Text([type.text, time.text].compactMap { $0 }.joined(separator: " · "))
                 .font(.caption2)
