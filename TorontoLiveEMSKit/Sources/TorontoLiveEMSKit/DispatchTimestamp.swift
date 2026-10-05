@@ -47,6 +47,36 @@ public enum DispatchTimestamp {
         return "\(parts.month) \(parts.day), \(parts.twelveHour)"
     }
 
+    /// The clock time of an instant, in the reader's own zone.
+    ///
+    /// **The fire feed publishes a wall-clock string and it is shown as published** — see the note at
+    /// the top of this type, which is why that path never goes near a date formatter. A police call
+    /// publishes an *instant* instead, and an instant has no clock until somebody chooses a zone.
+    /// The reader's own is the only honest choice.
+    ///
+    /// Done through `Calendar` rather than `DateFormatter`, for the reason the rest of this type is
+    /// done by hand: the parts are what the app wants, and a formatter would put the format in a
+    /// locale's hands instead of in the reader's setting. The calendar is a parameter so that a test
+    /// can pin a zone rather than depend on the machine it runs on.
+    public static func clockTime(
+        _ instant: Date,
+        format: DispatchTimeFormat = .twelveHour,
+        calendar: Calendar = .current
+    ) -> String {
+        let parts = calendar.dateComponents([.hour, .minute], from: instant)
+        // Unreachable for a real `Date` and a real `Calendar`, and marked rather than guessed at: a
+        // caller cannot tell the difference between a component that failed and midnight.
+        guard let hour = parts.hour, let minute = parts.minute else { return NotProvided.mark }
+
+        switch format {
+        case .twentyFourHour:
+            return String(format: "%02d:%02d", hour, minute)
+        case .twelveHour:
+            let display = hour % 12 == 0 ? 12 : hour % 12
+            return String(format: "%d:%02d %@", display, minute, hour < 12 ? "AM" : "PM")
+        }
+    }
+
     private struct Parts {
 
         let month: String

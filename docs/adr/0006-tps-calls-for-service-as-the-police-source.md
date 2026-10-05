@@ -81,10 +81,15 @@ position ADR-0004 already takes for the fire feed.
   the data's age and promises no cadence** — the fire feed's discipline, where the feed's own
   timestamp is the only thing the status line reads.
 - **Traps the client has to handle.** A time filter needs a literal: `OCCURRENCE_TIME > TIMESTAMP
-  '…'` works and a bare millisecond number answers 400. Missing values arrive as a dash with one
-  side empty — `"BONIS AVE - "` — which is the "no letter and no digit means no value" rule this
-  app already applies to the fire feed. And **GeoJSON stringifies the attributes**, so
-  `OCCURRENCE_TIME` arrives as `"1791219259000"` and has to be read as a number.
+  '…'` works and a bare millisecond number answers 400 — and the literal is read as **UTC**, which
+  was measured too. A value standing in for nothing is recognised by the fire feed's own rule, that
+  no letter and no digit means no value; a *one-sided intersection*, `"BONIS AVE - "`, has letters
+  in it and is therefore kept **as published** rather than tidied — the dangling separator is a
+  display question, not a parsing one.
+- **The app asks for `f=json`, not `f=geojson`.** Both are offered, and GeoJSON *stringifies every
+  attribute* — `OCCURRENCE_TIME` arrives as `"1791219259000"` — while Esri's own format keeps numbers
+  as numbers. Nothing needs the geometry, because the point is published as two attributes, so the
+  typed response is less code rather than more.
 - **`returnCountOnly` is not supported**, so counting means fetching. At eighty records that is not
   a hardship.
 - **Politeness.** It is a public service on somebody else's infrastructure, read on the fire feed's
