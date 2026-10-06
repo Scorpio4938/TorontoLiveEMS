@@ -123,6 +123,5 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "TRE", name: "TRESPASS"),
         PoliceCallType(code: "UNKTR", name: "UNKNOWN TROUBLE"),
         PoliceCallType(code: "WRWAY", name: "WRONG WAY VEHICLE"),
-
     ]
 }
