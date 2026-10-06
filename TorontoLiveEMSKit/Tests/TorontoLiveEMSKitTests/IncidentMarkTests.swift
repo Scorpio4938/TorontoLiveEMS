@@ -216,6 +216,15 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "MISCH")).urgency == .critical)
         #expect(IncidentMark(call: Self.call(code: "TRAOB")).category == .traffic)
         #expect(IncidentMark(call: Self.call(code: "TRAOB")).urgency == .routine)
+
+        // A stabbing is a knife that has already been used, so it is critical like PERKN rather than
+        // elevated like an assault that has happened. `--JU` is elevated, matching the other three.
+        #expect(IncidentMark(call: Self.call(code: "STA")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "STA")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "DAMJU")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "DAMJU")).urgency == .elevated)
+        #expect(IncidentMark(call: Self.call(code: "LOSEL")).category == .rescue)
+        #expect(IncidentMark(call: Self.call(code: "LOSEL")).urgency == .elevated)
     }
 
     @Test("a call nobody named is unknown, not ordinary")

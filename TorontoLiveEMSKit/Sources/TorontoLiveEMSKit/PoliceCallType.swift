@@ -87,6 +87,7 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "BREJU", name: "BREAK & ENTER JUST OCCURRED"),
         PoliceCallType(code: "BREPR", name: "BREAK & ENTER IN PROGRESS"),
         PoliceCallType(code: "DAM", name: "DAMAGE"),
+        PoliceCallType(code: "DAMJU", name: "DAMAGE JUST OCCURRED"),
         PoliceCallType(code: "DAMPR", name: "DAMAGE IN PROGRESS"),
         PoliceCallType(code: "DEMO", name: "DEMONSTRATION"),
         PoliceCallType(code: "DIS", name: "DISORDERLIES"),
@@ -102,6 +103,7 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "IMPDR", name: "IMPAIRED DRIVER"),
         PoliceCallType(code: "INDEX", name: "INDECENT EXPOSURE"),
         PoliceCallType(code: "JUVLO", name: "MISSING JUVENILE LOCATED"),
+        PoliceCallType(code: "LOSEL", name: "HOLDING LOST ELDERLY"),
         PoliceCallType(code: "MISCH", name: "MISSING CHILD"),
         PoliceCallType(code: "MISEL", name: "MISSING ELDERLY"),
         PoliceCallType(code: "MISVU", name: "MISSING VULNERABLE PERSON"),
@@ -111,6 +113,7 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "PIACC", name: "PERSONAL INJURY COLLISION"),
         PoliceCallType(code: "ROB", name: "ROBBERY"),
         PoliceCallType(code: "SEEAM", name: "SEE AMBULANCE"),
+        PoliceCallType(code: "STA", name: "STABBING"),
         PoliceCallType(code: "THE", name: "THEFT"),
         PoliceCallType(code: "THEAU", name: "THEFT FROM AUTO"),
         PoliceCallType(code: "THEJU", name: "THEFT JUST OCCURRED"),
@@ -120,5 +123,6 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "TRE", name: "TRESPASS"),
         PoliceCallType(code: "UNKTR", name: "UNKNOWN TROUBLE"),
         PoliceCallType(code: "WRWAY", name: "WRONG WAY VEHICLE"),
+
     ]
 }

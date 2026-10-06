@@ -187,15 +187,15 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return .alarm
             case "SEEAM":
                 return .medical
-            case "JUVLO", "MISCH", "MISEL", "MISVU":
+            case "JUVLO", "LOSEL", "MISCH", "MISEL", "MISVU":
                 return .rescue
             case "HAZ":
                 return .hazard
             case "IMPDR", "PDACC", "PIACC", "TRAOB", "WRWAY":
                 return .traffic
             case "ARR", "ASS", "ASSJU", "ASSPR", "ATTBR", "BREEN", "BREJU", "BREPR", "DAM",
-                 "DAMPR", "EXPJU", "FRA", "FRAPR", "INDEX", "PERGU", "PERKN", "ROB", "THE",
-                 "THEAU", "THEJU", "THEPR", "THEVE", "TRE":
+                 "DAMJU", "DAMPR", "EXPJU", "FRA", "FRAPR", "INDEX", "PERGU", "PERKN", "ROB",
+                 "STA", "THE", "THEAU", "THEJU", "THEPR", "THEVE", "TRE":
                 return .crime
             case "DEMO", "DIS", "DISPU", "FIG":
                 return .disturbance
@@ -319,12 +319,13 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         /// are not compositional, and `ROB` sitting beside `PERKN` is a decision rather than a parsing.
         public init(callTypeCode code: String) {
             switch code {
-            case "PERGU", "PERKN", "ASSPR", "ASSJU", "FIR", "HAZ", "MISCH", "WRWAY":
+            case "PERGU", "PERKN", "STA", "ASSPR", "ASSJU", "FIR", "HAZ", "MISCH", "WRWAY":
                 // A person with a gun, an assault in progress, a fire, a hazard, a car driving the
                 // wrong way up a road: the ones where somebody may be in danger as the call arrives.
                 self = .critical
-            case "ASS", "ATTBR", "BREEN", "BREJU", "BREPR", "DAMPR", "EXPJU", "FIG", "FRAPR",
-                 "IMPDR", "INDEX", "MISEL", "MISVU", "PIACC", "ROB", "SEEAM", "THEJU", "THEPR":
+            case "ASS", "ATTBR", "BREEN", "BREJU", "BREPR", "DAMJU", "DAMPR", "EXPJU", "FIG",
+                 "FRAPR", "IMPDR", "INDEX", "LOSEL", "MISEL", "MISVU", "PIACC", "ROB", "SEEAM",
+                 "THEJU", "THEPR":
                 // Serious, and already happened, or happening to property rather than to a person.
                 self = .elevated
             case "ARR", "DAM", "DEMO", "DIS", "DISPU", "FIRAL", "FOUPR", "FRA", "JUVLO", "PDACC",
