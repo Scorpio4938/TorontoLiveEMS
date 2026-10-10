@@ -202,7 +202,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return .traffic
             case "ARR", "ASS", "ASSJU", "ASSPR", "ATTBR", "BREEN", "BREJU", "BREPR", "DAM",
                  "DAMJU", "DAMPR", "EXPJU", "FRA", "FRAPR", "INDEX", "PERGU", "PERKN", "ROB",
-                 "STA", "THE", "THEAU", "THEJU", "THEPR", "THEVE", "TRE":
+                 "SHO", "SOUGU", "STA", "THE", "THEAU", "THEJU", "THEPR", "THEVE", "TRE":
                 return .crime
             case "DEMO", "DIS", "DISPU", "FIG":
                 return .disturbance
@@ -326,7 +326,8 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         /// are not compositional, and `ROB` sitting beside `PERKN` is a decision rather than a parsing.
         public init(callTypeCode code: String) {
             switch code {
-            case "PERGU", "PERKN", "STA", "ASSPR", "ASSJU", "FIR", "HAZ", "MISCH", "WRWAY":
+            case "PERGU", "PERKN", "SHO", "SOUGU", "STA", "ASSPR", "ASSJU", "FIR", "HAZ", "MISCH",
+                 "WRWAY":
                 // A person with a gun, an assault in progress, a fire, a hazard, a car driving the
                 // wrong way up a road: the ones where somebody may be in danger as the call arrives.
                 self = .critical

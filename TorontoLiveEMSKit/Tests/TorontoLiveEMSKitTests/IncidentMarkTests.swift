@@ -225,6 +225,14 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "DAMJU")).urgency == .elevated)
         #expect(IncidentMark(call: Self.call(code: "LOSEL")).category == .missing)
         #expect(IncidentMark(call: Self.call(code: "LOSEL")).urgency == .elevated)
+
+        // Both critical, on the rule as stated: a weapon already being used. SOUND OF GUNSHOTS is the
+        // judgement in the table worth arguing with — it may be fireworks — and it is deliberately
+        // over-flagged, because under-flagging a shooting is the worse error by a distance.
+        #expect(IncidentMark(call: Self.call(code: "SHO")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "SHO")).urgency == .critical)
+        #expect(IncidentMark(call: Self.call(code: "SOUGU")).category == .crime)
+        #expect(IncidentMark(call: Self.call(code: "SOUGU")).urgency == .critical)
     }
 
     @Test("a call nobody named is unknown, not ordinary")

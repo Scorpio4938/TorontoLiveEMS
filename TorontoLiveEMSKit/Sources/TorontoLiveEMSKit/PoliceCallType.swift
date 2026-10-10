@@ -113,6 +113,8 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "PIACC", name: "PERSONAL INJURY COLLISION"),
         PoliceCallType(code: "ROB", name: "ROBBERY"),
         PoliceCallType(code: "SEEAM", name: "SEE AMBULANCE"),
+        PoliceCallType(code: "SHO", name: "SHOOTING"),
+        PoliceCallType(code: "SOUGU", name: "SOUND OF GUNSHOTS"),
         PoliceCallType(code: "STA", name: "STABBING"),
         PoliceCallType(code: "THE", name: "THEFT"),
         PoliceCallType(code: "THEAU", name: "THEFT FROM AUTO"),

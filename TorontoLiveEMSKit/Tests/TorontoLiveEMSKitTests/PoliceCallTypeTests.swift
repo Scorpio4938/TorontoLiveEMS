@@ -25,7 +25,7 @@ struct PoliceCallTypeTests {
         // should be a decision somebody made rather than something that drifted in, which is what this
         // assertion is for. The count is not a target: it is a record of what has been seen, and it will
         // be wrong the moment the Service uses something new.
-        #expect(PoliceCallType.documented.count == 45)
+        #expect(PoliceCallType.documented.count == 47)
     }
 
     @Test("no entry is blank")
@@ -51,6 +51,9 @@ struct PoliceCallTypeTests {
         // A third report from the map, and the same shape: a code the app had never met, drawn as a
         // question mark. This one is a stabbing.
         #expect(byCode["STA"] == "STABBING")
+        // A fourth report, and the fourth violent-crime code the app had never met.
+        #expect(byCode["SHO"] == "SHOOTING")
+        #expect(byCode["SOUGU"] == "SOUND OF GUNSHOTS")
     }
 
     @Test("the codes cannot be read as abbreviations, which is why they are listed")
