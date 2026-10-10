@@ -119,6 +119,7 @@ rather than trusting.
 | `v0.0.13` | `8684d3e` | Builds and runs. Police calls on the map — grouped by point, each pin wearing its incident kind's symbol — over one shared mark vocabulary that both feeds produce, and a map tab whose refresh asks both. **The filter is not in yet**, and a busy window puts a hundred pins on one map without it. |
 | `v0.0.14` | `2fff7f9` | **Not yet run as it stands.** The map stops shouting: three tones — dark red, orange, and grey for the majority — over four severities, the police's inferred from their call codes and `unknown` for a call nobody named. |
 | `v0.0.15` | `8958fe4` | **Not yet run as it stands.** The pins are legible after dark, twelve more police codes are known — a robbery and a knife among them — and the map's info button opens a legend of its nine symbols and three colours instead of the fire feed's data page. |
+| `v0.0.16` | `9d356ab` | **Not yet run as it stands.** The filter — All, Fire Only or Police Only — in the chrome, second from the leading end, its glyph following the choice; `map` in place of `map.fill`; and three more police codes, a stabbing among them. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
@@ -131,15 +132,15 @@ whether it was ever *run* as well as whether it was ever *built*.
 
 ## Status
 
-**The app builds and runs on an iPhone.** The branch that put police calls on the map was exercised
-there repeatedly, which is where its compile errors were found and fixed, and the map was looked at
-with both feeds' marks on it — which is what prompted the colours to be redone.
+**The app builds and runs on an iPhone.** The map has been looked at on a device as far as the symbols
+and the colours — which is where three separate reports of a question mark came from, each one a
+police code the app had not met.
 
-**Not yet run: the four commits since v0.0.14.** The disc that follows the appearance, the twelve
-extra police codes, the declaration a script cut in half, and the map's own information screen. The
-first and the last of those are visible changes, so they are the two worth looking at.
+**Not yet run: the five commits since v0.0.15.** The filter, its control's glyph following the choice,
+`map` in place of `map.fill`, and the three extra police codes. The filter is the one that changes what
+the map shows, so it is the one worth looking at first.
 
-**`swift test` has still never been run.** There are 211 tests, and they are the only thing that can
+**`swift test` has still never been run.** There are 215 tests, and they are the only thing that can
 check the parsers, the query builders, the gates, the projections, the legend and the sentences.
 
 ## Documentation
