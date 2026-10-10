@@ -60,6 +60,15 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.mapFilter)
     private var mapFilter: MapFilter = .all
 
+    /// The same window and exemption the police page reads, so the two cannot disagree about what
+    /// counts as recent — and honouring the exemption here means a shooting three hours ago is on the
+    /// map even when the map is showing the last hour.
+    @AppStorage(SettingsKey.policeCallWindow)
+    private var callWindow: PoliceCallWindow = .oneHour
+
+    @AppStorage(SettingsKey.policeCallKeepsCritical)
+    private var keepsCriticalCalls = true
+
     /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
@@ -319,10 +328,22 @@ struct IncidentsMapPage: View {
     /// with coordinates differing in the sixth place, so matching exactly would draw two pins a hand's
     /// width apart. Five places is the grain the coincidences were found at, and is far finer than any
     /// pin is wide.
+    /// The police calls the map is asked to draw.
+    ///
+    /// **The window is the same setting the police page reads, and one option overrides it.**
+    /// `Police · Four Hours` exists because four hours of calls is more than a map can say anything
+    /// with, and a reader who wants to see all of it should be able to ask — but not by default, and
+    /// not by finding a second control.
+    private var policeCallsToDraw: [PoliceCall] {
+        guard let calls = policeFeed.calls else { return [] }
+        guard mapFilter != .policeAll else { return calls }
+        return callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date()).shown
+    }
+
     private var policePlaces: [Place] {
         var byPoint: [PointKey: [PoliceCall]] = [:]
         var order: [PointKey] = []
-        for call in policeFeed.calls ?? [] {
+        for call in policeCallsToDraw {
             let key = PointKey(call)
             if byPoint[key] == nil {
                 order.append(key)
@@ -501,7 +522,7 @@ struct IncidentsMapPage: View {
         switch mapFilter {
         case .fire:
             return "City data as of \(firePublished ?? Self.unknownTime)"
-        case .police:
+        case .police, .policeAll:
             return "TPS data as of \(policePublished ?? Self.unknownTime)"
         case .all:
             // **Compared as strings, which is safe because both are the same shape**: `yyyy-MM-dd
@@ -536,7 +557,7 @@ struct IncidentsMapPage: View {
         switch mapFilter {
         case .fire:
             return feed.status.isStale
-        case .police:
+        case .police, .policeAll:
             return policeFeed.isShowingStaleResult
         case .all:
             return feed.status.isStale || policeFeed.isShowingStaleResult
