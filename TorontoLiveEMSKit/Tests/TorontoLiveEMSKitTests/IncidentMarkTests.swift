@@ -165,7 +165,7 @@ struct IncidentMarkTests {
             ("FIR", .fire),
             ("FIRAL", .alarm),
             ("SEEAM", .medical),
-            ("MISVU", .rescue),
+            ("MISVU", .missing),
             ("HAZ", .hazard),
             ("PIACC", .traffic),
             ("IMPDR", .traffic),
@@ -212,7 +212,7 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "ROB")).urgency == .elevated)
         #expect(IncidentMark(call: Self.call(code: "PERKN")).category == .crime)
         #expect(IncidentMark(call: Self.call(code: "PERKN")).urgency == .critical)
-        #expect(IncidentMark(call: Self.call(code: "MISCH")).category == .rescue)
+        #expect(IncidentMark(call: Self.call(code: "MISCH")).category == .missing)
         #expect(IncidentMark(call: Self.call(code: "MISCH")).urgency == .critical)
         #expect(IncidentMark(call: Self.call(code: "TRAOB")).category == .traffic)
         #expect(IncidentMark(call: Self.call(code: "TRAOB")).urgency == .routine)
@@ -223,7 +223,7 @@ struct IncidentMarkTests {
         #expect(IncidentMark(call: Self.call(code: "STA")).urgency == .critical)
         #expect(IncidentMark(call: Self.call(code: "DAMJU")).category == .crime)
         #expect(IncidentMark(call: Self.call(code: "DAMJU")).urgency == .elevated)
-        #expect(IncidentMark(call: Self.call(code: "LOSEL")).category == .rescue)
+        #expect(IncidentMark(call: Self.call(code: "LOSEL")).category == .missing)
         #expect(IncidentMark(call: Self.call(code: "LOSEL")).urgency == .elevated)
     }
 

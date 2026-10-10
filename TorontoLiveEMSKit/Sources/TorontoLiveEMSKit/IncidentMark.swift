@@ -51,6 +51,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
         case medical
         case alarm
         case rescue
+        case missing
         case hazard
         case traffic
         case crime
@@ -72,6 +73,8 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return "bell.fill"
             case .rescue:
                 return "lifepreserver.fill"
+            case .missing:
+                return "magnifyingglass"
             case .hazard:
                 return "exclamationmark.triangle.fill"
             case .traffic:
@@ -96,6 +99,8 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
                 return "Alarm"
             case .rescue:
                 return "Rescue"
+            case .missing:
+                return "Missing Person"
             case .hazard:
                 return "Hazard"
             case .traffic:
@@ -123,7 +128,9 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
             case .alarm:
                 return "A fire alarm. Kept apart from Fire because the City's own codes are, and because they are overwhelmingly benign."
             case .rescue:
-                return "Somebody who needs finding or getting out — a water rescue, a missing person."
+                return "Somebody who needs getting out of somewhere — a water rescue, an ice rescue."
+            case .missing:
+                return "Somebody who has not come home: a missing child, an elderly person who has wandered, a vulnerable adult."
             case .hazard:
                 return "Something to keep away from: carbon monoxide, a gas leak, a spill, wires down, water."
             case .traffic:
@@ -188,7 +195,7 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
             case "SEEAM":
                 return .medical
             case "JUVLO", "LOSEL", "MISCH", "MISEL", "MISVU":
-                return .rescue
+                return .missing
             case "HAZ":
                 return .hazard
             case "IMPDR", "PDACC", "PIACC", "TRAOB", "WRWAY":
