@@ -41,14 +41,12 @@ struct CompactTableList<Row: Identifiable, Destination: View>: View {
         columns: [CompactColumn<Row>],
         timeFormat: DispatchTimeFormat,
         status: FeedStatus,
-        folded: FoldedCards<Row>? = nil,
         @ViewBuilder destination: @escaping (Row) -> Destination
     ) {
         self.rows = rows
         self.columns = columns
         self.timeFormat = timeFormat
         self.status = status
-        self.folded = folded
         self.destination = destination
     }
 
@@ -142,12 +140,14 @@ struct CardsList<Row: Identifiable, Destination: View>: View {
         columns: [CompactColumn<Row>],
         timeFormat: DispatchTimeFormat,
         status: FeedStatus,
+        folded: FoldedCards<Row>? = nil,
         @ViewBuilder destination: @escaping (Row) -> Destination
     ) {
         self.rows = rows
         self.columns = columns
         self.timeFormat = timeFormat
         self.status = status
+        self.folded = folded
         self.destination = destination
     }
 
