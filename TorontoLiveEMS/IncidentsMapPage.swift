@@ -476,12 +476,6 @@ struct IncidentsMapPage: View {
                 Image(systemName: "exclamationmark.triangle")
             }
             Text(noticeText)
-            // A filtered map with nothing on screen to say so is the confusion this prevents: half the
-            // marks gone and no reason visible. Only when a filter is in force, because "Both Feeds" is
-            // not worth saying.
-            if mapFilter != .all {
-                Text("· \(mapFilter.label)")
-            }
             if pendingPlaces > 0 {
                 Text("· Finding \(pendingPlaces) more…")
             }
@@ -494,27 +488,59 @@ struct IncidentsMapPage: View {
 
     /// The line the map carries: whose data this is, and how old it is.
     ///
-    /// **"City/TPS", where the fire feed's own sentence says "City".** That sentence is shown on the
-    /// fire page and in the fire table, where "City" is exactly right because there is nothing else
-    /// on screen. This map draws both feeds, so the line has to name both — and it is written here
-    /// rather than by changing `IncidentFeed`, which would have relabelled the fire page's line as
-    /// well and made it say something untrue about a screen that holds no police data at all.
+    /// **It follows the filter, both halves of it.** With both feeds drawn it names both and quotes
+    /// whichever of the two published later; with one drawn it names that one and quotes its own clock.
+    /// The two feeds do not republish on the same cycle — the City every five minutes, the Service
+    /// about every twenty — so a line that quoted one feed's clock while drawing the other's marks
+    /// would be wrong most of the time.
     ///
-    /// **The time beside it is still the City's own tick**, which is the only republish time this
-    /// page reads. The police feed states its own and the map does not yet show it; naming both
-    /// sources while quoting one clock is the honest half of that, and a second time is what the line
-    /// still needs before it is exact.
+    /// **Written here rather than by changing `IncidentFeed`.** That feed's own sentence says "City
+    /// data as of …" and is shared with the fire page and the fire table, where "City" is exactly right
+    /// because there is nothing else on screen. This page is the one that has two feeds to name.
     private var noticeText: String {
-        let updated = feed.snapshot?.updatedFromDatabaseAt ?? "an unknown time"
-        return "City/TPS data as of \(updated)"
+        switch mapFilter {
+        case .fire:
+            return "City data as of \(firePublished ?? Self.unknownTime)"
+        case .police:
+            return "TPS data as of \(policePublished ?? Self.unknownTime)"
+        case .all:
+            // **Compared as strings, which is safe because both are the same shape**: `yyyy-MM-dd
+            // HH:mm:ss`, biggest part first and every field the same width, so the later string is the
+            // later time. A change of shape on either side would make this wrong rather than crash,
+            // and the police side's shape is pinned by a test.
+            let latest = [firePublished, policePublished].compactMap { $0 }.max()
+            return "City/TPS data as of \(latest ?? Self.unknownTime)"
+        }
     }
 
-    /// Whether anything on the map is known to be out of date.
+    private static let unknownTime = "an unknown time"
+
+    /// The City's refresh tick, exactly as it published it.
+    private var firePublished: String? {
+        feed.snapshot?.updatedFromDatabaseAt
+    }
+
+    /// The Service's, written the way the City writes its own.
     ///
-    /// Either feed being stale is enough: the line describes the map, and a map with one old feed on
-    /// it is a map showing something old, whichever side it came from.
+    /// `DispatchTimestamp.publishedStamp` renders it on Toronto's clock in that same shape — which is
+    /// what lets the two be compared and read as one column rather than as two conventions.
+    private var policePublished: String? {
+        policeFeed.publishedAt.map { DispatchTimestamp.publishedStamp($0) }
+    }
+
+    /// Whether anything **being drawn** is known to be out of date.
+    ///
+    /// It follows the filter for the same reason the time does: a warning about a feed whose marks are
+    /// not on screen is a warning about nothing.
     private var isStale: Bool {
-        feed.status.isStale || policeFeed.isShowingStaleResult
+        switch mapFilter {
+        case .fire:
+            return feed.status.isStale
+        case .police:
+            return policeFeed.isShowingStaleResult
+        case .all:
+            return feed.status.isStale || policeFeed.isShowingStaleResult
+        }
     }
 
     /// One place's card: every incident there, each a way into its own detail view.
