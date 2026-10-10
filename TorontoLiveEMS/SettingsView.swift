@@ -11,6 +11,10 @@ enum SettingsKey {
     static let presentation = "incidentPresentation"
     /// Which half of a police call's type the table and the card show.
     static let policeCallTypeStyle = "policeCallTypeStyle"
+    /// How far back the police screens look by default.
+    static let policeCallWindow = "policeCallWindow"
+    /// Whether a critical police call is shown even when it falls outside that window.
+    static let policeCallKeepsCritical = "policeCallKeepsCritical"
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"

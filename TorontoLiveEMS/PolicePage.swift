@@ -59,11 +59,25 @@ struct PolicePage: View {
                     PoliceCallDetailView(call: call)
                 }
             case .cards:
+                // **Four hours of calls is more than a reader can use**, so the recent ones get the page
+                // and the rest wait behind one row. A call that has already happened is a log entry
+                // rather than a live incident, which is what makes folding it away honest — and a
+                // critical one is shown regardless, because a shooting three hours ago is still worth
+                // somebody's attention.
+                let split = callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date())
                 CardsList(
-                    rows: calls,
+                    rows: split.shown,
                     columns: CompactColumn<PoliceCall>.policeCard(style: policeCallTypeStyle),
                     timeFormat: dispatchTimeFormat,
-                    status: feed.status
+                    status: feed.status,
+                    folded: split.folded.isEmpty
+                        ? nil
+                        : FoldedCards(
+                            // "Earlier", not "the other three hours": the window is a setting, and a
+                            // label naming a fixed span would be wrong the moment it changed.
+                            label: "Earlier calls · \(split.folded.count)",
+                            rows: split.folded
+                        )
                 ) { call in
                     PoliceCallDetailView(call: call)
                 }

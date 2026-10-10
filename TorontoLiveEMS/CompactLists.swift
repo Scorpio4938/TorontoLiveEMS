@@ -41,12 +41,14 @@ struct CompactTableList<Row: Identifiable, Destination: View>: View {
         columns: [CompactColumn<Row>],
         timeFormat: DispatchTimeFormat,
         status: FeedStatus,
+        folded: FoldedCards<Row>? = nil,
         @ViewBuilder destination: @escaping (Row) -> Destination
     ) {
         self.rows = rows
         self.columns = columns
         self.timeFormat = timeFormat
         self.status = status
+        self.folded = folded
         self.destination = destination
     }
 
@@ -105,9 +107,27 @@ struct CompactTableList<Row: Identifiable, Destination: View>: View {
 /// behaviour — but it is a change, and it is deliberate.
 ///
 /// No column header. There are no columns.
+/// A group of cards the reader can open in place.
+///
+/// **In the same list, one row, one tap.** The alternative — a screen of its own, or a button into
+/// another layer — was asked against, and for a good reason: the older calls are the same kind of
+/// thing as the newer ones, and a reader who wants them should not have to leave the page they are
+/// already on to find them. A `DisclosureGroup` is the platform's own way of saying exactly that, so
+/// this is a label and the rows behind it and nothing else.
+struct FoldedCards<Row: Identifiable> {
+    let label: String
+    let rows: [Row]
+}
+
 struct CardsList<Row: Identifiable, Destination: View>: View {
 
     let rows: [Row]
+
+    /// Cards kept out of the way until asked for, drawn at the end of the same section.
+    ///
+    /// Defaulted to nil, so the fire page — which folds nothing — does not have to say so. The fold
+    /// belongs to whichever feed has more of them than a reader can use.
+    let folded: FoldedCards<Row>?
 
     /// The columns in the order the card reads them: two per line.
     let columns: [CompactColumn<Row>]
@@ -139,6 +159,24 @@ struct CardsList<Row: Identifiable, Destination: View>: View {
                         destination(row)
                     } label: {
                         CompactCardRow(row: row, columns: columns, timeFormat: timeFormat)
+                    }
+                }
+
+                // After the cards rather than before them: the fold is what a reader has not asked for,
+                // and what they have asked for should be where their eye already is.
+                if let folded, !folded.rows.isEmpty {
+                    DisclosureGroup {
+                        ForEach(folded.rows) { row in
+                            NavigationLink {
+                                destination(row)
+                            } label: {
+                                CompactCardRow(row: row, columns: columns, timeFormat: timeFormat)
+                            }
+                        }
+                    } label: {
+                        Text(folded.label)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.secondary)
                     }
                 }
             } header: {
