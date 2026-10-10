@@ -32,6 +32,16 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
+    /// How far back this page looks, and whether a critical call outside that window is kept.
+    ///
+    /// Read here rather than at the root, on the same terms as the three above: the preference is
+    /// stored, so the screen that applies it is the screen that reads it.
+    @AppStorage(SettingsKey.policeCallWindow)
+    private var callWindow: PoliceCallWindow = .oneHour
+
+    @AppStorage(SettingsKey.policeCallKeepsCritical)
+    private var keepsCriticalCalls = true
+
     var body: some View {
         content
             .task {
