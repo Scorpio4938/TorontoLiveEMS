@@ -69,9 +69,6 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.policeCallKeepsCritical)
     private var keepsCriticalCalls = true
 
-    /// The switch in the filter menu: the whole four hours rather than the window.
-    @AppStorage(SettingsKey.mapShowsAllPoliceHours)
-    private var showsAllPoliceHours = false
 
     /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
     @AppStorage(SettingsKey.policeCallTypeStyle)
@@ -334,13 +331,12 @@ struct IncidentsMapPage: View {
     /// pin is wide.
     /// The police calls the map is asked to draw.
     ///
-    /// **The window is the same setting the police page reads, and one switch overrides it.** Four
-    /// hours of calls is more than a map can say anything with, so the window is the default — and a
-    /// reader who wants all of it asks for it with the switch inside the filter menu, which is hidden
-    /// when the fire feed is the only one drawn.
+    /// **One setting, applied here exactly as the police page applies it.** No special case: choosing
+    /// the fourth window *is* asking for everything the Service holds, so `Last 4 hours` and the
+    /// switch in the filter menu reach the same state through the same stored preference.
     private var policeCallsToDraw: [PoliceCall] {
         guard let calls = policeFeed.calls else { return [] }
-        guard !showsAllPoliceHours else { return calls }
+
         return callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date()).shown
     }
 

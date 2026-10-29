@@ -114,8 +114,8 @@ struct MapFilterControl: View {
 
     @Binding var mapFilter: MapFilter
 
-    /// Whether the police marks are drawn from the whole four hours rather than the recent window.
-    @Binding var showsAllPoliceHours: Bool
+    /// The shared window preference. The switch below is a view onto it, not a flag of its own.
+    @Binding var policeWindow: PoliceCallWindow
 
     var body: some View {
         Menu {
@@ -136,7 +136,13 @@ struct MapFilterControl: View {
             // happening, so there is nothing for this switch to mean.
             if mapFilter != .fire {
                 Divider()
-                Toggle("All Four Hours", isOn: $showsAllPoliceHours)
+                // Bound through the window rather than to a flag of its own: on means the fourth
+                // window, off returns to one hour. That is what makes this switch and the police
+                // page's menu two views of one setting instead of two settings.
+                Toggle("All Four Hours", isOn: Binding(
+                    get: { policeWindow == .fourHours },
+                    set: { policeWindow = $0 ? .fourHours : .oneHour }
+                ))
             }
         } label: {
             Image(systemName: mapFilter.systemImage)
@@ -144,6 +150,36 @@ struct MapFilterControl: View {
         }
         // The state, for anyone who cannot see the small print.
         .accessibilityLabel("Filter, \(mapFilter.label)")
+    }
+}
+
+/// The police page's control: how far back its calls run.
+///
+/// **Built like `MapKindControl`, deliberately** — a `Menu` holding a `Picker`, wearing a fixed glyph,
+/// so the option in force carries the platform's own checkmark. The glyph does not change with the
+/// choice: a `clock` means *time* whatever is chosen, where a glyph that changed shape would be the
+/// button wearing an answer.
+///
+/// It writes the same stored window that Settings writes and that the map's switch writes. One
+/// preference, three places to reach it.
+struct PoliceWindowControl: View {
+
+    @Binding var policeWindow: PoliceCallWindow
+
+    var body: some View {
+        Menu {
+            Picker("Recent Calls", selection: $policeWindow) {
+                ForEach(PoliceCallWindow.allCases, id: \.self) { window in
+                    // No glyph on the rows: a clock on all four of them says nothing, and the
+                    // platform's checkmark already marks which one is in force.
+                    Text(window.label).tag(window)
+                }
+            }
+        } label: {
+            Image(systemName: "clock")
+                .foregroundStyle(Color.primary)
+        }
+        .accessibilityLabel("Recent calls, \(policeWindow.label)")
     }
 }
 
@@ -199,16 +235,25 @@ struct ScreenControls: View {
     /// they were and moves only the capsule's left edge.
     var mapFilter: Binding<MapFilter>? = nil
 
-    /// The switch inside the filter menu, bound like the filter itself.
-    var showsAllPoliceHours: Binding<Bool>? = nil
+    /// How far back police calls are taken, on whichever screen can show them.
+    ///
+    /// **One preference, three places to set it.** Settings has a row for it, the police page has a
+    /// menu for it, and the map has a switch for the fourth window. All three read and write the same
+    /// stored value, so there is no way for them to disagree — which is the only reason it is safe to
+    /// offer the same choice in more than one place.
+    var policeWindow: Binding<PoliceCallWindow>? = nil
 
     var body: some View {
         HStack(spacing: 16) {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
             }
-            if let mapFilter, let showsAllPoliceHours {
-                MapFilterControl(mapFilter: mapFilter, showsAllPoliceHours: showsAllPoliceHours)
+            if let mapFilter, let policeWindow {
+                MapFilterControl(mapFilter: mapFilter, policeWindow: policeWindow)
+            } else if let policeWindow {
+                // The police page's own control, in the slot the map's kind control takes — the two
+                // screens never both ask for it, so the capsule is never wider than four.
+                PoliceWindowControl(policeWindow: policeWindow)
             }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)
