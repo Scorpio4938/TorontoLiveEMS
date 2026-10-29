@@ -190,23 +190,16 @@ struct IncidentsMapPage: View {
             // on this page changes it: the control that does lives in the chrome above.
             .mapStyle(mapKind.style)
             .mapControls {
-                // **Kept clear by reserving safe area, not by placing it.** There is no placement API
-                // for `MapCompass` — one initialiser, no alignment, and `mapControls` shows or hides
-                // every control at once — so the strip below is the only lever. If a future build
-                // stops reflowing the compass below it, see the fallback in
-                // `docs/design-decisions.md` rather than hand-rolling a substitute.
-                MapCompass()
+                // **`MapCompass` is deliberately absent.** The platform's control sat under the app's
+                // capsule, and the only lever to move it — a safe-area strip inside the map — broke
+                // tap handling. It was deleted rather than placed or hand-rolled. A rotated map now
+                // has no north-reset; the standard rotation gesture is the way back. See
+                // `docs/design-decisions.md`.
                 // `alignment` given rather than left off. `MapScaleView` has two initialisers and
                 // every parameter of both has a default, so a bare `MapScaleView()` is ambiguous
                 // between them — it reads as the natural call and is not one.
                 MapScaleView(alignment: .leading)
             }
-            // **Empty space inside the map's safe area, not a bar above it.** The compass is drawn
-            // in the map's top-trailing corner at exactly the height of the app's capsule; reserving
-            // the same band here is meant to make the platform reflow its controls below the capsule.
-            // The map keeps its full frame, so it still renders edge to edge behind the glass, and
-            // the strip takes no hits of its own.
-            .mapCompassClearance()
             // **Every tap is decided here, and only here.** The map's own selection is not used
             // at all: with it, a tap on a pin set the selection twice — once by MapKit and once by
             // this — and a card that flashed and vanished was the result. There is one mechanism
@@ -814,29 +807,6 @@ struct MapInformationContent: View {
         .navigationTitle("About the Map")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-        #endif
-    }
-}
-
-private extension View {
-    /// Reserves the app's control band inside the map's safe area, on the platform that has one.
-    ///
-    /// `screenControlsLayer` is iOS-only: on the other platforms the controls live in the window
-    /// toolbar, so there is no capsule above the map to clear. The `#if` lives here rather than at the
-    /// call site, the same way `RootView` keeps it inside `screenControlsLayer`.
-    ///
-    /// The strip is Clear and takes no hits: it is space for the platform to reflow its compass into,
-    /// not a surface of ours and not a place a tap should stop.
-    @ViewBuilder
-    func mapCompassClearance() -> some View {
-        #if os(iOS)
-        safeAreaInset(edge: .top, spacing: 0) {
-            Color.clear
-                .frame(height: ScreenControls.bandHeight)
-                .allowsHitTesting(false)
-        }
-        #else
-        self
         #endif
     }
 }
