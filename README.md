@@ -137,7 +137,7 @@ whether it was ever *run* as well as whether it was ever *built*.
 and the colours — which is where three separate reports of a question mark came from, each one a
 police code the app had not met.
 
-**Not yet run: the eleven commits since v0.0.16.** Recent by default. The police page folds everything
+**Not yet run: the 19 commits since v0.0.16.** Recent by default. The police page folds everything
 older than its window behind `Earlier calls · n` — strictly, so a serious call outside the window folds
 with the rest — and the map takes a window of its own, one hour or four, always keeping criticals. The
 filter's menu, the police page's clock, and the Settings rows are the parts worth looking at.
