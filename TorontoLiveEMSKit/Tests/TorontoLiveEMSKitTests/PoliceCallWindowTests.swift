@@ -42,7 +42,13 @@ struct PoliceCallWindowTests {
         #expect(PoliceCallWindow.thirtyMinutes.duration == 30 * 60)
         #expect(PoliceCallWindow.oneHour.duration == 60 * 60)
         #expect(PoliceCallWindow.twoHours.duration == 2 * 60 * 60)
-        #expect(PoliceCallWindow.allCases.count == 3, "a fourth would need a place in Settings")
+        // Four hours is the Service's own window, so a fifth setting would be indistinguishable from
+        // this one rather than merely unwelcome.
+        #expect(
+            PoliceCallWindow.allCases.count == 4,
+            "beyond four hours the Service publishes nothing, so a fifth would equal the fourth"
+        )
+        #expect(PoliceCallWindow.fourHours.duration == 4 * 60 * 60)
     }
 
     @Test("every window has a name")

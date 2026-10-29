@@ -103,7 +103,7 @@ struct SettingsView: View {
                 } footer: {
                     Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
 
-                    Text("Recent Calls is how far back the police page and the map look. A call the app marks as critical is kept even when it falls outside that window. The map can show all four hours from its filter.")
+                    Text("Recent Calls is how far back the police page and the map look. A call the app marks as critical is kept even when it falls outside that window. The map can show all four hours from its filter, or by choosing Last 4 hours here.")
                 }
 
                 Section {

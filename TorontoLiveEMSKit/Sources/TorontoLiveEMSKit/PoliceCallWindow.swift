@@ -15,6 +15,9 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     case thirtyMinutes
     case oneHour
     case twoHours
+    /// **Everything the Service holds.** The feed is a rolling four-hour window, so this is not a
+    /// choice about taste — it is the whole of the data, and every call on it is inside the window.
+    case fourHours
 
     /// The name a reader sees in Settings.
     public var label: String {
@@ -22,6 +25,7 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
         case .thirtyMinutes: return "Last 30 minutes"
         case .oneHour: return "Last hour"
         case .twoHours: return "Last 2 hours"
+        case .fourHours: return "Last 4 hours"
         }
     }
 
@@ -31,6 +35,7 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
         case .thirtyMinutes: return 30 * 60
         case .oneHour: return 60 * 60
         case .twoHours: return 2 * 60 * 60
+        case .fourHours: return 4 * 60 * 60
         }
     }
 
