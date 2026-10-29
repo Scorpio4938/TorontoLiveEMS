@@ -700,16 +700,17 @@ say which of them mattered.
   stated once in `PoliceCallWindow.policePageDefault`, read by Settings and the page alike. What the
   page shows of the window now is the fold row counting the calls held back, which is accepted: the
   reader chose the window, and the fold already says older calls exist.
-- **The platform's compass is deleted, and the cost is north-reset.** Rotated away from north,
-  `MapCompass` appeared in the map's top-trailing corner, under the app's capsule. There is no
-  placement API for it — one initialiser, no alignment, and `mapControls` shows or hides every
-  control at once — so the map reserved a transparent 44-point strip in its own safe area to make
-  the platform reflow the compass below the capsule. The strip sat between the `MapReader` and its
-  tap gesture, and tapping incidents became unreliable at the same time; it was the only map-layout
-  change in that batch, so it was withdrawn and the compass deleted rather than risk the map's
-  primary interaction. The cost is recorded beside the remaining control: a rotated map has no
-  north-reset, and the standard rotation gesture is the way back. A hand-rolled compass is not the
-  platform's control, and a rotation gesture is a poor north-reset.
+- **The platform's compass is kept clear by padding the map's safe area — to be checked on a device.**
+  Rotated away from north, `MapCompass` appears in the map's top-trailing corner, under the app's
+  capsule. There is no placement API for it — one initialiser, no alignment, and `mapControls` shows
+  or hides every control at once. The first attempt reserved a transparent strip with
+  `safeAreaInset`; the strip sat between the `MapReader` and its tap gesture, and tapping incidents
+  became unreliable at the same time, so it was withdrawn. The second attempt adds the capsule's
+  band to the map's safe area with `safeAreaPadding` instead, which leaves the map's frame and tap
+  space alone. **Whether the platform reflows the compass below it has not been seen on a device.**
+  If it does not, delete the compass and record the cost to north-reset beside the remaining
+  controls. A hand-rolled compass is not the platform's control, and a rotation gesture is a poor
+  north-reset.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule
@@ -749,7 +750,8 @@ say which of them mattered.
   the police feed arrives it will show both.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
-`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation` and `.annotationTitles` are
-evidenced only by code that has already compiled in this project. For the same reason selection
-is done with `.onTapGesture` on the annotation content — plain SwiftUI — rather than
-`MapSelection`.
+`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles`,
+`.safeAreaPadding` on the map and `MapCompass` are evidenced only by code that has already
+compiled in this project. For the same reason selection is done with `.onTapGesture` on the
+annotation content — plain SwiftUI — rather than `MapSelection`. What has to be looked at on a
+device is both whether the compass is reflowed below the capsule and whether map taps still land.

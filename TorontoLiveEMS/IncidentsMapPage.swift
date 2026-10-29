@@ -190,16 +190,21 @@ struct IncidentsMapPage: View {
             // on this page changes it: the control that does lives in the chrome above.
             .mapStyle(mapKind.style)
             .mapControls {
-                // **`MapCompass` is deliberately absent.** The platform's control sat under the app's
-                // capsule, and the only lever to move it — a safe-area strip inside the map — was
-                // followed by unreliable tap handling, so the strip was withdrawn. The compass was
-                // deleted rather than placed or hand-rolled. A rotated map now has no north-reset;
-                // the standard rotation gesture is the way back. See `docs/design-decisions.md`.
+                // **Kept clear by padding the map's safe area, not by inserting a strip.** The first
+                // attempt used `safeAreaInset`, which shifted the map's frame between the `MapReader`
+                // and its tap gesture and made incidents hard to tap. This adds the capsule's band to
+                // the safe area instead, leaving the frame and the tap space alone. If this does not
+                // reflow the compass either, delete the control rather than hand-roll a substitute.
+                MapCompass()
                 // `alignment` given rather than left off. `MapScaleView` has two initialisers and
                 // every parameter of both has a default, so a bare `MapScaleView()` is ambiguous
                 // between them — it reads as the natural call and is not one.
                 MapScaleView(alignment: .leading)
             }
+            // **Padding the safe area, not adding a view to it.** `safeAreaInset` changed the map's
+            // layout and broke tap conversion; this asks for the same clearance as padding, so the
+            // map keeps its frame and its `.local` space.
+            .mapCompassPadding()
             // **Every tap is decided here, and only here.** The map's own selection is not used
             // at all: with it, a tap on a pin set the selection twice — once by MapKit and once by
             // this — and a card that flashed and vanished was the result. There is one mechanism
@@ -807,6 +812,22 @@ struct MapInformationContent: View {
         .navigationTitle("About the Map")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+}
+
+private extension View {
+    /// Adds the app's control band to the map's safe area, on the platform that has one.
+    ///
+    /// Unlike `safeAreaInset`, this does not insert a view or resize the map: it pads the safe area
+    /// the platform lays its controls inside, which is the part the compass is placed by. iOS only —
+    /// elsewhere the controls live in the window toolbar and no capsule floats over the map.
+    @ViewBuilder
+    func mapCompassPadding() -> some View {
+        #if os(iOS)
+        safeAreaPadding(.top, ScreenControls.bandHeight)
+        #else
+        self
         #endif
     }
 }
