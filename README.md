@@ -121,6 +121,7 @@ rather than trusting.
 | `v0.0.15` | `8958fe4` | **Not yet run as it stands.** The pins are legible after dark, twelve more police codes are known — a robbery and a knife among them — and the map's info button opens a legend of its nine symbols and three colours instead of the fire feed's data page. |
 | `v0.0.16` | `9d356ab` | **Not yet run as it stands.** The filter — All, Fire Only or Police Only — in the chrome, second from the leading end, its glyph following the choice; `map` in place of `map.fill`; and three more police codes, a stabbing among them. |
 | `v0.0.17` | `406c4be` | **Not yet run as it stands.** Recent by default: the police page shows the last hour and folds the rest behind `Earlier calls · n`, strictly — a serious call outside the window folds with everything else. The map has a window of its own, one hour or four, and always keeps criticals. Settings can set the page's window, and a fourth choice of `Last 4 hours` is the whole of what the Service publishes. |
+| `v0.0.18` | `{bump}` | **Builds and runs.** Both pages list their own feed newest first; the police refresh skips only on an unchanged as-of stamp; a duplicated apparatus token is shown once; the police page's clock control is gone, with Settings the only route; and map taps are converted in the window, so the padded compass clearance no longer offsets them. The pin callout still flips above and below its pin — #34. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
@@ -137,10 +138,7 @@ whether it was ever *run* as well as whether it was ever *built*.
 and the colours — which is where three separate reports of a question mark came from, each one a
 police code the app had not met.
 
-**Not yet run: the 19 commits since v0.0.16.** Recent by default. The police page folds everything
-older than its window behind `Earlier calls · n` — strictly, so a serious call outside the window folds
-with the rest — and the map takes a window of its own, one hour or four, always keeping criticals. The
-filter's menu and the Settings rows are the parts worth looking at.
+**Run on a device: v0.0.18's map changes.** Taps land where they are aimed after the padded compass clearance moved the map's coordinates into `.global`. The pin callout's stacking is still unstable, above and below its pin, and is open as #34.
 
 **`swift test` has still never been run.** There are **232 tests** across 23 files, with 651
 expectations, and they are the only thing that can check the parsers, the query builders, the gate and
