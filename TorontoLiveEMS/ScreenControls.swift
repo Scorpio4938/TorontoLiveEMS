@@ -136,7 +136,7 @@ struct MapFilterControl: View {
             // happening, so there is nothing for this switch to mean.
             if mapFilter != .fire {
                 Divider()
-                Toggle("Show all four hours", isOn: $showsAllPoliceHours)
+                Toggle("All Four Hours", isOn: $showsAllPoliceHours)
             }
         } label: {
             Image(systemName: mapFilter.systemImage)
