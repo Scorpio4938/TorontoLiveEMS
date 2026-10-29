@@ -120,6 +120,7 @@ rather than trusting.
 | `v0.0.14` | `2fff7f9` | **Not yet run as it stands.** The map stops shouting: three tones — dark red, orange, and grey for the majority — over four severities, the police's inferred from their call codes and `unknown` for a call nobody named. |
 | `v0.0.15` | `8958fe4` | **Not yet run as it stands.** The pins are legible after dark, twelve more police codes are known — a robbery and a knife among them — and the map's info button opens a legend of its nine symbols and three colours instead of the fire feed's data page. |
 | `v0.0.16` | `9d356ab` | **Not yet run as it stands.** The filter — All, Fire Only or Police Only — in the chrome, second from the leading end, its glyph following the choice; `map` in place of `map.fill`; and three more police codes, a stabbing among them. |
+| `v0.0.17` | `{bump}` | **Not yet run as it stands.** Recent by default: the police page shows the last hour and folds the rest behind `Earlier calls · n`, strictly — a serious call outside the window folds with everything else. The map has a window of its own, one hour or four, and always keeps criticals. Settings can set the page's window, and a fourth choice of `Last 4 hours` is the whole of what the Service publishes. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
