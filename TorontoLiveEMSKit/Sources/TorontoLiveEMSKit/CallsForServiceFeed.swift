@@ -120,6 +120,10 @@ public enum CallsForServiceFeed {
     /// literal read as local time four hours behind would have returned records.
     ///
     /// `returnGeometry=false` because the point is in the attributes, so nothing is fetched twice.
+    ///
+    /// **`orderByFields` is a convenience, not the app's ordering.** It asks for newest first, and the
+    /// Service currently answers that way — but a response's order is the Service's to change, so
+    /// `PoliceCallFeed` sorts the calls it receives by their instants and never relies on this.
     public static func queryURL(now: Date) -> URL? {
         let since = now.addingTimeInterval(-window)
         let stamp = utcStamp(since)

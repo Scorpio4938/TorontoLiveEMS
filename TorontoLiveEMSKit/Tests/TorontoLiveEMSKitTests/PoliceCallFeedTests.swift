@@ -63,12 +63,12 @@ struct PoliceCallFeedTests {
     /// 16:54:19 UTC, when the feed reads, and when the Service last wrote.
     private static let readAt = Date(timeIntervalSince1970: 1_791_219_259)
 
-    private static func call(_ objectID: Int) -> PoliceCall {
+    private static func call(_ objectID: Int, minutesAgo: Double = 13) -> PoliceCall {
         PoliceCall(
             objectID: objectID,
             // Deliberately not the read instant: the calls and the Service's clock are different
             // things, and a fixture where they coincide would hide a line that confused the two.
-            occurrenceTime: readAt.addingTimeInterval(-13 * 60),
+            occurrenceTime: readAt.addingTimeInterval(-minutesAgo * 60),
             division: "D14",
             latitude: 43.66,
             longitude: -79.42,
@@ -145,6 +145,24 @@ struct PoliceCallFeedTests {
         let line = feed.status
         #expect(line.text == "TPS data as of 2026-10-05 12:54:19 · showing the last result")
         #expect(line.isStale)
+    }
+
+    // MARK: - Ordering
+
+    @Test("lists the most recent call first, whatever order the Service returned")
+    func newestCallIsFirst() async {
+        // Returned out of order, as a source the app does not control is entitled to. Before this, the
+        // page showed whichever end the Service's response happened to start at.
+        let service = CallsService([[
+            Self.call(3, minutesAgo: 30),
+            Self.call(1, minutesAgo: 5),
+            Self.call(2, minutesAgo: 13),
+        ]])
+        let feed = Self.feed(readingCalls: service)
+
+        await feed.load()
+
+        #expect(feed.calls?.map(\.objectID) == [1, 2, 3])
     }
 
     // MARK: - The gate, before the fetch

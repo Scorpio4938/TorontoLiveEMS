@@ -61,6 +61,19 @@ struct IncidentFeedTests {
         LiveCADSnapshot(updatedFromDatabaseAt: tick, incidents: [])
     }
 
+    private nonisolated static func incident(_ number: String, dispatchTime: String) -> Incident {
+        Incident(
+            incidentNumber: number,
+            primeStreet: "M6K",
+            crossStreets: nil,
+            dispatchTime: dispatchTime,
+            incidentType: "MEDICAL",
+            alarmLevel: "0",
+            area: "426",
+            dispatchedUnits: nil
+        )
+    }
+
     // MARK: - Loading
 
     @Test("a successful load holds the snapshot and clears the failure")
@@ -147,6 +160,52 @@ struct IncidentFeedTests {
         #expect(seen.count == 1)
         #expect(seen.first?.hasSuffix("· checking…") == true)
         #expect(feed.status.text.hasSuffix("· checking…") == false)
+    }
+
+    // MARK: - Ordering
+
+    @Test("lists the most recently dispatched incident first")
+    func newestDispatchIsFirst() async {
+        // Published oldest first, which is the order the City's document actually has. The feed keeps
+        // it — that is `LiveCADParser`'s job — and the page reverses it by rule.
+        let published = [
+            Self.incident("F1", dispatchTime: "2026-09-29T18:24:39"),
+            Self.incident("F2", dispatchTime: "2026-09-29T19:18:53"),
+            Self.incident("F3", dispatchTime: "2026-09-29T19:54:42"),
+        ]
+        let feed = IncidentFeed(
+            fetch: { LiveCADSnapshot(updatedFromDatabaseAt: Self.tick, incidents: published) },
+            now: { Self.at(0) }
+        )
+
+        await feed.load()
+
+        #expect(feed.incidents?.map(\.incidentNumber) == ["F3", "F2", "F1"])
+        #expect(
+            feed.snapshot?.incidents.map(\.incidentNumber) == ["F1", "F2", "F3"],
+            "the snapshot keeps the order the feed published; the ordering is above the parser"
+        )
+    }
+
+    @Test("an incident with no dispatch time sorts last")
+    func noDispatchTimeIsLast() async {
+        // The string is sorted rather than parsed as a date, so "no time" is the empty string the
+        // parser produces — and the empty string compares below every digit, which is why it lands at
+        // the bottom where an absent value belongs. This is pinned because the behaviour is a
+        // consequence of string ordering rather than a case anybody wrote.
+        let published = [
+            Self.incident("F-none", dispatchTime: ""),
+            Self.incident("F-latest", dispatchTime: "2026-09-29T19:54:42"),
+            Self.incident("F-earliest", dispatchTime: "2026-09-29T18:24:39"),
+        ]
+        let feed = IncidentFeed(
+            fetch: { LiveCADSnapshot(updatedFromDatabaseAt: Self.tick, incidents: published) },
+            now: { Self.at(0) }
+        )
+
+        await feed.load()
+
+        #expect(feed.incidents?.map(\.incidentNumber) == ["F-latest", "F-earliest", "F-none"])
     }
 
     // MARK: - The refresh gate

@@ -232,14 +232,14 @@ struct IncidentsMapPage: View {
 
     // MARK: - What the feed gave us
 
-    /// Every distinct place the feed named, in the order the incidents were published.
+    /// Every distinct place the feed named, in the order its newest incident appears.
     ///
     /// Nothing is filtered by whether it can be **found** — a postal area with no boundary and a
     /// cross street are both questions worth asking. What is filtered, further down, is what
     /// needs asking at all.
     private var namedPlaces: [IncidentLocation] {
         var seen: [IncidentLocation] = []
-        for incident in feed.snapshot?.incidents ?? [] {
+        for incident in feed.incidents ?? [] {
             let location = IncidentLocation.from(incident)
             guard location != .unpublished, !seen.contains(location) else { continue }
             seen.append(location)
@@ -282,7 +282,7 @@ struct IncidentsMapPage: View {
 
     /// The fire places that can be drawn: a location, something to draw for it, and its mark.
     private var firePlaces: [Place] {
-        let incidents = feed.snapshot?.incidents ?? []
+        let incidents = feed.incidents ?? []
         return namedPlaces.compactMap { location in
             let here = incidents.filter { IncidentLocation.from($0) == location }
             // The mark first, because a place with no incidents at it is not a place. It cannot happen

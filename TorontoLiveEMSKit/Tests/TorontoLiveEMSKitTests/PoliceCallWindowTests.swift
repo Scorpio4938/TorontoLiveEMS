@@ -127,10 +127,10 @@ struct PoliceCallWindowTests {
         #expect(result.folded.isEmpty)
     }
 
-    @Test("the Service's order survives the split")
+    @Test("the feed's order survives the split")
     func theOrderIsNotRearranged() {
-        // The list arrives newest first and neither half is re-sorted. An old critical is *shown*, not
-        // promoted: it keeps its place among the recent ones rather than jumping the queue.
+        // The feed hands this list over newest first and neither half is re-sorted. An old critical is
+        // *shown*, not promoted: it keeps its place among the recent ones rather than jumping the queue.
         let calls = [
             Self.call(1, minutesAgo: 5),
             Self.call(2, minutesAgo: 180, code: "SHO"),

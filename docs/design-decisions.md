@@ -82,6 +82,15 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Offline or feed-down shows the last successful snapshot, clearly marked
   stale** — never a blank screen. Staleness is only ever within one session, since
   nothing persists.
+- **Each page lists its own feed newest first, by a rule the app applies.** The two
+  sources order differently, and neither order is something the app controls: the City's
+  document runs oldest first and the Service's response is only newest first because it was
+  asked to be. So each feed sorts its own collection by the time its publisher states,
+  descending, and the parsers keep reporting the publisher's order unchanged. Fire sorts the
+  published timestamp string — zero-padded ISO-8601, so string order is time order and no
+  timezone is chosen. Calls sort their instant. Neither is ever compared with the other,
+  because the two pages never show them together. An incident with no Dispatch Time sorts
+  last: the empty string compares below every digit, so it cannot claim to be the newest.
 
 ## Platform scope
 

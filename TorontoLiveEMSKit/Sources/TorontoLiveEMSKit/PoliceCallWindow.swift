@@ -43,8 +43,8 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     ///
     /// **One filter and its complement**, rather than two passes over the list: a call is shown if it is
     /// inside the window, or if it is critical and the reader has asked for critical calls to be kept.
-    /// The list arrives newest first from the Service and neither half is re-sorted, so what a reader
-    /// sees is still in the order the Service published.
+    /// The feed hands this list over newest first and neither half is re-sorted, so a call keeps the
+    /// place the feed's rule gave it.
     ///
     /// **The exemption is about severity, not about kind.** A shooting three hours ago is worth a
     /// reader's attention now; a theft three hours ago is not. `Urgency` is where that lives, so this

@@ -30,8 +30,25 @@ import Observation
 @Observable
 public final class PoliceCallFeed {
 
-    /// The most recent calls, or nothing if the first fetch has not succeeded.
-    public private(set) var calls: [PoliceCall]?
+    /// The calls as the Service returned them, in its own order.
+    ///
+    /// **Keep private, because it is not the order anybody reads.** What the Service sends is what the
+    /// parser kept, and that order is no longer relied on; `calls` applies the app's rule to it. The
+    /// gate compares these lists too, because its question is whether the response changed rather than
+    /// how the reader sees it.
+    private var receivedCalls: [PoliceCall]?
+
+    /// The calls on screen, most recent first, or nothing if the first fetch has not succeeded.
+    ///
+    /// **The app's order, not the Service's.** The query asks for an order and the Service happens to
+    /// answer newest first, but neither is something this app controls or can state — so the order a
+    /// reader sees is applied here, from the instant each call carries.
+    ///
+    /// **Stated here, once.** The page and the map read this property rather than sorting a copy at
+    /// each render site, so two screens over one feed cannot disagree about which end is recent.
+    public var calls: [PoliceCall]? {
+        receivedCalls?.sorted { $0.occurrenceTime > $1.occurrenceTime }
+    }
 
     /// When the Service last wrote to the layer, as the Service states it.
     ///
@@ -141,12 +158,12 @@ public final class PoliceCallFeed {
             return .skipped
         }
 
-        let before = calls
+        let before = receivedCalls
         await readCalls()
 
         guard failureMessage == nil,
               !isShowingStaleResult,
-              let after = calls,
+              let after = receivedCalls,
               after != before
         else {
             return .refreshed
@@ -170,12 +187,12 @@ public final class PoliceCallFeed {
     /// The calls themselves.
     private func readCalls() async {
         do {
-            calls = try await fetch()
+            receivedCalls = try await fetch()
             lastReadAt = now()
             failureMessage = nil
             isShowingStaleResult = false
         } catch {
-            guard calls == nil else {
+            guard receivedCalls == nil else {
                 isShowingStaleResult = true
                 return
             }

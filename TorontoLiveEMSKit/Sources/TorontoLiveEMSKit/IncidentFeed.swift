@@ -33,6 +33,23 @@ public final class IncidentFeed {
     /// The most recent snapshot, or nothing if the first fetch has not succeeded.
     public private(set) var snapshot: LiveCADSnapshot?
 
+    /// The incidents on screen, most recently dispatched first, or nothing if the first fetch has not
+    /// succeeded.
+    ///
+    /// **The app's order, not the City's.** `LiveCADParser` keeps the order the document published,
+    /// which is a separate and correct thing — on the captured feed that order runs oldest to newest —
+    /// but a reader arriving on this page wants the newest incident at the top.
+    ///
+    /// **Stated here, once.** Every screen reads this property rather than sorting the snapshot itself,
+    /// so a second screen over the same feed cannot choose a different end of the list.
+    ///
+    /// Sorted as the published string rather than as a date: it is zero-padded ISO-8601, so string
+    /// order is time order and no timezone has to be chosen. An incident with no dispatch time sorts
+    /// last, because an empty string compares below every digit — it cannot claim to be the newest.
+    public var incidents: [Incident]? {
+        snapshot?.incidents.sorted { $0.dispatchTime > $1.dispatchTime }
+    }
+
     /// Why there is no snapshot, in a sentence fit to show. Only set when there is nothing
     /// to show in its place.
     public private(set) var failureMessage: String?

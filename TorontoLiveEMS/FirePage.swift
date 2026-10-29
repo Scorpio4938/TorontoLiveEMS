@@ -41,11 +41,11 @@ struct FirePage: View {
     /// with nothing to put in its place.
     @ViewBuilder
     private var content: some View {
-        if let snapshot = feed.snapshot {
+        if let incidents = feed.incidents {
             switch presentation {
             case .compactTable:
                 CompactTableList(
-                    rows: snapshot.incidents,
+                    rows: incidents,
                     columns: CompactColumn<Incident>.fire,
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
@@ -54,7 +54,7 @@ struct FirePage: View {
                 }
             case .cards:
                 CardsList(
-                    rows: snapshot.incidents,
+                    rows: incidents,
                     columns: CompactColumn<Incident>.fireCard,
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
