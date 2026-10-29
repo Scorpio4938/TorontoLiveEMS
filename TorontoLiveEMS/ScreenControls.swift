@@ -114,8 +114,8 @@ struct MapFilterControl: View {
 
     @Binding var mapFilter: MapFilter
 
-    /// The shared window preference. The switch below is a view onto it, not a flag of its own.
-    @Binding var policeWindow: PoliceCallWindow
+    /// The map's own window. The switch below is a view onto it, not a flag of its own.
+    @Binding var mapPoliceWindow: PoliceCallWindow
 
     var body: some View {
         Menu {
@@ -136,12 +136,12 @@ struct MapFilterControl: View {
             // happening, so there is nothing for this switch to mean.
             if mapFilter != .fire {
                 Divider()
-                // Bound through the window rather than to a flag of its own: on means the fourth
-                // window, off returns to one hour. That is what makes this switch and the police
-                // page's menu two views of one setting instead of two settings.
+                // Bound through the map's window rather than to a flag of its own: on means the
+                // fourth window, off returns to one hour. The police page has its own window and
+                // never reads this one.
                 Toggle("All Four Hours", isOn: Binding(
-                    get: { policeWindow == .fourHours },
-                    set: { policeWindow = $0 ? .fourHours : .oneHour }
+                    get: { mapPoliceWindow == .fourHours },
+                    set: { mapPoliceWindow = $0 ? .fourHours : .oneHour }
                 ))
             }
         } label: {
@@ -235,12 +235,17 @@ struct ScreenControls: View {
     /// they were and moves only the capsule's left edge.
     var mapFilter: Binding<MapFilter>? = nil
 
-    /// How far back police calls are taken, on whichever screen can show them.
+    /// The **map's** window, written by the switch inside its filter menu.
     ///
-    /// **One preference, three places to set it.** Settings has a row for it, the police page has a
-    /// menu for it, and the map has a switch for the fourth window. All three read and write the same
-    /// stored value, so there is no way for them to disagree — which is the only reason it is safe to
-    /// offer the same choice in more than one place.
+    /// Deliberately not the same value as the police page's. The map is a picture of what is
+    /// happening and always keeps criticals; the police page is a log that obeys its window strictly.
+    /// Two questions, two ranges.
+    var mapPoliceWindow: Binding<PoliceCallWindow>? = nil
+
+    /// The **police page's** window, written by its clock menu and by the row in Settings.
+    ///
+    /// Those two are one preference on purpose: they are two ways to reach the same page's setting,
+    /// so they cannot disagree. The map's is the separate one.
     var policeWindow: Binding<PoliceCallWindow>? = nil
 
     var body: some View {
@@ -248,8 +253,8 @@ struct ScreenControls: View {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
             }
-            if let mapFilter, let policeWindow {
-                MapFilterControl(mapFilter: mapFilter, policeWindow: policeWindow)
+            if let mapFilter, let mapPoliceWindow {
+                MapFilterControl(mapFilter: mapFilter, mapPoliceWindow: mapPoliceWindow)
             } else if let policeWindow {
                 // The police page's own control, in the slot the map's kind control takes — the two
                 // screens never both ask for it, so the capsule is never wider than four.

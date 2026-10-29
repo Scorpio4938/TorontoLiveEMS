@@ -11,10 +11,10 @@ enum SettingsKey {
     static let presentation = "incidentPresentation"
     /// Which half of a police call's type the table and the card show.
     static let policeCallTypeStyle = "policeCallTypeStyle"
-    /// How far back the police screens look by default.
+    /// How far back the police page looks. Read there and in the page's own clock menu.
     static let policeCallWindow = "policeCallWindow"
-    /// Whether a critical police call is shown even when it falls outside that window.
-    static let policeCallKeepsCritical = "policeCallKeepsCritical"
+    /// How far back the map draws police calls — the map's own, deliberately unrelated to the row above.
+    static let mapPoliceWindow = "mapPoliceWindow"
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"
@@ -50,8 +50,7 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.policeCallWindow)
     private var policeCallWindow: PoliceCallWindow = .oneHour
 
-    @AppStorage(SettingsKey.policeCallKeepsCritical)
-    private var policeCallKeepsCritical = true
+
 
     @Environment(\.dismiss) private var dismiss
 
@@ -95,13 +94,12 @@ struct SettingsView: View {
                         }
                     }
 
-                    Toggle("Keep Critical Calls", isOn: $policeCallKeepsCritical)
                 } header: {
                     Text("Police")
                 } footer: {
                     Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
 
-                    Text("Recent Calls is how far back the police page and the map look. A call the app marks as critical is kept even when it falls outside that window. The map can show all four hours from its filter, or by choosing Last 4 hours here.")
+                    Text("Recent Calls is how far back the police page looks, and that page shows exactly that — a call outside it is folded into Earlier Calls however serious it is. The map's window is its own, in the map's filter.")
                 }
 
                 Section {

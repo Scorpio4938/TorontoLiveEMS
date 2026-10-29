@@ -39,8 +39,7 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.policeCallWindow)
     private var callWindow: PoliceCallWindow = .oneHour
 
-    @AppStorage(SettingsKey.policeCallKeepsCritical)
-    private var keepsCriticalCalls = true
+
 
     var body: some View {
         content
@@ -71,10 +70,14 @@ struct PolicePage: View {
             case .cards:
                 // **Four hours of calls is more than a reader can use**, so the recent ones get the page
                 // and the rest wait behind one row. A call that has already happened is a log entry
-                // rather than a live incident, which is what makes folding it away honest — and a
-                // critical one is shown regardless, because a shooting three hours ago is still worth
-                // somebody's attention.
-                let split = callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date())
+                // rather than a live incident, which is what makes folding it away honest.
+                //
+                // **Strictly the window, with no exemption.** A critical call outside it is folded
+                // with the rest: this page answers "what has been called in lately", and a page that
+                // quietly widened its own range to keep a serious call would be answering a question
+                // the reader did not ask, and would make the window a suggestion. The map is where
+                // severity outranks age, and it says so.
+                let split = callWindow.split(calls, keepingCritical: false, now: Date())
                 CardsList(
                     rows: split.shown,
                     columns: CompactColumn<PoliceCall>.policeCard(style: policeCallTypeStyle),

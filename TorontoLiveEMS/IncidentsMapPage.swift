@@ -63,11 +63,13 @@ struct IncidentsMapPage: View {
     /// The same window and exemption the police page reads, so the two cannot disagree about what
     /// counts as recent — and honouring the exemption here means a shooting three hours ago is on the
     /// map even when the map is showing the last hour.
-    @AppStorage(SettingsKey.policeCallWindow)
-    private var callWindow: PoliceCallWindow = .oneHour
-
-    @AppStorage(SettingsKey.policeCallKeepsCritical)
-    private var keepsCriticalCalls = true
+    /// **The map's own window**, deliberately unconnected to the police page's row in Settings.
+    ///
+    /// The two screens answer different questions. The police page is a log and obeys a window
+    /// strictly; the map is a picture of what is happening, where a serious call matters more than a
+    /// recent one, so its range is a choice of its own and it always keeps criticals.
+    @AppStorage(SettingsKey.mapPoliceWindow)
+    private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
 
     /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
@@ -331,13 +333,16 @@ struct IncidentsMapPage: View {
     /// pin is wide.
     /// The police calls the map is asked to draw.
     ///
-    /// **One setting, applied here exactly as the police page applies it.** No special case: choosing
-    /// the fourth window *is* asking for everything the Service holds, so `Last 4 hours` and the
-    /// switch in the filter menu reach the same state through the same stored preference.
+    /// The map's police marks, from the map's window — **always keeping criticals**.
+    ///
+    /// Aging out a shooting because it is ninety minutes old would be the map lying about the city to
+    /// respect a setting. So the window here bounds the ordinary calls, and severity overrides it;
+    /// that is this screen's fixed behaviour rather than a preference, because a map that could be
+    /// switched into hiding serious calls would be a map with a bad setting in it.
     private var policeCallsToDraw: [PoliceCall] {
         guard let calls = policeFeed.calls else { return [] }
 
-        return callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date()).shown
+        return mapPoliceWindow.split(calls, keepingCritical: true, now: Date()).shown
     }
 
     private var policePlaces: [Place] {
