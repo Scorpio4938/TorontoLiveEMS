@@ -706,11 +706,13 @@ say which of them mattered.
   or hides every control at once. The first attempt reserved a transparent strip with
   `safeAreaInset`; the strip sat between the `MapReader` and its tap gesture, and tapping incidents
   became unreliable at the same time, so it was withdrawn. The second attempt adds the capsule's
-  band to the map's safe area with `safeAreaPadding` instead, which leaves the map's frame and tap
-  space alone. **Whether the platform reflows the compass below it has not been seen on a device.**
-  If it does not, delete the compass and record the cost to north-reset beside the remaining
-  controls. A hand-rolled compass is not the platform's control, and a rotation gesture is a poor
-  north-reset.
+  band to the map's safe area with `safeAreaPadding` instead, which keeps the map's frame — but the
+  padded origin meant a tap's local point and the proxy's local conversion no longer agreed, so taps
+  landed above their target. The tap and both proxy conversions now use `.global`, which the padded
+  map and the reader share. **Whether the platform reflows the compass below the capsule has not
+  been seen on a device.** If it does not, delete the compass and record the cost to north-reset
+  beside the remaining controls. A hand-rolled compass is not the platform's control, and a rotation
+  gesture is a poor north-reset.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule

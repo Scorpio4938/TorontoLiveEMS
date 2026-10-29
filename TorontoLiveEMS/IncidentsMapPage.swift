@@ -202,8 +202,8 @@ struct IncidentsMapPage: View {
                 MapScaleView(alignment: .leading)
             }
             // **Padding the safe area, not adding a view to it.** `safeAreaInset` changed the map's
-            // layout and broke tap conversion; this asks for the same clearance as padding, so the
-            // map keeps its frame and its `.local` space.
+            // layout and broke tap conversion. This keeps the map's frame, though the padded origin
+            // still differs from the reader's — which is why the tap path now works in `.global`.
             .mapCompassPadding()
             // **Every tap is decided here, and only here.** The map's own selection is not used
             // at all: with it, a tap on a pin set the selection twice — once by MapKit and once by
@@ -211,7 +211,7 @@ struct IncidentsMapPage: View {
             // now, and one rule: a tap that lands on a place shows its card, and a tap that lands
             // on nothing puts the card away. The second half is the dismissal, which is why this
             // sets the selection whether or not something was hit.
-            .onTapGesture(coordinateSpace: .local) { point in
+            .onTapGesture(coordinateSpace: .global) { point in
                 selected = place(at: point, in: proxy)?.id
             }
             // **This page sits under no bar; its title and controls float, from `RootView`.**
@@ -447,22 +447,22 @@ struct IncidentsMapPage: View {
     /// to test, so it is tested with the same radius it is drawn at. Nil means the tap hit nothing,
     /// which is how the card is dismissed.
     ///
-    /// **`.local`, on both sides.** `MapProxy.convert` is documented as being relative to the
-    /// coordinate space associated with the `MapReader`, and the map fills that reader exactly, so
-    /// the tap and the conversion are talking about the same space by construction rather than by
-    /// agreement.
+    /// **`.global`, on both sides.** The map's top safe area is padded so the compass clears the app's
+    /// capsule, which means the map no longer shares the `MapReader`'s `.local` origin: a tap's local
+    /// point and the proxy's local conversion are offset by that band. The window is the one space
+    /// both agree on, so the tap and every conversion are made in `.global`.
     private func place(at point: CGPoint, in proxy: MapProxy) -> Place? {
         for place in places {
             guard
                 case .pin(let coordinate) = place.geometry,
-                let centre = proxy.convert(coordinate, to: .local)
+                let centre = proxy.convert(coordinate, to: .global)
             else { continue }
             if hypot(centre.x - point.x, centre.y - point.y) <= 22 {
                 return place
             }
         }
 
-        guard let coordinate = proxy.convert(point, from: .local) else { return nil }
+        guard let coordinate = proxy.convert(point, from: .global) else { return nil }
         let tapped = PostalAreas.Point(
             latitude: coordinate.latitude,
             longitude: coordinate.longitude
@@ -820,7 +820,8 @@ private extension View {
     /// Adds the app's control band to the map's safe area, on the platform that has one.
     ///
     /// Unlike `safeAreaInset`, this does not insert a view or resize the map: it pads the safe area
-    /// the platform lays its controls inside, which is the part the compass is placed by. iOS only —
+    /// the platform lays its controls inside, which is the part the compass is placed by. The padded
+    /// origin still differs from the reader's, so the tap path converts in `.global`. iOS only —
     /// elsewhere the controls live in the window toolbar and no capsule floats over the map.
     @ViewBuilder
     func mapCompassPadding() -> some View {
