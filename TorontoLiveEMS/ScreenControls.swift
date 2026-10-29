@@ -111,10 +111,14 @@ struct MapFilterControl: View {
 
     var body: some View {
         Menu {
-            Picker("Filter", selection: $mapFilter) {
-                ForEach(MapFilter.allCases, id: \.self) { option in
-                    Label(option.label, systemImage: option.systemImage)
-                        .tag(option)
+            // Section headers, so the menu says out loud what the separator only implied: these are
+            // two questions, not four answers to one.
+            Section("Feeds") {
+                Picker("Filter", selection: $mapFilter) {
+                    ForEach(MapFilter.allCases, id: \.self) { option in
+                        Label(option.label, systemImage: option.systemImage)
+                            .tag(option)
+                    }
                 }
             }
 
@@ -127,14 +131,25 @@ struct MapFilterControl: View {
             // window: an incident from three hours ago is still on that feed because it is still
             // happening, so there is nothing for this switch to mean.
             if mapFilter != .fire {
-                Divider()
-                Toggle("Show all four hours", isOn: $showsAllPoliceHours)
+                Section("Police Calls") {
+                    Toggle("Show All Four Hours", isOn: $showsAllPoliceHours)
+                }
             }
         } label: {
-            Image(systemName: mapFilter.systemImage)
-                .foregroundStyle(Color.primary)
+            // **Option 1.** The glyph is fixed to the filter, the word is the choice, the chevron is
+            // the affordance. See the note on this type for the two designs either side of it.
+            HStack(spacing: 5) {
+                Image(systemName: MapFilter.buttonImage)
+                Text(mapFilter.shortLabel)
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.subheadline)
+            .foregroundStyle(Color.primary)
         }
-        // The state, for anyone who cannot see the small print.
+        // The state, for anyone who cannot see the small print — and now for anyone who cannot see
+        // the word either.
         .accessibilityLabel("Filter, \(mapFilter.label)")
     }
 }

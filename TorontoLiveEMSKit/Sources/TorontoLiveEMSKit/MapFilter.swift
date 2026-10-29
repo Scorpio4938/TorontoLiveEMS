@@ -30,12 +30,32 @@ public enum MapFilter: String, CaseIterable, Sendable {
         }
     }
 
-    /// The glyph beside it.
+    /// The same three choices as one word each, for the place where the control says them.
+    ///
+    /// The menu has room for `Both Feeds`; the button in the capsule does not, and a capsule that has
+    /// grown a sentence to say `Fire` has stopped being a control.
+    public var shortLabel: String {
+        switch self {
+        case .all: return "Both"
+        case .fire: return "Fire"
+        case .police: return "Police"
+        }
+    }
+
+    /// The glyph the control wears, whatever is chosen.
+    ///
+    /// **Fixed, and that is the point.** It says what the control *is* — a filter — where a glyph that
+    /// changed with the choice said what the map was *showing*, which the map already says with those
+    /// same symbols. `shield.fill` is the map's own glyph for a police call; worn by the button it read
+    /// as part of the legend.
+    public static let buttonImage = "line.3.horizontal.decrease.circle"
+
+    /// The glyph on this option's row in the menu.
     ///
     /// `all` wears the filter's own glyph, **outlined**, because unfiltered is the state the control is
     /// named for. The two sources wear the glyphs they already wear as a *kind* on the map — a flame and
-    /// a shield, **both filled** — so choosing either turns the control from an outline into a solid,
-    /// and the glyph says which feed is on screen rather than merely that something is filtered.
+    /// a shield, **both filled** — so a row says which feed it would show. The button is the only place
+    /// the changing glyph was a mistake; a menu row is exactly where it belongs.
     public var systemImage: String {
         switch self {
         case .all: return "line.3.horizontal.decrease.circle"

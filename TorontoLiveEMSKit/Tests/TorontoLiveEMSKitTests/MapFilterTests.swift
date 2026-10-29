@@ -44,6 +44,14 @@ struct MapFilterTests {
             #expect(!option.label.isEmpty, "\(option) has no name")
             #expect(!option.systemImage.isEmpty, "\(option) has no glyph")
         }
-        #expect(MapFilter.allCases.count == 3, "a fourth would need a place in the menu")
+        #expect(
+            MapFilter.allCases.count == 3,
+            "a fourth row would have to answer the same question as the other three"
+        )
+
+        // The short words are what the button says, so they must be three words and not one word three
+        // times — a control that cannot be told apart by reading it is not a control.
+        #expect(Set(MapFilter.allCases.map(\.shortLabel)).count == 3)
+        #expect(MapFilter.allCases.allSatisfy { !$0.shortLabel.isEmpty && $0.shortLabel.count <= 6 })
     }
 }
