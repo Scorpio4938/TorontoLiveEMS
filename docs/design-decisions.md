@@ -471,6 +471,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   `FI` Fire Investigator. That is the City's vocabulary, not ours. The table keeps the
   published tokens — `P231, P234` — because it has the least room and the detail view is
   one tap away.
+- **A unit the feed publishes twice is shown once.** The roster is read through one rule in
+  `DispatchedUnit`: identity is the trimmed token compared case-insensitively, the first
+  occurrence keeps its place, and the published order survives. The correction is silent — a
+  source glitch the reader can do nothing about is not worth a sentence — and it is applied
+  where the roster is read, not to the payload. The stored `dispatchedUnits` string stays
+  exactly as the City sent it.
 - **Codes we cannot decode are shown raw.** The legend appears not to be
   exhaustive — `L325` was observed once and is undefined. An undecodable code
   falls back to its raw token rather than a guess.

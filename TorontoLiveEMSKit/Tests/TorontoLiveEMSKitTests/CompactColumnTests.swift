@@ -220,13 +220,25 @@ struct CompactColumnTests {
         #expect(major.warrantsAttention)
     }
 
-    @Test("shows the apparatus roster exactly as published")
+    @Test("shows the apparatus roster as published")
     func dispatchedUnitsArePublished() {
         // Decoding `P231` to `Pumper 231` is worth the characters in the detail view and
         // not here. The legend lives there.
         let cell = CompactColumn<Incident>.dispatchedUnits.cell(incident(dispatchedUnits: "P231, P234"), .twelveHour)
         #expect(cell.text == "P231, P234")
         #expect(!cell.warrantsAttention)
+    }
+
+    @Test("shows a repeated unit once and leaves the published string alone")
+    func repeatedDispatchedUnitIsShownOnce() {
+        // Synthetic: **no capture in this repository contains a duplicate roster**. The live feed has
+        // been seen naming the same token twice, so the cell folds it while the incident keeps every
+        // token the City sent.
+        let incident = incident(dispatchedUnits: "P231, P234, p231")
+        let cell = CompactColumn<Incident>.dispatchedUnits.cell(incident, .twelveHour)
+
+        #expect(cell.text == "P231, P234")
+        #expect(incident.dispatchedUnits == "P231, P234, p231", "the stored string is unchanged")
     }
 
     @Test("leaves every other column empty when the feed published nothing")
