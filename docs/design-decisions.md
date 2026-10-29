@@ -704,12 +704,12 @@ say which of them mattered.
   `MapCompass` appeared in the map's top-trailing corner, under the app's capsule. There is no
   placement API for it — one initialiser, no alignment, and `mapControls` shows or hides every
   control at once — so the map reserved a transparent 44-point strip in its own safe area to make
-  the platform reflow the compass below the capsule. That strip changed the map's layout between the
-  `MapReader` and its tap gesture, and tapping incidents became unreliable; the strip was withdrawn
-  and the compass deleted rather than risk the map's primary interaction. The cost is recorded beside
-  the remaining control: a rotated map has no north-reset, and the standard rotation gesture is the
-  way back. A hand-rolled compass is not the platform's control, and a rotation gesture is a poor
-  north-reset.
+  the platform reflow the compass below the capsule. The strip sat between the `MapReader` and its
+  tap gesture, and tapping incidents became unreliable at the same time; it was the only map-layout
+  change in that batch, so it was withdrawn and the compass deleted rather than risk the map's
+  primary interaction. The cost is recorded beside the remaining control: a rotated map has no
+  north-reset, and the standard rotation gesture is the way back. A hand-rolled compass is not the
+  platform's control, and a rotation gesture is a poor north-reset.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule

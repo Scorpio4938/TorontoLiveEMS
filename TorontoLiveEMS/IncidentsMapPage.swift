@@ -191,10 +191,10 @@ struct IncidentsMapPage: View {
             .mapStyle(mapKind.style)
             .mapControls {
                 // **`MapCompass` is deliberately absent.** The platform's control sat under the app's
-                // capsule, and the only lever to move it — a safe-area strip inside the map — broke
-                // tap handling. It was deleted rather than placed or hand-rolled. A rotated map now
-                // has no north-reset; the standard rotation gesture is the way back. See
-                // `docs/design-decisions.md`.
+                // capsule, and the only lever to move it — a safe-area strip inside the map — was
+                // followed by unreliable tap handling, so the strip was withdrawn. The compass was
+                // deleted rather than placed or hand-rolled. A rotated map now has no north-reset;
+                // the standard rotation gesture is the way back. See `docs/design-decisions.md`.
                 // `alignment` given rather than left off. `MapScaleView` has two initialisers and
                 // every parameter of both has a default, so a bare `MapScaleView()` is ambiguous
                 // between them — it reads as the natural call and is not one.
