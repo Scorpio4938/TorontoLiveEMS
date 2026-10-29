@@ -101,7 +101,15 @@ struct MapKindControl: View {
 /// reason to prefer this over a fixed glyph plus a sentence elsewhere.
 ///
 /// The map's small print names the filter in words as well, because a glyph is a hint and a word is
-/// not. Both are cheap; one of them is unambiguous.
+/// not. Both are cheap; one of them is unambiguous. That sentence under the map is what makes a
+/// changing glyph safe here.
+///
+/// **Two other designs were built and seen before this one was settled on.** *Option 1* fixed the
+/// glyph to the filter and wrote the choice beside it — `filter-glyph Both ⌄` — and named the menu's
+/// two questions with headers. *Option 2* was that without the word, leaving the state to the small
+/// print. Both were rejected in favour of this, which is worth recording so the next person tempted to
+/// label the control knows it has been tried and knows what it cost: the capsule's two buttons stop
+/// matching, and matching is most of what a two-button capsule has.
 struct MapFilterControl: View {
 
     @Binding var mapFilter: MapFilter
@@ -111,14 +119,10 @@ struct MapFilterControl: View {
 
     var body: some View {
         Menu {
-            // Section headers, so the menu says out loud what the separator only implied: these are
-            // two questions, not four answers to one.
-            Section("Feeds") {
-                Picker("Filter", selection: $mapFilter) {
-                    ForEach(MapFilter.allCases, id: \.self) { option in
-                        Label(option.label, systemImage: option.systemImage)
-                            .tag(option)
-                    }
+            Picker("Filter", selection: $mapFilter) {
+                ForEach(MapFilter.allCases, id: \.self) { option in
+                    Label(option.label, systemImage: option.systemImage)
+                        .tag(option)
                 }
             }
 
@@ -131,25 +135,14 @@ struct MapFilterControl: View {
             // window: an incident from three hours ago is still on that feed because it is still
             // happening, so there is nothing for this switch to mean.
             if mapFilter != .fire {
-                Section("Police Calls") {
-                    Toggle("Show All Four Hours", isOn: $showsAllPoliceHours)
-                }
+                Divider()
+                Toggle("Show all four hours", isOn: $showsAllPoliceHours)
             }
         } label: {
-            // **Option 1.** The glyph is fixed to the filter, the word is the choice, the chevron is
-            // the affordance. See the note on this type for the two designs either side of it.
-            HStack(spacing: 5) {
-                Image(systemName: MapFilter.buttonImage)
-                Text(mapFilter.shortLabel)
-                Image(systemName: "chevron.down")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .font(.subheadline)
-            .foregroundStyle(Color.primary)
+            Image(systemName: mapFilter.systemImage)
+                .foregroundStyle(Color.primary)
         }
-        // The state, for anyone who cannot see the small print — and now for anyone who cannot see
-        // the word either.
+        // The state, for anyone who cannot see the small print.
         .accessibilityLabel("Filter, \(mapFilter.label)")
     }
 }
