@@ -37,6 +37,13 @@ _Avoid_: Intersection, crossroad, cross
 The moment CAD dispatched units to an incident.
 _Avoid_: Alarm time, created at, start time, reported time
 
+**As-of**:
+The publisher's time belonging to the data on screen — for Fire, the snapshot's
+`update_from_db_time`; for police calls, the Service's last-write stamp that was
+current when those calls were read. It is not the publisher's latest stamp, which
+may describe a write the screen has never fetched.
+_Avoid_: Last updated, published at, latest stamp
+
 **Incident Type**:
 The category CAD assigned to an incident when it was dispatched. The live feed's
 vocabulary differs from the open data's, and its full set of values is not

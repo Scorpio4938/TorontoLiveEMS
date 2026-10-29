@@ -28,29 +28,6 @@ public enum FeedRefresh {
         return now >= published.addingTimeInterval(interval)
     }
 
-    /// Whether anything can have republished since an instant a publisher stated.
-    ///
-    /// The same rule as above, for a feed whose publisher gives a time rather than a wall-clock
-    /// string. If the Service says it last wrote at 17:31 and writes about every twenty minutes,
-    /// then at 17:41 there is nothing to fetch that was not already there.
-    ///
-    /// The interval is the caller's because it is the publisher's: five minutes is Toronto Fire's
-    /// pace and twenty is the Police Service's, and neither belongs in the other's gate.
-    ///
-    /// Answers `true` whenever it cannot tell — no stamp yet — so a time we failed to read never
-    /// quietly blocks a refresh. That is the same failing open as above, and it matters more here:
-    /// the stamp arrives in a response of its own, which can fail on its own.
-    public static func mayHaveRefreshed(
-        since instant: Date?,
-        interval: TimeInterval,
-        now: Date = Date()
-    ) -> Bool {
-        guard let instant else {
-            return true
-        }
-        return now >= instant.addingTimeInterval(interval)
-    }
-
     /// Reads `2026-09-30 00:00:02` as Toronto local time.
     ///
     /// Toronto specifically, because that is whose clock the feed publishes on. The zone is

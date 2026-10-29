@@ -8,12 +8,12 @@ import Foundation
 /// argument that put `FeedStatus` in a file of its own.
 public enum RefreshOutcome: Equatable, Sendable {
 
-    /// Something was fetched.
+    /// A refresh that was not proved to be a skip: the calls were fetched, or the attempt failed.
     case refreshed
 
-    /// Nothing newer was found — by whatever test that feed is able to make. The fire feed can
-    /// decline to ask at all, because the City's republish tick is inside the document it already
-    /// fetched; the police feed has no such tick in hand, so it fetches and compares. Both answer
-    /// this, and the reader sees the same word for it either way.
+    /// Nothing newer was found — by whatever test that feed is able to make. Fire can decline to ask
+    /// at all, because the City's republish tick is inside the document it already fetched. Police asks
+    /// the Service for its stamp, fetches only when that stamp is not the one the calls were read under,
+    /// and then compares what came back. Both answer this, and the reader sees the same word either way.
     case skipped
 }

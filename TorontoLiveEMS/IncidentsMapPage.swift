@@ -528,13 +528,13 @@ struct IncidentsMapPage: View {
         case .fire:
             return "City data as of \(firePublished ?? Self.unknownTime)"
         case .police:
-            return "TPS data as of \(policePublished ?? Self.unknownTime)"
+            return "TPS data as of \(policeAsOf ?? Self.unknownTime)"
         case .all:
             // **Compared as strings, which is safe because both are the same shape**: `yyyy-MM-dd
             // HH:mm:ss`, biggest part first and every field the same width, so the later string is the
             // later time. A change of shape on either side would make this wrong rather than crash,
             // and the police side's shape is pinned by a test.
-            let latest = [firePublished, policePublished].compactMap { $0 }.max()
+            let latest = [firePublished, policeAsOf].compactMap { $0 }.max()
             return "City/TPS data as of \(latest ?? Self.unknownTime)"
         }
     }
@@ -546,12 +546,12 @@ struct IncidentsMapPage: View {
         feed.snapshot?.updatedFromDatabaseAt
     }
 
-    /// The Service's, written the way the City writes its own.
+    /// The Service's as-of, written the way the City writes its own.
     ///
     /// `DispatchTimestamp.publishedStamp` renders it on Toronto's clock in that same shape — which is
     /// what lets the two be compared and read as one column rather than as two conventions.
-    private var policePublished: String? {
-        policeFeed.publishedAt.map { DispatchTimestamp.publishedStamp($0) }
+    private var policeAsOf: String? {
+        policeFeed.asOf.map { DispatchTimestamp.publishedStamp($0) }
     }
 
     /// Whether anything **being drawn** is known to be out of date.

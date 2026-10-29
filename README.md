@@ -26,7 +26,7 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 
 ```
 TorontoLiveEMS/         the app — the views, and the table's measurements
-TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 229 tests
+TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 226 tests
 scripts/check_swift.py  a structural check, see below
 docs/                   the decisions
 ```
@@ -60,7 +60,7 @@ cross-reference check only sees types declared in the roots it was given.
 ## Building and testing
 
 ```bash
-cd TorontoLiveEMSKit && swift test        # the 229 tests
+cd TorontoLiveEMSKit && swift test        # the 226 tests
 ```
 
 Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.
@@ -142,8 +142,8 @@ older than its window behind `Earlier calls · n` — strictly, so a serious cal
 with the rest — and the map takes a window of its own, one hour or four, always keeping criticals. The
 filter's menu, the police page's clock, and the Settings rows are the parts worth looking at.
 
-**`swift test` has still never been run.** There are **229 tests** across 23 files, with 631
-expectations, and they are the only thing that can check the parsers, the query builders, the gates,
+**`swift test` has still never been run.** There are **226 tests** across 23 files, with 637
+expectations, and they are the only thing that can check the parsers, the query builders, the gate and
 the projections, the two windows and their exemption, the legend and the sentences. Nothing in this
 checkpoint has been through a compiler's tests — only through a build.
 

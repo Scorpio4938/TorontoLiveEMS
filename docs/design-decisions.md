@@ -16,6 +16,16 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   we already know. The alert is the point: a silent skip is indistinguishable from a dead
   button, which is exactly the bug reported earlier. The gate **fails open** — no tick, or
   one of an unexpected shape, allows the fetch rather than blocking it.
+- **The police feed skips only on an unchanged stamp, never on a pace.** The
+  Service states when it last wrote to the layer. The app keeps the stamp the calls on
+  screen were read under — the **as-of**, not the Service's latest stamp — and reads the
+  Service's stamp on every refresh. If it is unchanged, the calls are already current and
+  are not fetched. If it has moved, the write is fetched: a pace describes the publisher,
+  not our copy, and our copy can be a write behind. After a fetch the calls are compared
+  with the calls that were there, because a stamp can move while the calls do not. The
+  status line and the "nothing newer" sentence quote the as-of, never the Service's newest
+  write. Fire keeps its five-minute gate because the City's tick rides inside the document
+  it already fetched.
 - **One fetch when the app has no data to show** — a cold launch, so it is never
   empty on arrival. This matches the City's own page, whose AJAX call fires on
   `document.ready` and whose refresh button is `location.reload()`.

@@ -312,9 +312,10 @@ struct RootView: View {
             outcome = await policeFeed.refresh()
             message = policeFeed.nothingNewerMessage
         case .map:
-            // **The map draws both feeds, so a refresh on it asks both.** Each keeps its own gate, so
-            // inside the Service's twenty minutes the police half costs no request at all and inside
-            // the City's five the fire half costs none — a tap with nothing to fetch is still instant.
+            // **The map draws both feeds, so a refresh on it asks both.** Fire can still answer from
+            // the clock it holds, because the City's republish tick rides inside the document it
+            // already fetched. The police half always asks the Service whether it has written, and
+            // fetches the calls only when it has. A tap with nothing to fetch is still instant.
             //
             // The alert only appears when **neither** found anything: saying "nothing newer" while one
             // of the two had in fact refreshed would be the kind of half-truth this alert exists to

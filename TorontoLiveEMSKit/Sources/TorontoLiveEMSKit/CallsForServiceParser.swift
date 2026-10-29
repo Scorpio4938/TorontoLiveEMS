@@ -38,13 +38,17 @@ public enum CallsForServiceParser {
     /// A second response from the same service, and the only place the app can learn when the Service
     /// last wrote — a `query` cannot be asked for it.
     ///
+    /// **The Service's latest stamp, not an as-of.** It can describe a write whose calls the screen
+    /// has not fetched; `PoliceCallFeed` keeps the stamp those calls were read under separately.
+    ///
     /// `dataLastEditDate` rather than `lastEditDate`: both are present and equal in this service, and
     /// the one whose name says "the data" is the one whose meaning can be stated.
     ///
-    /// **Non-throwing, and optional.** A response without a stamp means "no gate and no time to
-    /// quote", which is a state the feed handles; it is not a failure worth putting in front of a
-    /// reader, and it must not be confused with a network failure, which the client reports.
-    public static func publishedAt(from data: Data) -> Date? {
+    /// **Non-throwing, and optional.** A response without a stamp means "no proof the calls are
+    /// current, and no time to quote", which is a state the feed handles by fetching; it is not a
+    /// failure worth putting in front of a reader, and it must not be confused with a network failure,
+    /// which the client reports.
+    public static func latestStamp(from data: Data) -> Date? {
         guard let layer = try? JSONDecoder().decode(Layer.self, from: data),
               let milliseconds = layer.editingInfo?.dataLastEditDate
         else {
