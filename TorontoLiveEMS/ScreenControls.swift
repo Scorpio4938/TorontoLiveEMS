@@ -106,6 +106,9 @@ struct MapFilterControl: View {
 
     @Binding var mapFilter: MapFilter
 
+    /// Whether the police marks are drawn from the whole four hours rather than the recent window.
+    @Binding var showsAllPoliceHours: Bool
+
     var body: some View {
         Menu {
             Picker("Filter", selection: $mapFilter) {
@@ -113,6 +116,19 @@ struct MapFilterControl: View {
                     Label(option.label, systemImage: option.systemImage)
                         .tag(option)
                 }
+            }
+
+            // **A switch, not a fourth row in the picker.** The picker answers "which feed"; this
+            // answers "how far back", and a list where one row asks a different question from the other
+            // three is a list a reader has to decode. A toggle is also a direct row rather than a
+            // submenu, so it costs one tap instead of two.
+            //
+            // Hidden when only the fire feed is drawn, because the City's fire incidents have no
+            // window: an incident from three hours ago is still on that feed because it is still
+            // happening, so there is nothing for this switch to mean.
+            if mapFilter != .fire {
+                Divider()
+                Toggle("Show all four hours", isOn: $showsAllPoliceHours)
             }
         } label: {
             Image(systemName: mapFilter.systemImage)
@@ -175,13 +191,16 @@ struct ScreenControls: View {
     /// they were and moves only the capsule's left edge.
     var mapFilter: Binding<MapFilter>? = nil
 
+    /// The switch inside the filter menu, bound like the filter itself.
+    var showsAllPoliceHours: Binding<Bool>? = nil
+
     var body: some View {
         HStack(spacing: 16) {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
             }
-            if let mapFilter {
-                MapFilterControl(mapFilter: mapFilter)
+            if let mapFilter, let showsAllPoliceHours {
+                MapFilterControl(mapFilter: mapFilter, showsAllPoliceHours: showsAllPoliceHours)
             }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)

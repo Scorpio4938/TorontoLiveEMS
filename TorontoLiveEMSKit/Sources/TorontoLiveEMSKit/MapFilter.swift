@@ -11,19 +11,15 @@ import Foundation
 /// City incident types would be a control nobody would use; fire or police is a question a reader
 /// actually has. Narrowing further is a different feature, and this is deliberately not it.
 ///
-/// **The one exception is time, and only for police.** Four hours of calls is about a hundred marks,
-/// which is more than a map can say anything with, so the police option draws the recent window and a
-/// fourth option draws all of it. It is a *fourth row in the same picker* rather than a second control,
-/// because a fifth button in a capsule of four is worse than a fourth line in a menu of three — and it
-/// is only police, because the City's fire feed has no window: an incident from three hours ago is
-/// still on it because it is still happening.
+/// **The time is deliberately not in here.** Four hours of calls is about a hundred marks, so the
+/// police marks are drawn from the recent window — but *how far back* is a switch in the menu below
+/// this picker, not a fourth row in it. A picker where three rows answer "which feed" and one answers
+/// "how far back" is a picker nobody can read, which is what the fourth row turned out to be.
 public enum MapFilter: String, CaseIterable, Sendable {
 
     case all
     case fire
     case police
-    /// Police calls from the whole four hours the Service holds, rather than the recent window.
-    case policeAll
 
     /// The name a reader sees in the menu.
     public var label: String {
@@ -31,7 +27,6 @@ public enum MapFilter: String, CaseIterable, Sendable {
         case .all: return "Both Feeds"
         case .fire: return "Fire Only"
         case .police: return "Police Only"
-        case .policeAll: return "Police · Four Hours"
         }
     }
 
@@ -45,7 +40,7 @@ public enum MapFilter: String, CaseIterable, Sendable {
         switch self {
         case .all: return "line.3.horizontal.decrease.circle"
         case .fire: return "flame.fill"
-        case .police, .policeAll: return "shield.fill"
+        case .police: return "shield.fill"
         }
     }
 
@@ -54,7 +49,7 @@ public enum MapFilter: String, CaseIterable, Sendable {
         switch self {
         case .all: return true
         case .fire: return mark.source == .fire
-        case .police, .policeAll: return mark.source == .police
+        case .police: return mark.source == .police
         }
     }
 }

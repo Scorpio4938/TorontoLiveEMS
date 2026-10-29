@@ -69,6 +69,10 @@ struct IncidentsMapPage: View {
     @AppStorage(SettingsKey.policeCallKeepsCritical)
     private var keepsCriticalCalls = true
 
+    /// The switch in the filter menu: the whole four hours rather than the window.
+    @AppStorage(SettingsKey.mapShowsAllPoliceHours)
+    private var showsAllPoliceHours = false
+
     /// The same stored key the police page reads, so a reader who chose codes sees codes here too.
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
@@ -330,13 +334,13 @@ struct IncidentsMapPage: View {
     /// pin is wide.
     /// The police calls the map is asked to draw.
     ///
-    /// **The window is the same setting the police page reads, and one option overrides it.**
-    /// `Police · Four Hours` exists because four hours of calls is more than a map can say anything
-    /// with, and a reader who wants to see all of it should be able to ask — but not by default, and
-    /// not by finding a second control.
+    /// **The window is the same setting the police page reads, and one switch overrides it.** Four
+    /// hours of calls is more than a map can say anything with, so the window is the default — and a
+    /// reader who wants all of it asks for it with the switch inside the filter menu, which is hidden
+    /// when the fire feed is the only one drawn.
     private var policeCallsToDraw: [PoliceCall] {
         guard let calls = policeFeed.calls else { return [] }
-        guard mapFilter != .policeAll else { return calls }
+        guard !showsAllPoliceHours else { return calls }
         return callWindow.split(calls, keepingCritical: keepsCriticalCalls, now: Date()).shown
     }
 
@@ -522,7 +526,7 @@ struct IncidentsMapPage: View {
         switch mapFilter {
         case .fire:
             return "City data as of \(firePublished ?? Self.unknownTime)"
-        case .police, .policeAll:
+        case .police:
             return "TPS data as of \(policePublished ?? Self.unknownTime)"
         case .all:
             // **Compared as strings, which is safe because both are the same shape**: `yyyy-MM-dd
@@ -557,7 +561,7 @@ struct IncidentsMapPage: View {
         switch mapFilter {
         case .fire:
             return feed.status.isStale
-        case .police, .policeAll:
+        case .police:
             return policeFeed.isShowingStaleResult
         case .all:
             return feed.status.isStale || policeFeed.isShowingStaleResult

@@ -81,6 +81,7 @@ struct RootView: View {
     /// the dispatch-time format already uses, so nothing new is being invented to make it work.
     @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
+    @AppStorage(SettingsKey.mapShowsAllPoliceHours) private var showsAllPoliceHours = false
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
@@ -139,7 +140,8 @@ struct RootView: View {
                 // and the control goes at the capsule's leading end, so Info and Settings do not
                 // move when it appears.
                 mapKind: screen == .map ? $mapKind : nil,
-                mapFilter: screen == .map ? $mapFilter : nil
+                mapFilter: screen == .map ? $mapFilter : nil,
+                showsAllPoliceHours: screen == .map ? $showsAllPoliceHours : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -350,7 +352,8 @@ private extension View {
         onInfo: @escaping () -> Void,
         onSettings: @escaping () -> Void,
         mapKind: Binding<MapKind>? = nil,
-        mapFilter: Binding<MapFilter>? = nil
+        mapFilter: Binding<MapFilter>? = nil,
+        showsAllPoliceHours: Binding<Bool>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
@@ -358,7 +361,8 @@ private extension View {
                 onInfo: onInfo,
                 onSettings: onSettings,
                 mapKind: mapKind,
-                mapFilter: mapFilter
+                mapFilter: mapFilter,
+                showsAllPoliceHours: showsAllPoliceHours
             )
                 // Centred in a bar's height at a content margin, which is where the bar's own
                 // items sat before this layer replaced them. These two numbers are the placement,

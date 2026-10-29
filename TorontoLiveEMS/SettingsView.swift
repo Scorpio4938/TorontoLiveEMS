@@ -15,6 +15,8 @@ enum SettingsKey {
     static let policeCallWindow = "policeCallWindow"
     /// Whether a critical police call is shown even when it falls outside that window.
     static let policeCallKeepsCritical = "policeCallKeepsCritical"
+    /// Whether the map's police marks come from the whole four hours rather than the window.
+    static let mapShowsAllPoliceHours = "mapShowsAllPoliceHours"
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"
