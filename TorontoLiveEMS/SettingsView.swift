@@ -47,6 +47,14 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
+    // The defaults here must be the defaults the police page and the map read, or Settings would
+    // display a value the other screens are not using — the store is empty until something writes it.
+    @AppStorage(SettingsKey.policeCallWindow)
+    private var policeCallWindow: PoliceCallWindow = .oneHour
+
+    @AppStorage(SettingsKey.policeCallKeepsCritical)
+    private var policeCallKeepsCritical = true
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -83,10 +91,19 @@ struct SettingsView: View {
                             Text(style.label).tag(style)
                         }
                     }
+                    Picker("Recent Calls", selection: $policeCallWindow) {
+                        ForEach(PoliceCallWindow.allCases, id: \.self) { window in
+                            Text(window.label).tag(window)
+                        }
+                    }
+
+                    Toggle("Keep Critical Calls", isOn: $policeCallKeepsCritical)
                 } header: {
                     Text("Police")
                 } footer: {
                     Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
+
+                    Text("Recent Calls is how far back the police page and the map look. A call the app marks as critical is kept even when it falls outside that window. The map can show all four hours from its filter.")
                 }
 
                 Section {

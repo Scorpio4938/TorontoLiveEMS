@@ -16,7 +16,7 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     case oneHour
     case twoHours
 
-    /// The name a reader sees in Settings, and in the map's filter menu.
+    /// The name a reader sees in Settings.
     public var label: String {
         switch self {
         case .thirtyMinutes: return "Last 30 minutes"
