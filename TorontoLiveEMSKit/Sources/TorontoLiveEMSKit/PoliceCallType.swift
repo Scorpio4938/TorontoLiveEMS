@@ -56,7 +56,13 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
     ///
     /// **Gathered from the Service, not invented, and static.** Every call carries both halves of this
     /// mapping, so it was collected from the calls themselves — and the two numbers involved are worth
-    /// keeping apart. On 2026-10-05 the Service held **ninety-six calls**, which are individual
+    /// keeping apart. **It is also incomplete, and cannot be otherwise**: the Service holds four hours
+    /// at a time, so a code that has not happened lately is a code this list has never seen. The first
+    /// gathering found thirty; a second window, two hours later, found twelve more that were not in the
+    /// first — including `ROB` and `PERKN`, which is how a robbery came to be drawn as a question mark.
+    /// The codes cluster by suffix (`--PR` in progress, `--JU` just occurred, `PER--` person with), and
+    /// **nothing here relies on that**: `INDEX` means *indecent exposure* while `EXPJU` means *indecent
+    /// exposure just occurred*, so the letters are not a scheme a table can be replaced by. On 2026-10-05 the Service held **ninety-six calls**, which are individual
     /// incidents; among them were **thirty distinct codes**, which are kinds of incident. One code
     /// appears on many calls: `DIS` alone was seventeen of the ninety-six. So this list is thirty
     /// entries because thirty kinds of thing happened in four hours, not because the Service has only
@@ -78,7 +84,11 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "ASSPR", name: "ASSAULT IN PROGRESS"),
         PoliceCallType(code: "ATTBR", name: "ATTEMPT BREAK & ENTER"),
         PoliceCallType(code: "BREEN", name: "BREAK & ENTER"),
+        PoliceCallType(code: "BREJU", name: "BREAK & ENTER JUST OCCURRED"),
+        PoliceCallType(code: "BREPR", name: "BREAK & ENTER IN PROGRESS"),
         PoliceCallType(code: "DAM", name: "DAMAGE"),
+        PoliceCallType(code: "DAMJU", name: "DAMAGE JUST OCCURRED"),
+        PoliceCallType(code: "DAMPR", name: "DAMAGE IN PROGRESS"),
         PoliceCallType(code: "DEMO", name: "DEMONSTRATION"),
         PoliceCallType(code: "DIS", name: "DISORDERLIES"),
         PoliceCallType(code: "DISPU", name: "DISPUTE"),
@@ -88,17 +98,30 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "FIRAL", name: "FIRE ALARM"),
         PoliceCallType(code: "FOUPR", name: "FOUND PROPERTY"),
         PoliceCallType(code: "FRA", name: "FRAUD"),
+        PoliceCallType(code: "FRAPR", name: "FRAUD IN PROGRESS"),
         PoliceCallType(code: "HAZ", name: "HAZARD"),
         PoliceCallType(code: "IMPDR", name: "IMPAIRED DRIVER"),
         PoliceCallType(code: "INDEX", name: "INDECENT EXPOSURE"),
+        PoliceCallType(code: "JUVLO", name: "MISSING JUVENILE LOCATED"),
+        PoliceCallType(code: "LOSEL", name: "HOLDING LOST ELDERLY"),
+        PoliceCallType(code: "MISCH", name: "MISSING CHILD"),
+        PoliceCallType(code: "MISEL", name: "MISSING ELDERLY"),
         PoliceCallType(code: "MISVU", name: "MISSING VULNERABLE PERSON"),
         PoliceCallType(code: "PDACC", name: "PROPERTY DAMAGE COLLISION"),
         PoliceCallType(code: "PERGU", name: "PERSON WITH A GUN"),
+        PoliceCallType(code: "PERKN", name: "PERSON WITH A KNIFE"),
         PoliceCallType(code: "PIACC", name: "PERSONAL INJURY COLLISION"),
+        PoliceCallType(code: "ROB", name: "ROBBERY"),
         PoliceCallType(code: "SEEAM", name: "SEE AMBULANCE"),
+        PoliceCallType(code: "SHO", name: "SHOOTING"),
+        PoliceCallType(code: "SOUGU", name: "SOUND OF GUNSHOTS"),
+        PoliceCallType(code: "STA", name: "STABBING"),
+        PoliceCallType(code: "THE", name: "THEFT"),
         PoliceCallType(code: "THEAU", name: "THEFT FROM AUTO"),
         PoliceCallType(code: "THEJU", name: "THEFT JUST OCCURRED"),
         PoliceCallType(code: "THEPR", name: "THEFT IN PROGRESS"),
+        PoliceCallType(code: "THEVE", name: "THEFT OF VEHICLE"),
+        PoliceCallType(code: "TRAOB", name: "TRAFFIC OBSTRUCT"),
         PoliceCallType(code: "TRE", name: "TRESPASS"),
         PoliceCallType(code: "UNKTR", name: "UNKNOWN TROUBLE"),
         PoliceCallType(code: "WRWAY", name: "WRONG WAY VEHICLE"),

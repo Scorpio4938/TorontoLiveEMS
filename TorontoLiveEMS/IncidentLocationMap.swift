@@ -259,7 +259,8 @@ struct IncidentLocationMap: View {
 /// the map's colour.
 ///
 /// It is told *whether* rather than *which incident*, because a place can hold more than one and a
-/// dot is one dot: the caller decides, and `Place.isUrgent` is where that decision is made.
+/// dot is one dot. The caller decides — and it decides from an `IncidentMark`, which is where that
+/// judgement lives now, so that a mark on the large map and a dot here cannot come to disagree.
 struct IncidentPin: View {
 
     let warrantsAttention: Bool

@@ -41,15 +41,20 @@ public enum MapKind: String, CaseIterable, Sendable {
     /// the map-type button is not a generic "change the map" symbol but the symbol of the map you
     /// are looking at, so the control states the current mode as well as offering the others.
     ///
-    /// **Both are filled, deliberately**, so the two read as siblings in the capsule rather than as
-    /// one outlined icon and one solid one. The names were given rather than guessed, and they
-    /// cannot be checked on the machine this was written on — there is no symbol list to check them
-    /// against, and Apple publishes none. The failure mode is worth knowing and is not silent in the
-    /// way that matters: a symbol name that does not exist draws *nothing at all*, which reads as a
-    /// gap in the capsule rather than as a wrong picture, and is one word to fix.
+    /// **`standard` is outlined and `satellite` is filled**, which is not how this started: both were
+    /// filled so that the two would read as siblings in the capsule. The plain `map` was preferred for
+    /// the standard kind when the control was looked at on a device, and the reason for the pairing did
+    /// not survive that preference — two glyphs are siblings because they sit in one capsule, not
+    /// because they share an outline weight.
+    ///
+    /// **The names are checked rather than remembered**, and they were not always: this comment used to
+    /// say they could not be, which was true until the app grew a test that asks the system's own
+    /// catalogue. A symbol name that does not exist draws *nothing at all* — no warning, no
+    /// placeholder, just a gap in the capsule — so all three sets of control glyphs are asserted there
+    /// now: the map kinds, the filter, and the nine incident kinds.
     public var systemImage: String {
         switch self {
-        case .standard: return "map.fill"
+        case .standard: return "map"
         case .satellite: return "globe.americas.fill"
         }
     }

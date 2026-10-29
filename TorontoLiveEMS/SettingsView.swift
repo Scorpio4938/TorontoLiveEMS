@@ -11,9 +11,15 @@ enum SettingsKey {
     static let presentation = "incidentPresentation"
     /// Which half of a police call's type the table and the card show.
     static let policeCallTypeStyle = "policeCallTypeStyle"
+    /// How far back the police page looks. Read there and in the page's own clock menu.
+    static let policeCallWindow = "policeCallWindow"
+    /// How far back the map draws police calls — the map's own, deliberately unrelated to the row above.
+    static let mapPoliceWindow = "mapPoliceWindow"
     /// Which kind of map the map page draws. Read by `RootView`'s chrome as well as by the page,
     /// which is the point of it being a stored preference rather than state passed down.
     static let mapKind = "mapKind"
+    /// Which feeds the map draws, on the same terms: written by the chrome, read by the page.
+    static let mapFilter = "mapFilter"
 }
 
 /// The app's preferences, and one row to everything that is not one.
@@ -38,6 +44,13 @@ struct SettingsView: View {
 
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
+
+    // The defaults here must be the defaults the police page and the map read, or Settings would
+    // display a value the other screens are not using — the store is empty until something writes it.
+    @AppStorage(SettingsKey.policeCallWindow)
+    private var policeCallWindow: PoliceCallWindow = .oneHour
+
+
 
     @Environment(\.dismiss) private var dismiss
 
@@ -75,10 +88,18 @@ struct SettingsView: View {
                             Text(style.label).tag(style)
                         }
                     }
+                    Picker("Recent Calls", selection: $policeCallWindow) {
+                        ForEach(PoliceCallWindow.allCases, id: \.self) { window in
+                            Text(window.label).tag(window)
+                        }
+                    }
+
                 } header: {
                     Text("Police")
                 } footer: {
                     Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
+
+                    Text("Recent Calls is how far back the police page looks, and that page shows exactly that — a call outside it is folded into Earlier Calls however serious it is. The map's window is its own, in the map's filter.")
                 }
 
                 Section {

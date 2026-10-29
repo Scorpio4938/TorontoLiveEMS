@@ -116,6 +116,11 @@ rather than trusting.
 | `v0.0.10` | `1f4d003` | **Not built.** Settings says the version, the build and the stage — the build number back where it was, and the sentence under it explaining which number is which. |
 | `v0.0.11` | `f468581` | Builds, and ran: the police page. A second source and a second tab over the same table and cards as the fire page, so the two feeds share one presentation layer and differ only in their columns, their detail screen and their data. |
 | `v0.0.12` | `2fa91a4` | **Not yet run as it stands.** The police page finished: a static code list behind every code, the reader's choice of words or code in the table, an information screen that is fields and licence without padding, and a refresh that answers from the clock it already holds rather than spending a network round trip to decide there is nothing to fetch. |
+| `v0.0.13` | `8684d3e` | Builds and runs. Police calls on the map — grouped by point, each pin wearing its incident kind's symbol — over one shared mark vocabulary that both feeds produce, and a map tab whose refresh asks both. **The filter is not in yet**, and a busy window puts a hundred pins on one map without it. |
+| `v0.0.14` | `2fff7f9` | **Not yet run as it stands.** The map stops shouting: three tones — dark red, orange, and grey for the majority — over four severities, the police's inferred from their call codes and `unknown` for a call nobody named. |
+| `v0.0.15` | `8958fe4` | **Not yet run as it stands.** The pins are legible after dark, twelve more police codes are known — a robbery and a knife among them — and the map's info button opens a legend of its nine symbols and three colours instead of the fire feed's data page. |
+| `v0.0.16` | `9d356ab` | **Not yet run as it stands.** The filter — All, Fire Only or Police Only — in the chrome, second from the leading end, its glyph following the choice; `map` in place of `map.fill`; and three more police codes, a stabbing among them. |
+| `v0.0.17` | `406c4be` | **Not yet run as it stands.** Recent by default: the police page shows the last hour and folds the rest behind `Earlier calls · n`, strictly — a serious call outside the window folds with everything else. The map has a window of its own, one hour or four, and always keeps criticals. Settings can set the page's window, and a fourth choice of `Last 4 hours` is the whole of what the Service publishes. |
 
 A row whose own commit writes this file cannot name that commit; `git rev-parse <tag>` answers
 it. Every other row can be checked with `git show <hash> --stat`.
@@ -128,13 +133,19 @@ whether it was ever *run* as well as whether it was ever *built*.
 
 ## Status
 
-**The app builds and runs on an iPhone.** The police page was exercised on a device throughout,
-which is where the refresh freeze was found and reported; everything the branch carried up to
-that point was run there. The last few commits before this merge have not been run since: the
-freeze fix itself, the two Fields merges on the information screen, and the reverted detail view.
+**The app builds and runs on an iPhone.** The map has been looked at on a device as far as the symbols
+and the colours — which is where three separate reports of a question mark came from, each one a
+police code the app had not met.
 
-**`swift test` has still never been run.** There are 190 tests, and they are the only thing that
-can check the parsers, the query builders, the gates and the sentences.
+**Not yet run: the eleven commits since v0.0.16.** Recent by default. The police page folds everything
+older than its window behind `Earlier calls · n` — strictly, so a serious call outside the window folds
+with the rest — and the map takes a window of its own, one hour or four, always keeping criticals. The
+filter's menu, the police page's clock, and the Settings rows are the parts worth looking at.
+
+**`swift test` has still never been run.** There are **226 tests** across 23 files, with 625
+expectations, and they are the only thing that can check the parsers, the query builders, the gates,
+the projections, the two windows and their exemption, the legend and the sentences. Nothing in this
+checkpoint has been through a compiler's tests — only through a build.
 
 ## Documentation
 

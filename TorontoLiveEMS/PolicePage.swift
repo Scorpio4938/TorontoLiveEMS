@@ -32,6 +32,15 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
+    /// How far back this page looks, and whether a critical call outside that window is kept.
+    ///
+    /// Read here rather than at the root, on the same terms as the three above: the preference is
+    /// stored, so the screen that applies it is the screen that reads it.
+    @AppStorage(SettingsKey.policeCallWindow)
+    private var callWindow: PoliceCallWindow = .oneHour
+
+
+
     var body: some View {
         content
             .task {
@@ -59,11 +68,29 @@ struct PolicePage: View {
                     PoliceCallDetailView(call: call)
                 }
             case .cards:
+                // **Four hours of calls is more than a reader can use**, so the recent ones get the page
+                // and the rest wait behind one row. A call that has already happened is a log entry
+                // rather than a live incident, which is what makes folding it away honest.
+                //
+                // **Strictly the window, with no exemption.** A critical call outside it is folded
+                // with the rest: this page answers "what has been called in lately", and a page that
+                // quietly widened its own range to keep a serious call would be answering a question
+                // the reader did not ask, and would make the window a suggestion. The map is where
+                // severity outranks age, and it says so.
+                let split = callWindow.split(calls, keepingCritical: false, now: Date())
                 CardsList(
-                    rows: calls,
+                    rows: split.shown,
                     columns: CompactColumn<PoliceCall>.policeCard(style: policeCallTypeStyle),
                     timeFormat: dispatchTimeFormat,
-                    status: feed.status
+                    status: feed.status,
+                    folded: split.folded.isEmpty
+                        ? nil
+                        : FoldedCards(
+                            // "Earlier", not "the other three hours": the window is a setting, and a
+                            // label naming a fixed span would be wrong the moment it changed.
+                            label: "Earlier calls · \(split.folded.count)",
+                            rows: split.folded
+                        )
                 ) { call in
                     PoliceCallDetailView(call: call)
                 }

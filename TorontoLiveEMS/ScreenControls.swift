@@ -87,6 +87,102 @@ struct MapKindControl: View {
     }
 }
 
+/// The map's other control: which feeds to draw.
+///
+/// **Built like `MapKindControl`, deliberately.** A `Menu` holding a `Picker`, so the option in force
+/// carries the platform's own checkmark and the menu states the current filter as well as offering the
+/// other two — which a flat list of actions cannot do without this code drawing the mark itself.
+///
+/// **The button wears the glyph of the option in force**, exactly as the map kind control beside it
+/// does. `all` wears the filter's own glyph, outlined, because unfiltered is the state the control is
+/// named for; the two sources wear the glyphs they already wear as *kinds* on the map — a flame and a
+/// shield, both filled — so choosing one changes the control from an outline to a solid and the glyph
+/// says which feed is being shown. A filter that is on is visible in the control itself, which is the
+/// reason to prefer this over a fixed glyph plus a sentence elsewhere.
+///
+/// The map's small print names the filter in words as well, because a glyph is a hint and a word is
+/// not. Both are cheap; one of them is unambiguous. That sentence under the map is what makes a
+/// changing glyph safe here.
+///
+/// **Two other designs were built and seen before this one was settled on.** *Option 1* fixed the
+/// glyph to the filter and wrote the choice beside it — `filter-glyph Both ⌄` — and named the menu's
+/// two questions with headers. *Option 2* was that without the word, leaving the state to the small
+/// print. Both were rejected in favour of this, which is worth recording so the next person tempted to
+/// label the control knows it has been tried and knows what it cost: the capsule's two buttons stop
+/// matching, and matching is most of what a two-button capsule has.
+struct MapFilterControl: View {
+
+    @Binding var mapFilter: MapFilter
+
+    /// The map's own window. The switch below is a view onto it, not a flag of its own.
+    @Binding var mapPoliceWindow: PoliceCallWindow
+
+    var body: some View {
+        Menu {
+            Picker("Filter", selection: $mapFilter) {
+                ForEach(MapFilter.allCases, id: \.self) { option in
+                    Label(option.label, systemImage: option.systemImage)
+                        .tag(option)
+                }
+            }
+
+            // **A switch, not a fourth row in the picker.** The picker answers "which feed"; this
+            // answers "how far back", and a list where one row asks a different question from the other
+            // three is a list a reader has to decode. A toggle is also a direct row rather than a
+            // submenu, so it costs one tap instead of two.
+            //
+            // Hidden when only the fire feed is drawn, because the City's fire incidents have no
+            // window: an incident from three hours ago is still on that feed because it is still
+            // happening, so there is nothing for this switch to mean.
+            if mapFilter != .fire {
+                Divider()
+                // Bound through the map's window rather than to a flag of its own: on means the
+                // fourth window, off returns to one hour. The police page has its own window and
+                // never reads this one.
+                Toggle("All Four Hours", isOn: Binding(
+                    get: { mapPoliceWindow == .fourHours },
+                    set: { mapPoliceWindow = $0 ? .fourHours : .oneHour }
+                ))
+            }
+        } label: {
+            Image(systemName: mapFilter.systemImage)
+                .foregroundStyle(Color.primary)
+        }
+        // The state, for anyone who cannot see the small print.
+        .accessibilityLabel("Filter, \(mapFilter.label)")
+    }
+}
+
+/// The police page's control: how far back its calls run.
+///
+/// **Built like `MapKindControl`, deliberately** — a `Menu` holding a `Picker`, wearing a fixed glyph,
+/// so the option in force carries the platform's own checkmark. The glyph does not change with the
+/// choice: a `clock` means *time* whatever is chosen, where a glyph that changed shape would be the
+/// button wearing an answer.
+///
+/// It writes the same stored window that Settings writes and that the map's switch writes. One
+/// preference, three places to reach it.
+struct PoliceWindowControl: View {
+
+    @Binding var policeWindow: PoliceCallWindow
+
+    var body: some View {
+        Menu {
+            Picker("Recent Calls", selection: $policeWindow) {
+                ForEach(PoliceCallWindow.allCases, id: \.self) { window in
+                    // No glyph on the rows: a clock on all four of them says nothing, and the
+                    // platform's checkmark already marks which one is in force.
+                    Text(window.label).tag(window)
+                }
+            }
+        } label: {
+            Image(systemName: "clock")
+                .foregroundStyle(Color.primary)
+        }
+        .accessibilityLabel("Recent calls, \(policeWindow.label)")
+    }
+}
+
 /// The controls in the app's own capsule — drawn once, above every page.
 ///
 /// **One layer, like the tab bar.** The tab bar is not part of either page: the container draws
@@ -131,10 +227,38 @@ struct ScreenControls: View {
     /// could disturb something that was already right.
     var mapKind: Binding<MapKind>? = nil
 
+    /// Which feeds the map draws — the map's second control, present on the same terms as the first.
+    ///
+    /// **Second from the leading end, which is where it was asked for.** The two controls that belong
+    /// to a map sit together at the left, and Info and Settings keep the slots they have always had:
+    /// the capsule is trailing-aligned, so anything inserted before them leaves them exactly where
+    /// they were and moves only the capsule's left edge.
+    var mapFilter: Binding<MapFilter>? = nil
+
+    /// The **map's** window, written by the switch inside its filter menu.
+    ///
+    /// Deliberately not the same value as the police page's. The map is a picture of what is
+    /// happening and always keeps criticals; the police page is a log that obeys its window strictly.
+    /// Two questions, two ranges.
+    var mapPoliceWindow: Binding<PoliceCallWindow>? = nil
+
+    /// The **police page's** window, written by its clock menu and by the row in Settings.
+    ///
+    /// Those two are one preference on purpose: they are two ways to reach the same page's setting,
+    /// so they cannot disagree. The map's is the separate one.
+    var policeWindow: Binding<PoliceCallWindow>? = nil
+
     var body: some View {
         HStack(spacing: 16) {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
+            }
+            if let mapFilter, let mapPoliceWindow {
+                MapFilterControl(mapFilter: mapFilter, mapPoliceWindow: mapPoliceWindow)
+            } else if let policeWindow {
+                // The police page's own control, in the slot the map's kind control takes — the two
+                // screens never both ask for it, so the capsule is never wider than four.
+                PoliceWindowControl(policeWindow: policeWindow)
             }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)

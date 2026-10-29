@@ -80,6 +80,9 @@ struct RootView: View {
     /// the app root into a page is exactly the plumbing this avoids — and it is the same pattern
     /// the dispatch-time format already uses, so nothing new is being invented to make it work.
     @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
+    @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
+    @AppStorage(SettingsKey.policeCallWindow) private var policeCallWindow: PoliceCallWindow = .oneHour
+    @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
@@ -137,7 +140,10 @@ struct RootView: View {
                 // `screen` is the tab view's own selection, so the condition needs no new state —
                 // and the control goes at the capsule's leading end, so Info and Settings do not
                 // move when it appears.
-                mapKind: screen == .map ? $mapKind : nil
+                mapKind: screen == .map ? $mapKind : nil,
+                mapFilter: screen == .map ? $mapFilter : nil,
+                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil,
+                policeWindow: screen == .police ? $policeCallWindow : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -147,9 +153,12 @@ struct RootView: View {
             // information they want is that tab's. A sheet covers the tab bar, so `screen` cannot
             // move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                if screen == .police {
+                switch screen {
+                case .police:
                     PoliceCallsInformationView()
-                } else {
+                case .map:
+                    MapInformationView()
+                default:
                     AboutThisDataView()
                 }
             }
@@ -195,7 +204,7 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage(feed: feed)
+                    IncidentsMapPage(feed: feed, policeFeed: policeFeed)
                         // **The map tab has no navigation bar.** The band under it was the bar's
                         // own glass — the build that hid the bar proved it — so the bar stays
                         // hidden and the page is named by floating text instead.
@@ -302,6 +311,19 @@ struct RootView: View {
         case .police:
             outcome = await policeFeed.refresh()
             message = policeFeed.nothingNewerMessage
+        case .map:
+            // **The map draws both feeds, so a refresh on it asks both.** Each keeps its own gate, so
+            // inside the Service's twenty minutes the police half costs no request at all and inside
+            // the City's five the fire half costs none — a tap with nothing to fetch is still instant.
+            //
+            // The alert only appears when **neither** found anything: saying "nothing newer" while one
+            // of the two had in fact refreshed would be the kind of half-truth this alert exists to
+            // avoid saying.
+            let fireOutcome = await feed.refresh()
+            let policeOutcome = await policeFeed.refresh()
+            guard fireOutcome == .skipped, policeOutcome == .skipped else { return }
+            outcome = .skipped
+            message = policeFeed.nothingNewerMessage
         default:
             outcome = await feed.refresh()
             message = feed.nothingNewerMessage
@@ -331,11 +353,22 @@ private extension View {
     func screenControlsLayer(
         onInfo: @escaping () -> Void,
         onSettings: @escaping () -> Void,
-        mapKind: Binding<MapKind>? = nil
+        mapKind: Binding<MapKind>? = nil,
+        mapFilter: Binding<MapFilter>? = nil,
+        mapPoliceWindow: Binding<PoliceCallWindow>? = nil,
+        policeWindow: Binding<PoliceCallWindow>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
-            ScreenControls(onInfo: onInfo, onSettings: onSettings, mapKind: mapKind)
+            ScreenControls(
+                onInfo: onInfo,
+                onSettings: onSettings,
+                mapKind: mapKind,
+                mapFilter: mapFilter,
+                // One order throughout: the map's three, then the police page's one.
+                mapPoliceWindow: mapPoliceWindow,
+                policeWindow: policeWindow
+            )
                 // Centred in a bar's height at a content margin, which is where the bar's own
                 // items sat before this layer replaced them. These two numbers are the placement,
                 // and the only ones in it.
