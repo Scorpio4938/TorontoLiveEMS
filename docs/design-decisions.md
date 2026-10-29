@@ -693,6 +693,13 @@ say which of them mattered.
   either page, the container draws it, and that is why it cannot differ between them. Apple
   provides no top-side equivalent — `tabViewBottomAccessory` is the only accessory API and it is
   the bottom — so an overlay on the container is how that arrangement is reached.
+- **The police page's window has no control of its own.** The capsule carried a clock menu for it,
+  which covered the page's header; the window is settable in Settings, so that second route was
+  removed and Settings is now the only writer. The old rationale — that two routes to one preference
+  cannot disagree — went with the control: one route cannot disagree with itself, and the default is
+  stated once in `PoliceCallWindow.policePageDefault`, read by Settings and the page alike. What the
+  page shows of the window now is the fold row counting the calls held back, which is accepted: the
+  reader chose the window, and the fold already says older calls exist.
 - **The platform's compass is clear of our capsule by reserving map safe area — to be checked on a
   device.** Rotated away from north, `MapCompass` appears in the map's top-trailing corner, which is
   under the app's capsule — and it appears precisely when it is the only way back to north. There is

@@ -32,12 +32,13 @@ struct PolicePage: View {
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
-    /// How far back this page looks, and whether a critical call outside that window is kept.
+    /// How far back this page looks.
     ///
     /// Read here rather than at the root, on the same terms as the three above: the preference is
-    /// stored, so the screen that applies it is the screen that reads it.
+    /// stored, so the screen that applies it is the screen that reads it. Settings is now the only
+    /// writer — the page's clock control was removed — and both sides read the same default.
     @AppStorage(SettingsKey.policeCallWindow)
-    private var callWindow: PoliceCallWindow = .oneHour
+    private var policeCallWindow: PoliceCallWindow = PoliceCallWindow.policePageDefault
 
 
 
@@ -77,7 +78,7 @@ struct PolicePage: View {
                 // quietly widened its own range to keep a serious call would be answering a question
                 // the reader did not ask, and would make the window a suggestion. The map is where
                 // severity outranks age, and it says so.
-                let split = callWindow.split(calls, keepingCritical: false, now: Date())
+                let split = policeCallWindow.split(calls, keepingCritical: false, now: Date())
                 CardsList(
                     rows: split.shown,
                     columns: CompactColumn<PoliceCall>.policeCard(style: policeCallTypeStyle),

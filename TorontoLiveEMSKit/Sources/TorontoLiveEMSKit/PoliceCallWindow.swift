@@ -19,6 +19,13 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     /// choice about taste — it is the whole of the data, and every call on it is inside the window.
     case fourHours
 
+    /// The default for the police page's window.
+    ///
+    /// Settings displays it and the police page applies it, and Settings is now the only writer, so
+    /// the two read one constant instead of each carrying a copy of `.oneHour`. The map's window is a
+    /// separate preference with its own default, and does not read this.
+    public static let policePageDefault: PoliceCallWindow = .oneHour
+
     /// The name a reader sees in Settings.
     public var label: String {
         switch self {

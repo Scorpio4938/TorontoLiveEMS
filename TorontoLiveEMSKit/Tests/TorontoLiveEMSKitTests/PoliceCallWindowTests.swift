@@ -51,6 +51,13 @@ struct PoliceCallWindowTests {
         #expect(PoliceCallWindow.fourHours.duration == 4 * 60 * 60)
     }
 
+    @Test("the police page's default window is one hour, stated once")
+    func policePageDefaultIsOneHour() {
+        // Settings displays this and the page applies it, so the constant is the only place the
+        // default is written. Pinned because a change here changes what a new install opens on.
+        #expect(PoliceCallWindow.policePageDefault == .oneHour)
+    }
+
     @Test("every window has a name")
     func everyWindowIsNamed() {
         for window in PoliceCallWindow.allCases {

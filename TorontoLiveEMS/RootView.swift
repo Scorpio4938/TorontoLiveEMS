@@ -81,7 +81,6 @@ struct RootView: View {
     /// the dispatch-time format already uses, so nothing new is being invented to make it work.
     @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
-    @AppStorage(SettingsKey.policeCallWindow) private var policeCallWindow: PoliceCallWindow = .oneHour
     @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
     @State private var isShowingSettings = false
@@ -142,8 +141,7 @@ struct RootView: View {
                 // move when it appears.
                 mapKind: screen == .map ? $mapKind : nil,
                 mapFilter: screen == .map ? $mapFilter : nil,
-                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil,
-                policeWindow: screen == .police ? $policeCallWindow : nil
+                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -356,8 +354,7 @@ private extension View {
         onSettings: @escaping () -> Void,
         mapKind: Binding<MapKind>? = nil,
         mapFilter: Binding<MapFilter>? = nil,
-        mapPoliceWindow: Binding<PoliceCallWindow>? = nil,
-        policeWindow: Binding<PoliceCallWindow>? = nil
+        mapPoliceWindow: Binding<PoliceCallWindow>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
@@ -366,9 +363,7 @@ private extension View {
                 onSettings: onSettings,
                 mapKind: mapKind,
                 mapFilter: mapFilter,
-                // One order throughout: the map's three, then the police page's one.
-                mapPoliceWindow: mapPoliceWindow,
-                policeWindow: policeWindow
+                mapPoliceWindow: mapPoliceWindow
             )
                 // Centred in a bar's height at a content margin, which is where the bar's own
                 // items sat before this layer replaced them. The band height and the trailing inset
