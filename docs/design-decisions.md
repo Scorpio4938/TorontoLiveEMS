@@ -693,6 +693,16 @@ say which of them mattered.
   either page, the container draws it, and that is why it cannot differ between them. Apple
   provides no top-side equivalent — `tabViewBottomAccessory` is the only accessory API and it is
   the bottom — so an overlay on the container is how that arrangement is reached.
+- **The platform's compass is clear of our capsule by reserving map safe area — to be checked on a
+  device.** Rotated away from north, `MapCompass` appears in the map's top-trailing corner, which is
+  under the app's capsule — and it appears precisely when it is the only way back to north. There is
+  no placement API: one initialiser, no alignment, and `mapControls` shows or hides every control at
+  once. So the map reserves a transparent strip inside its own safe area, the same band the capsule is
+  centred in — one shared `ScreenControls.bandHeight`, so the two cannot drift — and the map still
+  draws edge to edge behind both. The strip is Clear and takes no hits. **Whether the platform reflows
+  the compass below it has not been seen on a device**: if a build shows it does not, delete the
+  compass and record the cost to north-reset beside the remaining controls. A hand-rolled compass is
+  not the platform's control, and a rotation gesture is a poor north-reset.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule
@@ -732,7 +742,8 @@ say which of them mattered.
   the police feed arrives it will show both.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
-`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
-`MapCompass` are evidenced only by code that has already compiled in this project. For the
-same reason selection is done with `.onTapGesture` on the annotation content — plain
-SwiftUI — rather than `MapSelection`.
+`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles`,
+`.safeAreaInset` on the map and `MapCompass` are evidenced only by code that has already
+compiled in this project. For the same reason selection is done with `.onTapGesture` on the
+annotation content — plain SwiftUI — rather than `MapSelection`. What has to be looked at on a
+device is whether the compass is reflowed below the capsule after the map is rotated.

@@ -371,9 +371,10 @@ private extension View {
                 policeWindow: policeWindow
             )
                 // Centred in a bar's height at a content margin, which is where the bar's own
-                // items sat before this layer replaced them. These two numbers are the placement,
-                // and the only ones in it.
-                .frame(height: 44, alignment: .center)
+                // items sat before this layer replaced them. The band height and the trailing inset
+                // are the placement, and the only numbers in it. The map reads the same band for its
+                // compass clearance, so the two cannot drift apart.
+                .frame(height: ScreenControls.bandHeight, alignment: .center)
                 .padding(.trailing, 12)
         }
         #else

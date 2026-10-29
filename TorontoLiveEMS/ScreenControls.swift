@@ -215,6 +215,13 @@ struct PoliceWindowControl: View {
 /// means two things: facts about the app, and a setting about a map.
 struct ScreenControls: View {
 
+    /// The band the capsule is centred in at the top of the screen.
+    ///
+    /// It is the placement, and the only height in it. The map reads it too: the platform's compass
+    /// has no placement API, so the map reserves this band inside its own safe area to keep the
+    /// compass below the capsule.
+    static let bandHeight: CGFloat = 44
+
     let onInfo: () -> Void
     let onSettings: () -> Void
 
