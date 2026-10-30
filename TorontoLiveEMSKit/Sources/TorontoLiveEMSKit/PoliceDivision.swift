@@ -12,10 +12,16 @@ public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
 
     /// The division number as the City publishes it, e.g. `14`.
     ///
-    /// **This is the only form a screen shows.** The feed spells the same division `D14`, and the
-    /// app must not show both spellings as if they were two things. `PoliceDivisions` accepts
-    /// either on the way in and hands back this one canonical value.
+    /// This is the stored spelling, and the one lookup keys on. It is not the form a screen shows;
+    /// `feedCode` is.
     public let number: String
+
+    /// The feed's spelling, e.g. `D14`, and **the only form a screen shows**.
+    ///
+    /// The City's file spells the same division `14`; the feed spells it `D14`. The app must not
+    /// show both as if they were two things, so a screen renders this form throughout, and the
+    /// stored `number` never reaches a label.
+    public var feedCode: String { "D" + number }
 }
 
 /// The police divisions the City publishes boundaries for, and where the file came from.
@@ -23,8 +29,8 @@ public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
 /// **Why this exists.** A police call arrives with a division string — `D14` — and the City also
 /// publishes which divisions exist as 19 boundary features. The boundary file spells the same
 /// division `14`. One of the two has to be normalised, and this type makes the City's spelling the
-/// canonical one: the file stores `14`, a lookup accepts `14` or `D14`, and a screen renders
-/// `number` so the app can never show both.
+/// stored one: the file holds `14`, a lookup accepts `14` or `D14`, and a screen renders `feedCode`
+/// so the app can never show both.
 ///
 /// **19 divisions, including `00`.** The published file carries all 19 rows, so the file the app
 /// ships does too. Nothing here decides which divisions are interesting: a division the City
@@ -114,7 +120,7 @@ public struct PoliceDivisions: Sendable {
         self.byNumber = [:]
     }
 
-    private static func normalised(_ published: String) -> String {
+    static func normalised(_ published: String) -> String {
         let trimmed = published
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .uppercased()

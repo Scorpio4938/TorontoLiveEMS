@@ -26,6 +26,7 @@ struct PoliceDivisionsTests {
 
         #expect(fromFeed == fromCity)
         #expect(fromFeed.number == "14")
+        #expect(fromFeed.feedCode == "D14")
     }
 
     @Test("a division the file does not know is nil, not a made-up one")

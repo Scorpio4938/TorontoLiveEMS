@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the reference data the app ships: fire stations, police divisions, fire units.
+"""Generate the reference data the app ships: fire stations, police divisions, police facilities,
+and fire units.
 
-Three published City of Toronto sources, three small derived files, and one script. The files are
+Four published City of Toronto sources, four small derived files, and one script. The files are
 committed; this script is the only thing that writes them, so a value in the app can always be
 traced to a published row and the date it was read.
 
@@ -24,6 +25,17 @@ Divisions
 Nineteen features, each with the division number in `AREA_LONG_CODE`. The geometry is not
 shipped: no screen draws a division boundary, and a polygon nothing reads is a second copy of a
 published shape waiting to drift. What the app needs is the number, so that is what the file has.
+
+Facilities
+----------
+*Police Facility Locations*:
+
+    https://open.toronto.ca/dataset/police-facility-locations/
+
+Twenty-six facilities, of which sixteen are a division's own address. A facility belongs to a
+division when its published name is `<two digits> Division`; `55 Substation` is a different
+building and is not 55 Division. A division with no such row is left out, so the app can show no
+address rather than an empty one.
 
 Units
 -----
@@ -50,7 +62,8 @@ Usage
 -----
     python3 scripts/make_reference_data.py
 
-Add `--stations`, `--divisions` or `--capture` to read a saved copy instead of the published URL.
+Add `--stations`, `--divisions`, `--facilities` or `--capture` to read a saved copy instead of the
+published URL.
 That is for regenerating from a file when the network is unavailable, not a second source: the
 URLs below are the only published ones this script knows.
 
@@ -81,6 +94,11 @@ DIVISIONS_URL = (
     "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/"
     "6ff875e3-7c26-4abe-8fb2-afe7b2519ba2/resource/"
     "52fac153-c14b-437f-8121-75fbfa162532/download/police-boundaries-data-4326.geojson"
+)
+FACILITIES_URL = (
+    "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/"
+    "9aeefa17-27e8-4dd9-b74d-80f7f9eb85ac/resource/"
+    "c0176e24-8b76-4bb2-96fa-61cc1af2a065/download/police-facility-locations-4326.geojson"
 )
 UNITS_URL = "https://www.toronto.ca/data/fire/livecad.xml"
 
@@ -220,6 +238,47 @@ def divisions_from(published, retrieved):
     }
 
 
+def police_facilities_from(published, division_numbers, retrieved):
+    """The facility rows that are divisions, keyed by the division they are.
+
+    The published file has 26 facilities — headquarters, collision reporting centres, the college,
+    marine and mounted units — and only some of them are a division's own address. A facility is a
+    division's when its published name is `<two digits> Division`; `55 Substation` is a different
+    facility at a different address and is not 55 Division's row. Divisions with no such row are
+    simply absent, which is what the division page needs to know to show no address.
+    """
+    facilities = {}
+    for feature in published.get("features", []):
+        properties = feature.get("properties", {})
+        name = text(properties.get("FACILITY"))
+        if not name:
+            continue
+        match = re.fullmatch(r"(\d{1,2})\s+Division", name, re.IGNORECASE)
+        if not match:
+            continue
+        division = f"{int(match.group(1)):02d}"
+        if division not in division_numbers:
+            raise SystemExit(f"a facility names division {division}, which is not published")
+        if division in facilities:
+            raise SystemExit(f"two facilities claim division {division}")
+        facilities[division] = {
+            "division": division,
+            "address": required_text(properties.get("ADDRESS"), "facility address"),
+            "postalCode": required_text(properties.get("POSTAL_CODE"), "postal code"),
+            "coordinate": coordinate_of(feature["geometry"]),
+        }
+
+    if not facilities:
+        raise SystemExit("the published facility file has no division facilities")
+
+    return {
+        "source": FACILITIES_URL,
+        "licence": LICENCE,
+        "retrieved": retrieved,
+        "facilities": [facilities[number] for number in sorted(facilities)],
+    }
+
+
 def legend_from_swift(path):
     """The City's legend, in the order the app keeps it.
 
@@ -296,6 +355,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--stations", help="a saved copy of the station GeoJSON")
     parser.add_argument("--divisions", help="a saved copy of the division GeoJSON")
+    parser.add_argument("--facilities", help="a saved copy of the facility GeoJSON")
     parser.add_argument("--capture", help="a saved copy of the live feed XML")
     parser.add_argument("--legend", default=str(DEFAULT_LEGEND), help="the Swift legend to read")
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT))
@@ -315,6 +375,12 @@ def main():
     divisions = divisions_from(
         document(arguments.divisions or DIVISIONS_URL), arguments.retrieved
     )
+    division_numbers = {division["number"] for division in divisions["divisions"]}
+    facilities = police_facilities_from(
+        document(arguments.facilities or FACILITIES_URL),
+        division_numbers,
+        arguments.retrieved,
+    )
     legend = legend_from_swift(arguments.legend)
     station_numbers = {station["number"] for station in stations["stations"]}
     units = units_from(
@@ -323,6 +389,7 @@ def main():
 
     print(f"  {len(stations['stations'])} stations")
     print(f"  {len(divisions['divisions'])} divisions")
+    print(f"  {len(facilities['facilities'])} division facilities")
     named = sum(1 for unit in units["units"] if unit["name"])
     placed = sum(1 for unit in units["units"] if unit["station"])
     print(
@@ -332,6 +399,7 @@ def main():
 
     write(out_dir / "TorontoFireStations.json", stations)
     write(out_dir / "TorontoPoliceDivisions.json", divisions)
+    write(out_dir / "TorontoPoliceFacilities.json", facilities)
     write(out_dir / "TorontoFireUnits.json", units)
 
 
