@@ -24,16 +24,18 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 
 ### Reference data
 
-Fire stations, police divisions, police facilities, and the apparatus codes the app has seen are
-bundled rather than fetched. The live feed names a station by number and a police call names a
-division as `D14`; neither feed says what either one is. `scripts/make_reference_data.py` reads
-the City's *Fire Facility Locations*, *Police Boundaries* and *Police Facility Locations* open
-datasets and one capture of the live feed, and writes the four JSON files under
+Fire stations, police divisions, police facilities, and the apparatus roster are bundled rather
+than fetched. The live feed names a station by number and a police call names a division as `D14`;
+neither feed says what either one is. `scripts/make_reference_data.py` reads the City's *Fire
+Facility Locations*, *Police Boundaries* and *Police Facility Locations* open datasets, and the
+community-maintained *Firefighting Wiki* apparatus roster, and writes the four JSON files under
 `TorontoLiveEMSKit/Sources/TorontoLiveEMSKit/Resources/`. Each file records its source URL,
-licence and retrieval date, and the units file records the feed's own timestamp for its capture.
-Re-running the script is the only way those files change. The app reads them from the bundle: the
-Stations, Units and Divisions catalogues are the reference section, and a station, unit or division
-page is built from the file rather than from a second copy of the facts.
+licence and retrieval date. The three City datasets are Open Government Licence – Toronto; the
+apparatus roster is CC BY-SA 3.0, because the City publishes no roster and the live feed only
+publishes what was dispatched. Re-running the script is the only way those files change. The app
+reads them from the bundle: the Stations, Units and Divisions catalogues are the reference section,
+and a station, unit or division page is built from the file rather than from a second copy of the
+facts.
 
 ## Layout
 

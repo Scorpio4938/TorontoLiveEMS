@@ -66,7 +66,7 @@ enum Attribution {
     }
 
 
-    /// One of the five sources the reference section is built from, and the licence it is under.
+    /// One of the sources the reference section is built from, and the licence it is under.
     struct SourceCredit: Identifiable, Sendable {
         let name: String
         let url: URL
@@ -75,12 +75,13 @@ enum Attribution {
         var id: String { name }
     }
 
-    /// The five sources, each with its own licence.
+    /// The six sources, each with its own licence.
     ///
-    /// **Not one licence for all five.** The fire incidents are the City of Toronto's, under
+    /// **Not one licence for all of them.** The fire incidents are the City of Toronto's, under
     /// Toronto's open licence; the police calls are the Toronto Police Service's, under Ontario's;
-    /// the station, division and facility datasets are the City's, under Toronto's. Naming them
-    /// together would read as compliance while being wrong about two of them.
+    /// the station, division and facility datasets are the City's, under Toronto's; the apparatus
+    /// roster is a community wiki under CC BY-SA 3.0. Naming them together would read as compliance
+    /// while being wrong about two of them.
     ///
     /// The three reference licences are read from the generated files rather than typed here, so a
     /// credit follows the file it describes. The live feeds' licences are the publishers' own:
@@ -112,6 +113,11 @@ enum Attribution {
                 policeFacilitiesDatasetURL,
                 PoliceFacilities.bundled.licence
             ),
+            credit(
+                "Toronto Fire Services apparatus roster",
+                apparatusRosterURL,
+                FireUnits.bundled.licence
+            ),
         ].compactMap { $0 }
     }
 
@@ -135,6 +141,8 @@ enum Attribution {
         "https://open.toronto.ca/dataset/police-boundaries/"
     private static let policeFacilitiesDatasetURL =
         "https://open.toronto.ca/dataset/police-facility-locations/"
+    private static let apparatusRosterURL =
+        "https://fire.fandom.com/wiki/Toronto_Fire_Services"
 
     /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
     /// Statistics Canada's own metadata names it in exactly these terms.

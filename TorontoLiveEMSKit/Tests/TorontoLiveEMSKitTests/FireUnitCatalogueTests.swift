@@ -4,9 +4,9 @@ import TorontoLiveEMSKit
 /// The catalogue rules: how rows are grouped, how names are decided, and what "dispatched now"
 /// means.
 ///
-/// The bundled capture does not happen to contain the letter-collision pair the issue names, so the
-/// grouping test builds `C23` and `CMD1` through the same `FireUnit` initialiser the import uses.
-/// That is the rule under test, not a second copy of it.
+/// The bundled roster contains `C23` and `CMD10`, so the letter-collision pair is real in the data.
+/// The grouping test still builds the pair through the same `FireUnit` initialiser the import uses,
+/// so it tests the rule rather than depending on the roster.
 @Suite("Fire unit catalogue")
 struct FireUnitCatalogueTests {
 

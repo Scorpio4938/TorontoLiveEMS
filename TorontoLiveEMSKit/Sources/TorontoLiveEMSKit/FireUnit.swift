@@ -80,17 +80,17 @@ public struct FireUnitGroup: Sendable, Equatable, Identifiable {
     public let units: [FireUnit]
 }
 
-/// The apparatus codes seen in one capture of the live fire feed, and where the file came from.
+/// The apparatus codes in the reference roster, and where the file came from.
 ///
-/// **Ours, not the City's.** The City publishes no list of apparatus; it publishes the units it
-/// dispatched at the moment someone reads the feed. This file is that moment, baked: the codes that
-/// appeared in the captured feed, each named from the City's legend, and placed at a station when
-/// its digits are one of the 84 published station numbers. It records the feed's own timestamp for
-/// the capture, as well as the date the script read it.
+/// **The City publishes no apparatus roster, and the live feed publishes only what was dispatched.**
+/// This file is the community-maintained Firefighting Wiki's active roster, mapped to feed-style
+/// codes, named from the City's legend, and placed at a station when the code's digits are one of
+/// the 84 published station numbers. It records the wiki page, its licence, the date it was read and
+/// the retrieval time.
 ///
-/// **One capture, not a census.** A unit that was not dispatched that day is not in the file, and
-/// that is not a claim that it does not exist. A screen that needs to name a code the file does not
-/// hold can ask `FireUnit(code:stations:)`, which applies the same rules without a capture.
+/// **A roster, not the feed.** A unit that is not in the roster is not in the file, and that is not
+/// a claim that it does not exist. A screen that needs to name a code the file does not hold can ask
+/// `FireUnit(code:stations:)`, which applies the same rules without a roster.
 ///
 /// `scripts/make_reference_data.py` writes the file, and re-running that script is the only way it
 /// changes.
@@ -106,13 +106,13 @@ public struct FireUnits: Sendable {
     /// The date the file was retrieved, `yyyy-MM-dd`.
     public let retrieved: String
 
-    /// The feed's own `update_from_db_time` for the capture, verbatim, e.g.
-    /// `2026-10-29 16:40:01`. Toronto wall-clock, as the feed publishes it.
+    /// The roster's retrieval timestamp, e.g. `2026-10-30 16:21:29`. Toronto wall-clock, so it
+    /// reads on the same clock as the feeds.
     public let capturedAt: String
 
     private let byCode: [String: FireUnit]
 
-    /// How many unit codes the capture held.
+    /// How many unit codes the roster holds.
     public var count: Int { byCode.count }
 
     /// Every unit, in code order.

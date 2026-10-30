@@ -559,12 +559,15 @@ division — and it is deliberately the quietest part of the app.
   catalogue is, not how it is doing.
 - **Sources are a section, not a footer.** They are destinations; a reader should be
   able to tap them. Provenance is the last section because it is context for the rows
-  above, not a link. The five sources are named with their own licences — the City's
+  above, not a link. The six sources are named with their own licences — the City's
   fire data and its three reference datasets under Toronto's open licence, the
-  Service's calls under Ontario's — rather than lumped under one licence that would be
-  wrong for two of them. The ticket that asked for the credit parenthesised both live
-  feeds as Ontario's; the fire feed is the City's, and the licence the app has stated
-  since ADR-0001 is Toronto's.
+  Service's calls under Ontario's, and the community apparatus roster under CC BY-SA
+  3.0 — rather than lumped under one licence that would be wrong for several of them.
+  The ticket that asked for the credit parenthesised both live feeds as Ontario's; the
+  fire feed is the City's, and the licence the app has stated since ADR-0001 is
+  Toronto's. The roster is the one source that names individual units: the City
+  publishes no apparatus roster, and the live feed is a dispatch capture rather than a
+  fleet list.
 - **Area is a run area, not a nearest station.** The City's run-area data has 84 areas
   numbered like the 84 stations, and the number does not claim which station responded;
   in our own capture it matched a dispatched unit about half the time. The interface

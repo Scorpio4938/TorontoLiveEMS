@@ -10,9 +10,9 @@ struct FireUnitsTests {
     private var units: FireUnits { FireUnits.bundled }
     private var stations: FireStations { FireStations.bundled }
 
-    @Test("the bundled capture loads")
+    @Test("the bundled roster loads")
     func theFileLoads() {
-        #expect(units.count > 0)
+        #expect(units.count > 100, "the active roster, not one dispatch capture")
         #expect(units.units.count == units.count)
         #expect(units.units.map(\.code) == units.units.map(\.code).sorted())
         #expect(!units.source.isEmpty)
@@ -91,24 +91,23 @@ struct FireUnitsTests {
         }
     }
 
-    @Test("the capture holds both a station-numbered code and one with no station")
-    func captureExercisesBothAnswers() {
+    @Test("the roster holds both a station-numbered code and one with no station")
+    func rosterExercisesBothAnswers() {
         #expect(units.units.contains { $0.station != nil })
         #expect(units.units.contains { $0.station == nil })
     }
 
-    @Test("the source, licence, retrieval date and capture moment are recorded")
+    @Test("the source, licence, retrieval date and roster moment are recorded")
     func provenanceIsRecorded() {
-        #expect(units.source.contains("livecad.xml"))
-        #expect(units.licence.contains("Open Government Licence"))
-        #expect(units.licence.contains("Toronto"))
+        #expect(units.source.contains("fire.fandom.com"))
+        #expect(units.licence.contains("CC BY-SA"))
         #expect(units.retrieved.count == 10)
         #expect(units.retrieved.split(separator: "-").count == 3)
-        #expect(units.capturedAt.count == 19, "the feed's own timestamp, not a date we made up")
+        #expect(units.capturedAt.count == 19, "the roster's retrieval timestamp")
     }
 
-    @Test("a captured code is found by its code")
-    func findsACapturedUnit() throws {
+    @Test("a roster code is found by its code")
+    func findsARosterUnit() throws {
         let first = try #require(units.units.first)
         #expect(units.unit(code: first.code) == first)
         #expect(units.unit(code: " \(first.code) ") == first)
@@ -116,12 +115,12 @@ struct FireUnitsTests {
 
     @Test("the units at a station are the ones the catalogue places there")
     func unitsAtAStation() {
-        // Station 331 in the committed capture has two: one named, one not.
+        // Station 331 has a pumper, a ladder and a squad.
         let at331 = units.units(at: 331)
-        #expect(at331.map(\.code) == ["L331", "P331"])
+        #expect(at331.map(\.code) == ["L331", "P331", "S331"])
         #expect(at331.allSatisfy { $0.station == 331 })
 
-        // A station the capture knows no unit for is an empty list, not an error.
+        // A station the roster knows no unit for is an empty list, not an error.
         #expect(units.units(at: 999).isEmpty)
 
         // And every station the file does place a unit at really has it.
@@ -131,7 +130,7 @@ struct FireUnitsTests {
         }
     }
 
-    @Test("a unit the capture did not hold is nil")
+    @Test("a unit the roster did not hold is nil")
     func unknownUnitIsNil() {
         #expect(units.unit(code: "ZZZ999") == nil)
     }

@@ -2,9 +2,9 @@
 """Generate the reference data the app ships: fire stations, police divisions, police facilities,
 and fire units.
 
-Four published City of Toronto sources, four small derived files, and one script. The files are
-committed; this script is the only thing that writes them, so a value in the app can always be
-traced to a published row and the date it was read.
+Three published City of Toronto open datasets, one community apparatus roster, four small derived
+files, and one script. The files are committed; this script is the only thing that writes them, so a
+value in the app can always be traced to a published row and the date it was read.
 
 Stations
 --------
@@ -39,15 +39,24 @@ address rather than an empty one.
 
 Units
 -----
-A capture of the live fire feed:
+The City publishes no apparatus roster, and the live feed only publishes the units dispatched at
+the moment it is read. The roster used here is the community-maintained Firefighting Wiki page:
 
-    https://www.toronto.ca/data/fire/livecad.xml
+    https://fire.fandom.com/wiki/Toronto_Fire_Services
 
-The City publishes no list of apparatus. It publishes the units dispatched at the moment someone
-reads the feed, so the units list is *ours*: the codes seen in one capture, each named from the
-City's own legend and placed at a station when its digits are one of the 84 published station
-numbers. The file records the moment the feed itself says it was built, as well as the date this
-script read it.
+It names the apparatus stationed at each fire station and in the Special Events Command. The script
+reads the wiki's wikitext through its API, maps each advertised apparatus name to its feed-style
+code, names the code from the City's own legend, and places it at a station when its digits are one
+of the 84 published station numbers. The file records the wiki page and its licence, the date this
+script read it, and the retrieval time.
+
+The wiki is a third-party source, not a City publication. Its licence is CC BY-SA 3.0, and the app
+credits it separately from the City's open data. It is used because no City source names the
+individual units, and the live feed is a snapshot of what was dispatched rather than a fleet
+roster.
+
+The live-fire capture remains available as an alternate source with `--capture`; it uses the same
+code/name/station rules and records the live feed's own capture time.
 
 The legend is read from `DispatchedUnit.swift`, which is where the app already keeps the City's
 legend verbatim. Reading it here rather than typing it a second time means the names in the file
@@ -55,17 +64,18 @@ and the names a screen derives cannot disagree.
 
 Licence
 -------
-Every published source here is Open Government Licence – Toronto. The licence and the retrieval
+The three City open datasets are Open Government Licence – Toronto; the units roster is CC BY-SA
+3.0; the alternate live capture is Open Government Licence – Toronto. The licence and the retrieval
 date travel in each generated file, because the file is what travels into the app.
 
 Usage
 -----
     python3 scripts/make_reference_data.py
 
-Add `--stations`, `--divisions`, `--facilities` or `--capture` to read a saved copy instead of the
-published URL.
-That is for regenerating from a file when the network is unavailable, not a second source: the
-URLs below are the only published ones this script knows.
+Add `--stations`, `--divisions`, `--facilities` or `--units-wiki` to read a saved copy instead of
+the published URL. `--capture` uses a saved live-feed XML instead of the wiki roster. These are for
+regenerating from a file when the network is unavailable, not second sources: the URLs below are
+the only published ones this script knows.
 
 No third-party libraries. The CKAN downloads are plain requests and the live feed is XML that
 `xml.etree` reads.
@@ -78,6 +88,7 @@ import pathlib
 import re
 import urllib.request
 import xml.etree.ElementTree as ET
+from zoneinfo import ZoneInfo
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEFAULT_OUT = ROOT / "TorontoLiveEMSKit" / "Sources" / "TorontoLiveEMSKit" / "Resources"
@@ -101,8 +112,14 @@ FACILITIES_URL = (
     "c0176e24-8b76-4bb2-96fa-61cc1af2a065/download/police-facility-locations-4326.geojson"
 )
 UNITS_URL = "https://www.toronto.ca/data/fire/livecad.xml"
+WIKI_PAGE_URL = "https://fire.fandom.com/wiki/Toronto_Fire_Services"
+WIKI_API_URL = (
+    "https://fire.fandom.com/api.php?action=parse&page=Toronto_Fire_Services"
+    "&prop=wikitext&format=json"
+)
 
 LICENCE = "Open Government Licence – Toronto"
+WIKI_LICENCE = "CC BY-SA 3.0"
 
 STATION_TYPE = "Fire Station"
 
@@ -300,6 +317,12 @@ def trailing_digits(code):
     return code[index:]
 
 
+def legend_name(code, legend):
+    """The City's name for a code, by the longest matching legend entry."""
+    ordered = sorted(legend, key=lambda entry: len(entry[0]), reverse=True)
+    return next((name for prefix, name in ordered if code.startswith(prefix)), None)
+
+
 def units_from(capture, station_numbers, legend, retrieved):
     """The codes one capture dispatched, named and placed by the app's own rules."""
     root = ET.fromstring(capture)
@@ -319,14 +342,9 @@ def units_from(capture, station_numbers, legend, retrieved):
     if not codes:
         raise SystemExit("the capture dispatched no units")
 
-    # Longest legend code first, so `CMD1` reads as Command Vehicle rather than Chief and
-    # `PL231` as Platform rather than Pumper. The Swift legend is already in that order, but
-    # sorting here means the file does not depend on the order it happens to be written in.
-    ordered_legend = sorted(legend, key=lambda entry: len(entry[0]), reverse=True)
-
     units = []
     for code in sorted(codes):
-        name = next((name for prefix, name in ordered_legend if code.startswith(prefix)), None)
+        name = legend_name(code, legend)
         digits = trailing_digits(code)
         station = int(digits) if digits else None
         if station is not None and station not in station_numbers:
@@ -339,6 +357,116 @@ def units_from(capture, station_numbers, legend, retrieved):
         "retrieved": retrieved,
         "capturedAt": captured_at,
         "units": units,
+    }
+
+
+def _clean_wiki_name(raw):
+    """The apparatus name from a bold bullet, with its wiki markup removed."""
+    name = re.sub(r'\[https?://[^\s\]]+\s*([^\]]*)\]', r'\1', raw)
+    name = re.sub(r'\[\[([^\]]+)\]\]', r'\1', name)
+    name = re.sub(r'<[^>]+>', '', name)
+    return name.strip()
+
+
+def units_from_wiki(api_document, station_numbers, legend, retrieved):
+    """The active apparatus roster, mapped from the Firefighting Wiki to feed-style codes.
+
+    The wiki names apparatus by words; the app is keyed by the feed's letter-and-number tokens.
+    The mapping is the whole of the translation: `Pumper` is `P`, `Aerial` is `A`, `Haz-Mat` is
+    `HZ`, and so on. A code's digits are read as a station number only when they are one of the 84
+    published numbers — the same rule the live capture uses. Names come from the City's legend,
+    never from the wiki's prose.
+
+    The roster is cut at `Special Divisions`: training, mechanical, spare, on-order and retired
+    apparatus are not active station units. `Special Events Command` is kept — it is active and
+    deployable citywide.
+    """
+    try:
+        wikitext = api_document["parse"]["wikitext"]["*"]
+    except (KeyError, TypeError):
+        raise SystemExit("the wiki response is not a parse of the page")
+
+    start = wikitext.find("==Apparatus Roster==")
+    end = wikitext.find("===Special Divisions===", start)
+    if start < 0 or end < 0:
+        raise SystemExit("the wiki page has no active apparatus roster section")
+    roster = wikitext[start:end]
+
+    # Order matters: the more specific label must win before its shorter prefix.
+    type_map = [
+        ("Technical Rescue Support", "TRS"),
+        ("Trench Rescue Support", "TRS"),
+        ("Haz-Mat Support", "HS"),
+        ("Haz-Mat", "HZ"),
+        ("High Rise", "HR"),
+        ("Air/Light", "LA"),
+        ("Mini Pumper", "MP"),
+        ("Foam Pumper", "P"),
+        ("Training Pumper", "TRAINP"),
+        ("Training Aerial", "TRAINA"),
+        ("Pumper", "P"),
+        ("Aerial", "A"),
+        ("Ladder", "L"),
+        ("Tower", "T"),
+        ("Platform", "PL"),
+        ("Squad", "S"),
+        ("Rescue Boat", "RESCUEBOAT"),
+        ("Rescue", "R"),
+        ("Decon", "DE"),
+        ("Tanker", "WT"),
+        ("Fireboat", "FB"),
+        ("Platoon Chief", "C"),
+        ("District Chief", "C"),
+        ("Car", "C"),
+        ("Command", "CMD"),
+        ("Box", "Box"),
+        ("Support", "Sup"),
+    ]
+    excluded = {"TRAINP", "TRAINA", "RESCUEBOAT"}
+
+    units = {}
+    for line in roster.splitlines():
+        if not line.startswith("*"):
+            continue
+        bold = re.search(r"'''(.+?)'''", line)
+        if not bold:
+            continue
+        name = _clean_wiki_name(bold.group(1))
+        prefix = None
+        label = None
+        for candidate, code_prefix in type_map:
+            if name.startswith(candidate + " "):
+                prefix = code_prefix
+                label = candidate
+                break
+        if prefix is None or prefix in excluded:
+            continue
+        match = re.match(re.escape(label) + r"\s+(\d+)([A-Za-z]?)", name)
+        if not match:
+            continue
+        code = prefix + match.group(1) + match.group(2)
+        if code in units:
+            continue
+        digits = match.group(1)
+        station = int(digits) if int(digits) in station_numbers else None
+        units[code] = {
+            "code": code,
+            "name": legend_name(code, legend),
+            "station": station,
+        }
+
+    if not units:
+        raise SystemExit("the wiki roster mapped no units")
+
+    captured_at = datetime.datetime.now(ZoneInfo("America/Toronto")).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    return {
+        "source": WIKI_PAGE_URL,
+        "licence": WIKI_LICENCE,
+        "retrieved": retrieved,
+        "capturedAt": captured_at,
+        "units": [units[code] for code in sorted(units)],
     }
 
 
@@ -356,7 +484,8 @@ def main():
     parser.add_argument("--stations", help="a saved copy of the station GeoJSON")
     parser.add_argument("--divisions", help="a saved copy of the division GeoJSON")
     parser.add_argument("--facilities", help="a saved copy of the facility GeoJSON")
-    parser.add_argument("--capture", help="a saved copy of the live feed XML")
+    parser.add_argument("--capture", help="a saved copy of the live feed XML, instead of the wiki roster")
+    parser.add_argument("--units-wiki", help="a saved copy of the wiki API JSON")
     parser.add_argument("--legend", default=str(DEFAULT_LEGEND), help="the Swift legend to read")
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT))
     parser.add_argument(
@@ -383,9 +512,19 @@ def main():
     )
     legend = legend_from_swift(arguments.legend)
     station_numbers = {station["number"] for station in stations["stations"]}
-    units = units_from(
-        read(arguments.capture or UNITS_URL), station_numbers, legend, arguments.retrieved
-    )
+    if arguments.capture:
+        units = units_from(
+            read(arguments.capture), station_numbers, legend, arguments.retrieved
+        )
+        units_source = "the live capture"
+    else:
+        units = units_from_wiki(
+            document(arguments.units_wiki or WIKI_API_URL),
+            station_numbers,
+            legend,
+            arguments.retrieved,
+        )
+        units_source = "the Firefighting Wiki roster"
 
     print(f"  {len(stations['stations'])} stations")
     print(f"  {len(divisions['divisions'])} divisions")
@@ -393,7 +532,7 @@ def main():
     named = sum(1 for unit in units["units"] if unit["name"])
     placed = sum(1 for unit in units["units"] if unit["station"])
     print(
-        f"  {len(units['units'])} units from the capture at {units['capturedAt']}: "
+        f"  {len(units['units'])} units from {units_source} at {units['capturedAt']}: "
         f"{named} named, {placed} at a station"
     )
 
