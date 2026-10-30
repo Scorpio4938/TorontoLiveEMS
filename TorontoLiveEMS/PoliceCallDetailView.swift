@@ -73,8 +73,12 @@ struct PoliceCallDetailView: View {
             } header: {
                 Text("Location")
             } footer: {
-                Text("The point is the Service's own, as published. Calls are published at the nearest intersection rather than at an address, and a call that is not here is not evidence that nothing happened.")
+                Text("The point is the Service's own, as published. Calls are published at the nearest intersection rather than at an address.")
             }
+
+            // The screen showing the Service's data states who published it and that this app is
+            // not the Service. The terms themselves are one row away, on Data Licences.
+            DataLicenceNotice(sentence: Attribution.policeNotice)
         }
         .navigationTitle(call.callType)
     }

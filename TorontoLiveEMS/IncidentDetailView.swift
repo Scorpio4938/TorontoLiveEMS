@@ -92,13 +92,9 @@ struct IncidentDetailView: View {
                 }
             }
 
-            Section {
-                // One line, with the licence as an inline link rather than a row of its
-                // own repeating the name. Non-affiliation is stated rather than implied:
-                // the feed is the one the City's own page uses, taken from there, and
-                // this app has nothing to do with the City.
-                LinkedText(Attribution.attributed)
-            }
+            // The screen showing the City's data states who published it and that this app is not
+            // the City. The terms themselves are one row away, on Data Licences.
+            DataLicenceNotice(sentence: Attribution.fireNotice)
         }
         .navigationTitle(incident.incidentNumber)
         .softScrollEdge()

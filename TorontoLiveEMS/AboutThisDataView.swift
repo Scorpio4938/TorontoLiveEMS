@@ -4,9 +4,9 @@ import TorontoLiveEMSKit
 /// Everything the City's own page explains, in one place.
 ///
 /// Reference material rather than a setting: what the fields mean, how an Alarm Level is arrived
-/// at, what its vehicle counts actually count, and where the data comes from. It is reached two
-/// ways — the info button in the chrome presents it, and *About* pushes it — which is why the list
-/// and the way of leaving it are two types rather than one.
+/// at, what its vehicle counts actually count, and where the data comes from. It is reached from
+/// the info button in the chrome, which is why the list and the way of leaving it are two types
+/// rather than one.
 ///
 /// The prose paraphrases the City's own descriptions, and quotes only where the exact wording
 /// carries the meaning — the vehicle counts, mainly. It lives with the thing it describes in the
@@ -14,6 +14,9 @@ import TorontoLiveEMSKit
 /// a wording change happens beside the field, not in a view.
 /// The levels and the apparatus legend are *rendered from* the same tables the app parses
 /// with, so this screen cannot drift from what the rest of the app believes.
+///
+/// **The licences are not here.** They live on *Data Licences*, which the notice at the bottom
+/// opens; this screen is about the feed's fields, not its terms.
 struct AboutThisDataContent: View {
 
     var body: some View {
@@ -58,17 +61,7 @@ struct AboutThisDataContent: View {
                 Text("Toronto Fire Services' apparatus codes, as the City publishes them. A code not listed here is unnamed, and is shown as published.")
             }
 
-            Section {
-                LinkedText(Attribution.attributed)
-            }
-
-            Section {
-                LinkedText(Attribution.postalAreas)
-            } header: {
-                Text("Postal Areas")
-            } footer: {
-                Text("A medical incident's location is a postal area, not an address, to protect privacy. These are Statistics Canada's boundaries, so the map draws the area the City published — a circle where it knows no boundary, and never a point.")
-            }
+            DataLicenceNotice(sentence: Attribution.fireNotice)
         }
         .navigationTitle("About this Data")
         #if os(iOS)
@@ -81,7 +74,7 @@ struct AboutThisDataContent: View {
 ///
 /// The only thing that differs between the two ways in is how a reader gets out: a sheet needs a
 /// button of its own, and a pushed screen has the navigation bar's. Keeping that here — rather than
-/// in the content — is what lets *About* push the same list without putting a second
+/// in the content — is what lets a second way in push the same list without putting a second
 /// `NavigationStack` inside the first.
 struct AboutThisDataView: View {
 

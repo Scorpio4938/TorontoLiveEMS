@@ -5,14 +5,15 @@ import TorontoLiveEMSKit
 ///
 /// The police counterpart of `AboutThisDataContent`, and reached the same way — the info button in
 /// the chrome, on the tab it belongs to. It is a reference screen rather than a setting: which fields
-/// the Service publishes, how long a call stays, and what the licence requires of an app that shows
-/// them.
+/// the Service publishes and how long a call stays.
 ///
 /// **What is here is what could be checked.** The Service's item and layer both leave `description`
 /// empty, so `CallsForServiceFeed.sourceNote` is the whole of what it says about its own data in
-/// machine-readable form, and the licence's own clauses — downloaded and read, not remembered — are
-/// what the privacy section states. Two claims that appear in ADR-0006 could not be reproduced from
-/// the published metadata, and this screen does not repeat them. See the note there.
+/// machine-readable form. Two claims that appear in ADR-0006 could not be reproduced from the
+/// published metadata, and this screen does not repeat them. See the note there.
+///
+/// **The licences are not here.** They live on *Data Licences*, which the notice at the bottom
+/// opens; this screen is about the calls, not their terms.
 struct PoliceCallsInformationContent: View {
 
     var body: some View {
@@ -21,12 +22,6 @@ struct PoliceCallsInformationContent: View {
                 Text(CallsForServiceFeed.sourceNote)
             } header: {
                 Text("The Calls")
-            } footer: {
-                LinkedText(markdown: """
-                    The Toronto Police Service's own summary of the dataset, quoted. It is read \
-                    through the Service's [web app](\(CallsForServiceFeed.pageURLString)), which \
-                    is the page a person can open.
-                    """)
             }
 
             Section {
@@ -58,20 +53,7 @@ struct PoliceCallsInformationContent: View {
                 Text("How Long a Call Is Here")
             }
 
-            Section {
-                Text("The licence below is written for anyone using this data, and two of its clauses say what this app may not be.")
-                Text("It is not to merge or link this data with any other database in an attempt to identify a person. Nothing in this app is correlated with anything else — not the fire incidents, not the map — and no call is combined with anything to work out who it was about.")
-                Text("It is not to present the data in a way that suggests access to information the Service holds about an identifiable person. A call here is shown as what happened at a place, and nothing on any screen is shaped like a person.")
-                Text("The licence also grants no right to personal information at all, so what the Service withholds is not something this app could show even if it wanted to.")
-            } header: {
-                Text("Privacy")
-            } footer: {
-                Text("This app shows what the Service published. What it does not publish is not evidence that nothing happened.")
-            }
-
-            Section {
-                LinkedText(Attribution.policeCalls)
-            }
+            DataLicenceNotice(sentence: Attribution.policeNotice)
         }
         .navigationTitle("About Police Calls")
         #if os(iOS)
@@ -104,8 +86,8 @@ struct PoliceCallsInformationView: View {
 
 /// Every code the Service has been observed using, and what it means.
 ///
-/// **The mapping, and nothing else.** A code and its words, one per line, with no explanation over the
-/// top — the screen a reader reaches by tapping a code is there to answer one question.
+/// **The mapping, and one sentence saying what it is.** A code and its words, one per line; the
+/// screen a reader reaches by tapping a code is there to answer one question.
 ///
 /// Both rows are the Service's own, spelled as published, so a code found here matches the same code
 /// on the call it came from. See `PoliceCallType.documented` for where the list came from.
@@ -113,8 +95,14 @@ struct CallTypeCodeList: View {
 
     var body: some View {
         List {
-            ForEach(PoliceCallType.documented) { type in
-                LabeledContent(type.code, value: type.name)
+            Section {
+                Text("Every call-type code the Service has used on a call, in its own words.")
+            }
+
+            Section {
+                ForEach(PoliceCallType.documented) { type in
+                    LabeledContent(type.code, value: type.name)
+                }
             }
         }
         .navigationTitle("Call Type Codes")

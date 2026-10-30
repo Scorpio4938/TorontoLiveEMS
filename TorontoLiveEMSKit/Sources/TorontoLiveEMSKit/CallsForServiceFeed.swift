@@ -28,6 +28,9 @@ public enum CallsForServiceFeed {
     public static let licenceName = "Open Government Licence – Ontario"
 
     /// The Service's web app, which is the page a person can open.
+    ///
+    /// Linked from *About*'s Sources row rather than from the police information screen, which is
+    /// where a reader looks for provenance rather than for a field's explanation.
     public static let pageURLString =
         "https://experience.arcgis.com/experience/a22f5295933e48a5b0a4c90cd3c4cae1"
 
@@ -65,18 +68,15 @@ public enum CallsForServiceFeed {
         Calls for Service dataset prepared for public use.
         """
 
-    /// How current the data is, in this app's words.
+    /// How long a call stays, in this app's words.
     ///
-    /// **It names the Service's own pace, but the app no longer gates on it.** Nothing in the layer's
-    /// metadata states an interval; twenty minutes is the figure the app measured, and the information
-    /// screen states it so a reader knows roughly how often to expect a new write. What it must not do
-    /// is promise a *schedule* — the writes are roughly twenty minutes apart and not on a grid, which
-    /// is why the app asks when the last one was rather than counting down to the next.
+    /// **The window, and one clause about asking rather than assuming a pace.** Nothing in the layer's
+    /// metadata states an interval, and the two figures the publisher has contradicted itself over are
+    /// not a schedule. The app asks the Service when it last wrote; what a reader needs from this note
+    /// is how long a call they see will remain.
     public static let cadenceNote = """
-        A call stays here for four hours and then goes. The Service writes about every twenty \
-        minutes, and this app asks it when it last did on every refresh. It fetches the calls only \
-        when that stamp is not the one the calls on screen were read under, so it never claims they \
-        are current on the strength of a pace.
+        A call stays here for four hours and then goes. The app asks the Service when it last \
+        wrote rather than assuming a pace.
         """
 
     /// How far back a read reaches.

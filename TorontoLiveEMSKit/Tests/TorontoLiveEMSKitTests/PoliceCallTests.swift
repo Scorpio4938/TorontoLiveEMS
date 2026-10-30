@@ -178,13 +178,15 @@ struct PoliceCallTests {
         #expect(CallsForServiceFeed.sourceNote.contains("prepared for public use"))
     }
 
-    @Test("the note says the window and the Service's pace")
-    func theNoteSaysTheWindowAndPace() {
-        // The note is what a reader sees, and the window is what the query asks for. The twenty-minute
-        // pace is stated as a pace, not used as a gate — the app compares the Service's stamp instead.
+    @Test("the note says the window and asks rather than assuming a pace")
+    func theNoteSaysTheWindowAndAsks() {
+        // The note is what a reader sees, and the window is what the query asks for. It says when a
+        // call goes; how the app decides to fetch belongs in the feed, not on a heading that promises
+        // how long a call stays.
         #expect(CallsForServiceFeed.window == 4 * 60 * 60)
         #expect(CallsForServiceFeed.cadenceNote.contains("four hours"))
-        #expect(CallsForServiceFeed.cadenceNote.contains("twenty minutes"))
+        #expect(CallsForServiceFeed.cadenceNote.contains("asks"))
+        #expect(!CallsForServiceFeed.cadenceNote.contains("twenty minutes"))
     }
 
     @Test("both endpoints ask the service for JSON")

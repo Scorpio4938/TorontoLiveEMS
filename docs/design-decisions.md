@@ -356,8 +356,8 @@ is being described. "Fire division" remains a phrase this project does not use.
   it is still quoted, and the screen does not present itself as a transcript.
 - **A screen of its own, behind an info button beside Settings.** Reference material rather than
   a preference: somebody wondering what an Alarm Level is should not have to guess that it is
-  filed under settings. Settings keeps the attribution; this screen carries the licence too,
-  because a reference screen that explains the data should say who published it.
+  filed under settings. It explains the fire feed's fields and what an Alarm Level means; the
+  licences have a screen of their own, *Data Licences*, rather than a second home here.
 - **The levels and the apparatus legend are rendered from the same tables the app parses with.**
   `AlarmLevel.levels` and `DispatchedUnit.documentedApparatus` were added for it, and
   `AlarmLevel.meaning(for:)` now reads from the list rather than from a dictionary beside it —
@@ -367,16 +367,14 @@ is being described. "Fire division" remains a phrase this project does not use.
   emergency vehicles* beside a roster of five tokens and concludes the app has miscounted. The
   City's own footnote — that support vehicles are not in that count — is the answer, and until
   now nothing in the app said it.
-- **The City's page is linked wherever the attribution is, and the feed is not.** Put in the
-  attribution sentence rather than added beside it on two screens: that sentence already named
-  the page, and it already goes to Settings, the detail view and the About screen — so one
-  change reaches all three, and they cannot come to disagree about the source of their own data.
-  The page's name and address are interpolated from the package, so a page the City renames
-  changes in one place. They are two different addresses for two
-  different readers: `pageURLString` is a page a person can open, `urlString` is the XML the app
-  reads. The feed is undocumented and was never offered to people, so linking to it would be
-  inviting someone to read a document that was never meant for them — and would advertise an
-  endpoint the app deliberately asks for as little as possible.
+- **The publishers' pages are linked from *About*, and neither feed is.** *About* is the
+  app-level provenance screen and sits one tap from every screen: its *Sources* rows name the City
+  and the Service and open their pages. The page's name and address are interpolated from the
+  package, so a page renamed by its publisher changes in one place. They are two different
+  addresses for two different readers: `pageURLString` is a page a person can open, `urlString` is
+  the XML the app reads. The fire feed is undocumented and was never offered to people, so linking
+  to it would invite someone to read a document that was never meant for them — and would advertise
+  an endpoint the app deliberately asks for as little as possible.
 - **Links are blue, wherever a link appears.** Three screens now draw text containing one, so
   the colour lives in `LinkedText` rather than at each call site: three screens should not be
   able to disagree about what a link looks like. `AttributionText` became a thin wrapper around
@@ -393,31 +391,35 @@ is being described. "Fire division" remains a phrase this project does not use.
   the picker's options do not — the table-and-cards trade, the detail view showing both type styles,
   the map's separate window — and the time format's went because *12-Hour* and *24-Hour* already say
   it.
-- **Two About screens and a licences screen, because they answer different questions.** *About* is
-  about the app: its icon, its name, which version is in the reader's hand, what it is for, and the
-  City's page it reads. *About this Data* is about the feed: what each field means, and the licences
-  the data and the postal-area shapes come under — and it is reached from the **info button** beside
-  Settings rather than from *About*, which has no row to it. *Data Licences* is the
-  provider-by-provider list behind a row in Settings, so a reader looking for a licence does not
-  have to know which screen explains which feed first.
-- **The one external link on *About* says whose it is.** It sits under a header naming the City,
-  with a footer saying that the app only reads what they publish and is not affiliated with them.
+- **Three reference screens, because they answer different questions.** *About* is about the app:
+  its icon, its name, which version is in the reader's hand, what it is for, both publishers'
+  pages, the repository and the app's own licence. *About this Data* is about the fire feed's
+  fields and an Alarm Level, reached from the **info button** beside Settings. *Data Licences*
+  holds all three providers' terms, reached from Settings and from the notice on every screen that
+  shows data; a reader looking for a licence does not have to know which screen explains which feed
+  first.
+- **Every external link on *About* says whose it is.** The City's and the Service's pages sit under
+  *Sources*, each row labelled with its publisher; the repository row says it is this app's source.
   An About screen is about *this* app, so a row that opened somebody else's page without saying so
   would be a mistake the reader has no way to avoid making.
 - **The icon is the artwork the Home screen uses**, from the imagesets the icon previews already
   load, clipped on the same continuous corner the system uses — about 22.4% of the edge — and the
   dark variant in dark mode, because that is the one the Home screen is showing at the time. No
   `UIImage(named: "AppIcon")`, which is a trick the documentation does not promise.
-- **The source repository is not linked, and that is a fact about the repository rather than a
-  preference.** `github.com/Scorpio4938/TorontoLiveEMS` answers **404** to anyone not signed in as
-  its owner — checked, with the account itself answering 200 to the same request — so a row
-  pointing at it would be a link a reader cannot open. It belongs in *About* on the day the
-  repository is public, which a release will make it.
-- **Everything on *About* is read rather than typed**: the name from the bundle, the version from
-  the bundle, the artwork from the asset catalogue, the City's page from the package. The app sets no `CFBundleDisplayName`, so its name
-  there is the target's — `TorontoLiveEMS`, without the spaces it is called by in prose. Setting
-  `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is the whole of that change, and then
-  the row and the Home screen agree without either being told.
+- **The source repository is linked, and the row marks the day it became public.**
+  `github.com/Scorpio4938/TorontoLiveEMS` used to answer **404** to anyone not signed in as its
+  owner, so it was left out rather than offered as a dead link. It now answers **200**, and
+  *About* carries it under *This app*.
+- **The icon artwork is hand-maintained rather than generated.** A new icon changes six files
+  together: `icon-light`, `icon-dark` and `icon-tinted` in the app icon set, and
+  `IconAppearanceLight`, `IconAppearanceDark` and `IconAppearanceTinted` in the imagesets *About*
+  uses.
+- **Everything on *About* is read rather than typed**: the name and version from the bundle, the
+  artwork from the asset catalogue, both publishers' pages from the package. The app sets no
+  `CFBundleDisplayName`, so its name there is the target's — `TorontoLiveEMS`, without the spaces
+  it is called by in prose. Setting `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is
+  the whole of that change, and then the row and the Home screen agree without either being told.
+  The repository address is the one typed constant, because no publisher carries it.
 
 ## The map
 
@@ -548,17 +550,24 @@ is being described. "Fire division" remains a phrase this project does not use.
 
 ## Attribution and data terms
 
-- **The City is credited, non-affiliation is stated, and the licence is linked inline.**
-  The detail view carries a single line: that the app is not affiliated with the City of
-  Toronto, that the data is shown from the City's public Toronto Fire Active Incidents
-  page, and that it contains information licensed under the Open Government Licence –
-  Toronto. The licence name is an inline link inside that sentence — a separate row
-  repeating "Open Government Licence – Toronto" said nothing the sentence had not.
+- **One sentence and one button on a data screen; the terms on *Data Licences*.** The fire screens
+  say "Not affiliated with the City of Toronto. Fire data licensed under the Open Government
+  Licence – Toronto." and the police screens say the same of the Toronto Police Service and the
+  Ontario licence. The sentence names the publisher and the licence; a row to *Data Licences* opens
+  the attribution, the licence link and what the licence requires. "Not affiliated" stays in the
+  sentence deliberately — it is not a licence clause, and the screen showing somebody's data is
+  where a reader may think the app is official.
 
-  "Not affiliated" is stated rather than left to inference. The feed is the one the
-  City's own page loads; it is not offered to anyone, we took it from there, and a line
-  reading "Data provided by the City of Toronto" implied a relationship that does not
-  exist.
+  The four sites are the fire incident detail, *About this Data*, the police information screen and
+  the police call detail. A licence paragraph on each of them was four copies of terms that belong
+  in one place, and the police detail had none at all.
+
+- **Three sections on *Data Licences*, one per provider.** *Fire* is the City of Toronto's under
+  Toronto's open licence; *Postal areas* is Statistics Canada's under Canada's, with the privacy
+  reason the areas are drawn as areas; *Police* is the Toronto Police Service's under Ontario's,
+  carrying the two clauses that constrain the app and the grant that excludes personal information.
+  None is stated generically — a licence that names the wrong provider is worse than one that is
+  missing, because it reads as compliance.
 
 - **It is unresolved whether the licence formally covers this feed.**
   `livecad.xml` is not on the City's Open Data portal — searching that portal for
@@ -636,8 +645,8 @@ say which of them mattered.
   published for a postal area.
 - **The postal area is the real one, not a circle around a guess.** An FSA is drawn as Statistics
   Canada's boundary for it, generated into the package by `scripts/make_postal_areas.py`
-  (Open Government Licence – Canada, and the attribution is shown in *About this Data* because it
-  is required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
+  (Open Government Licence – Canada, and the attribution is shown on *Data Licences* because it is
+  required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
   and it could spill into a neighbouring FSA or out into the lake — claiming ground the City never
   named. A postal area also needs **no geocoding at all** now, which removes a network round trip
   per postal incident: nine of the fifteen incidents in the live capture were postal areas.

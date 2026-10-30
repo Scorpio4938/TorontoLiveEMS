@@ -2,32 +2,31 @@ import Foundation
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The app's attribution and licence line.
+/// The app's attribution and licence sentences.
 ///
-/// In one place because several screens show it: the detail views, the information screens
-/// and *Data Licences*. The licence name is an inline markdown link, so it reads as part of
-/// the sentence rather than as a separate control beside it.
+/// **One place now.** *Data Licences* states each provider's attribution and links its licence; a
+/// data screen carries one sentence naming the publisher and the licence, and a row to that screen.
+/// Three licences, three providers, and no screen has to spell a provider differently from another.
 enum Attribution {
 
-    /// The sentence, with both of its links written as markdown.
+    /// The fire feed's attribution, for *Data Licences*.
     ///
-    /// Composed rather than written out, because the page's name and address are the feed's and
-    /// live beside it. A page the City renames should be renamed in one place, and a link the
-    /// app shows should be an address the app has actually checked.
-    private static var source: String {
-        """
-        Not affiliated with the City of Toronto. Data shown from their public \
-        [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page. Contains information \
-        licensed under the [Open Government Licence – Toronto](\(licenceURL)).
-        """
+    /// The City publishes the incidents and licenses them under Toronto's open licence. The sentence
+    /// names both and links the licence text, so a reader who wants the terms is one tap away.
+    static var fire: AttributedString {
+        .fromMarkdown(
+            "Fire incidents: City of Toronto. Contains information licensed under the "
+                + "[\(torontoLicenceName)](\(torontoLicenceURL))."
+        )
     }
 
-    /// The City's Open Data licence, which the feed's page links to.
+    /// The one sentence a fire data screen carries.
     ///
-    /// Here rather than in the package: nothing in the package is about licensing, and this
-    /// sentence is the only thing that cites it.
-    private static let licenceURL =
-        "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/"
+    /// **Non-affiliation is not a licence clause, and stays in the sentence deliberately.** The
+    /// screen showing somebody's data is where a reader may think the app is official, so that is
+    /// where the disclaimer belongs.
+    static let fireNotice =
+        "Not affiliated with the City of Toronto. Fire data licensed under the \(torontoLicenceName)."
 
     /// The shapes' licence, which is a different licence from the feed's and has to be shown too.
     ///
@@ -42,29 +41,40 @@ enum Attribution {
     static var postalAreas: AttributedString {
         .fromMarkdown(
             "\(PostalAreas.bundled.attribution) The licence: "
-                + "[Open Government Licence – Canada](\(canadaLicenceURL))"
+                + "[\(canadaLicenceName)](\(canadaLicenceURL))"
         )
     }
 
-    /// The police calls' licence, which is a third one and has to be shown on the police screens.
+    /// The police calls' attribution, for *Data Licences*.
     ///
-    /// **Three licences, three providers.** The fire feed is the City of Toronto's, the postal-area
-    /// shapes are Statistics Canada's under the Canadian licence, and the police calls are the
-    /// Toronto Police Service's under Ontario's. Each is stated where its data is explained, and
-    /// *Data Licences* gathers the three — none is stated generically, because a licence that names
-    /// the wrong provider is worse than one that is missing: it reads as compliance.
-    ///
-    /// The attribution string is the provider's own: *Toronto Police Service*, which is what the
-    /// item's `accessInformation` says.
+    /// The attribution names the Service whose calls these are, and the licence is Ontario's rather
+    /// than Toronto's or Canada's. Both names come from the feed, so a renamed provider or licence
+    /// changes here and on the screen that shows the calls.
     static var policeCalls: AttributedString {
         .fromMarkdown(
-            "Calls for service: Toronto Police Service. Contains information licensed under the "
-                + "[Open Government Licence – Ontario](\(ontarioLicenceURL))"
+            "Calls for service: \(CallsForServiceFeed.provider). Contains information licensed under "
+                + "the Government of Ontario's [\(CallsForServiceFeed.licenceName)](\(ontarioLicenceURL))"
         )
     }
+
+    /// The one sentence a police data screen carries.
+    ///
+    /// The same judgement as `fireNotice`: non-affiliation is stated where a reader might mistake
+    /// the app for the publisher.
+    static let policeNotice =
+        "Not affiliated with the \(CallsForServiceFeed.provider). Police data licensed under the \(CallsForServiceFeed.licenceName)."
+
+    /// The City's licence, which the fire feed's page links to.
+    private static let torontoLicenceName = "Open Government Licence – Toronto"
+
+    /// The City's Open Data licence address.
+    private static let torontoLicenceURL =
+        "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/"
 
     /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
     /// Statistics Canada's own metadata names it in exactly these terms.
+    private static let canadaLicenceName = "Open Government Licence – Canada"
+
     private static let canadaLicenceURL =
         "https://open.canada.ca/en/open-government-licence-canada"
 
@@ -72,14 +82,4 @@ enum Attribution {
     /// Checked rather than assumed: it answers 200 to a plain request.
     private static let ontarioLicenceURL =
         "https://www.ontario.ca/page/open-government-licence-ontario"
-
-    /// The sentence with its link parsed.
-    ///
-    /// `Text` parses markdown from a string literal, but renders the syntax verbatim when
-    /// handed a `String` variable — so `[name](url)` would appear as typed. Parsing it here
-    /// once is what lets the sentence live in a single place. Drawn through `LinkedText`, which
-    /// has the other half of the problem: what colour the link comes out.
-    static var attributed: AttributedString {
-        .fromMarkdown(source)
-    }
 }
