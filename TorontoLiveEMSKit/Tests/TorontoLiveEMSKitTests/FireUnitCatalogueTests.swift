@@ -71,7 +71,7 @@ struct FireUnitCatalogueTests {
 
         #expect(!groups.isEmpty)
         #expect(groups.map(\.letter) == groups.map(\.letter).sorted())
-        #expect(groups.flatMap(\.units).count == FireUnits.bundled.count)
+        #expect(groups.flatMap { $0.units }.count == FireUnits.bundled.count)
 
         // The group letter is the code's first character, never a reading of the name.
         for group in groups {
