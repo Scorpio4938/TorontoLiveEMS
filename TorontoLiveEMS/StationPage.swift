@@ -14,11 +14,14 @@ import TorontoLiveEMSKit
 /// photograph: the file knows neither, and the catalogue's premise is that it says only what it knows.
 ///
 /// The units section is the catalogue's own cross-reference: the captured unit codes whose digits are
-/// this station's number. It is absent when the app knows of none, in the same way an unpublished
-/// office is.
+/// this station's number, each opening its unit page. It is absent when the app knows of none, in the
+/// same way an unpublished office is.
 struct StationPage: View {
 
     let station: FireStation
+
+    /// The shared fire feed, handed on to a unit page so its live section reads the same snapshot.
+    let feed: IncidentFeed
 
     private var units: [FireUnit] {
         FireUnits.bundled.units(at: station.number)
@@ -53,15 +56,16 @@ struct StationPage: View {
             if !units.isEmpty {
                 Section {
                     ForEach(units) { unit in
-                        // A unit page is #27. Until it exists the row states the two facts the
-                        // catalogue has — the code and, when the legend names it, the apparatus —
-                        // and does not pretend to lead anywhere.
-                        HStack {
-                            Text(unit.code)
-                            Spacer()
-                            if let name = unit.name {
-                                Text(name)
-                                    .foregroundStyle(Color.secondary)
+                        NavigationLink {
+                            UnitPage(unit: unit, feed: feed)
+                        } label: {
+                            HStack {
+                                Text(unit.code)
+                                Spacer()
+                                if let name = unit.name {
+                                    Text(name)
+                                        .foregroundStyle(Color.secondary)
+                                }
                             }
                         }
                     }
@@ -109,7 +113,7 @@ private struct StationLocationMap: View {
 #Preview {
     NavigationStack {
         if let station = FireStations.bundled.station(number: 231) {
-            StationPage(station: station)
+            StationPage(station: station, feed: PreviewIncidents.feed())
         }
     }
 }

@@ -50,7 +50,7 @@ struct FirePage: View {
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { incident in
-                    IncidentDetailView(incident: incident)
+                    IncidentDetailView(incident: incident, feed: feed)
                 }
             case .cards:
                 CardsList(
@@ -59,7 +59,7 @@ struct FirePage: View {
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { incident in
-                    IncidentDetailView(incident: incident)
+                    IncidentDetailView(incident: incident, feed: feed)
                 }
             }
         } else if let failureMessage = feed.failureMessage {

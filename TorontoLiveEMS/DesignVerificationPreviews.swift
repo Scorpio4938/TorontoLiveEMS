@@ -110,6 +110,16 @@ enum PreviewIncidents {
         updatedFromDatabaseAt: "2026-09-29 20:00:01",
         incidents: all
     )
+
+    /// A feed holding the sample snapshot, for a preview that needs the feed itself.
+    ///
+    /// The feed has not been asked for it yet; a screen that reads `incidents` sees the same
+    /// cold-start state the app has before its first fetch. That is deliberate — a preview of a
+    /// cold start should look like one.
+    @MainActor
+    static func feed() -> IncidentFeed {
+        IncidentFeed(fetch: { snapshot })
+    }
 }
 
 /// What the status line says in the previews. The real value is the City's refresh tick,
@@ -128,6 +138,7 @@ private let previewStatus = FeedStatus(
 /// The real table over the sample incidents, so a preview cannot show a layout the app does not
 /// have. The columns are the fire feed's own, from the package — the previews do not carry a second
 /// copy of them, which is what the eight call sites below used to do.
+@MainActor
 private func fireTable(
     _ timeFormat: DispatchTimeFormat,
     status: FeedStatus = previewStatus
@@ -138,11 +149,12 @@ private func fireTable(
         timeFormat: timeFormat,
         status: status
     ) { incident in
-        IncidentDetailView(incident: incident)
+        IncidentDetailView(incident: incident, feed: PreviewIncidents.feed())
     }
 }
 
 /// The real cards over the same data, in the fire feed's card order.
+@MainActor
 private func fireCards(
     _ timeFormat: DispatchTimeFormat,
     status: FeedStatus = previewStatus
@@ -153,7 +165,7 @@ private func fireCards(
         timeFormat: timeFormat,
         status: status
     ) { incident in
-        IncidentDetailView(incident: incident)
+        IncidentDetailView(incident: incident, feed: PreviewIncidents.feed())
     }
 }
 
@@ -218,13 +230,13 @@ private func fireCards(
 /// layout got its block from, so it is the reference for that.
 #Preview("Detail — light") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
+        IncidentDetailView(incident: PreviewIncidents.fire, feed: PreviewIncidents.feed())
     }
 }
 
 #Preview("Detail — dark") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.fire)
+        IncidentDetailView(incident: PreviewIncidents.fire, feed: PreviewIncidents.feed())
     }
     .preferredColorScheme(.dark)
 }
@@ -232,7 +244,7 @@ private func fireCards(
 /// The medical case, whose location is a postal area and whose footer says so.
 #Preview("Detail — withheld location") {
     NavigationStack {
-        IncidentDetailView(incident: PreviewIncidents.locationWithheld)
+        IncidentDetailView(incident: PreviewIncidents.locationWithheld, feed: PreviewIncidents.feed())
     }
 }
 

@@ -16,6 +16,9 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
+    /// The shared fire feed, handed on so the station page's unit rows can open unit pages.
+    let feed: IncidentFeed
+
     /// The map's geocoder, owned by this screen.
     ///
     /// **One per detail view rather than one shared.** This screen looks up exactly one location,
@@ -52,7 +55,7 @@ struct IncidentDetailView: View {
                 LabeledContent("Dispatch Time", value: incident.dispatchTime)
                 if let station = stationForArea {
                     NavigationLink {
-                        StationPage(station: station)
+                        StationPage(station: station, feed: feed)
                     } label: {
                         LabeledContent("Area", value: incident.area)
                     }

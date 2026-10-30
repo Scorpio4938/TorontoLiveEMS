@@ -36,20 +36,23 @@ struct HomePage: View {
         List {
             Section {
                 NavigationLink {
-                    StationCatalogueView()
+                    StationCatalogueView(feed: feed)
                 } label: {
                     LabeledContent("Stations", value: "\(stations.count)")
                 }
 
-                // The Units and Divisions catalogues are their own tickets (#27 and #28). Until
-                // they exist, these rows carry the counts the index promises rather than pretending
-                // to lead somewhere they do not.
-                LabeledContent("Units", value: "\(units.count)")
+                NavigationLink {
+                    UnitCatalogueView(feed: feed)
+                } label: {
+                    LabeledContent("Units", value: "\(units.count)")
+                }
             } header: {
                 Text("Fire")
             }
 
             Section {
+                // The Divisions catalogue is #28. Until it exists the row carries the count the
+                // index promises rather than pretending to lead somewhere it does not.
                 LabeledContent("Divisions", value: "\(divisions.count)")
             } header: {
                 Text("Police")

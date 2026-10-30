@@ -12,13 +12,16 @@ import TorontoLiveEMSKit
 /// anything typed into this view.
 struct StationCatalogueView: View {
 
+    /// The shared fire feed, handed on to each station page so its unit rows can open unit pages.
+    let feed: IncidentFeed
+
     private var stations: [FireStation] { FireStations.bundled.stations }
 
     var body: some View {
         List {
             ForEach(stations) { station in
                 NavigationLink {
-                    StationPage(station: station)
+                    StationPage(station: station, feed: feed)
                 } label: {
                     StationRow(station: station)
                 }
@@ -46,6 +49,6 @@ private struct StationRow: View {
 
 #Preview {
     NavigationStack {
-        StationCatalogueView()
+        StationCatalogueView(feed: PreviewIncidents.feed())
     }
 }

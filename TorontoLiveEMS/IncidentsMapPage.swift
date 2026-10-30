@@ -595,7 +595,7 @@ struct IncidentsMapPage: View {
             case .fire(let incidents):
                 ForEach(incidents) { incident in
                     NavigationLink {
-                        IncidentDetailView(incident: incident)
+                        IncidentDetailView(incident: incident, feed: feed)
                     } label: {
                         row(for: incident)
                     }
