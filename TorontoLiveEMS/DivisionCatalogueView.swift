@@ -22,6 +22,13 @@ struct DivisionCatalogueView: View {
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
     @State private var selected: String?
 
+    /// One scroll target, set only when the map is left for the list and cleared once used.
+    ///
+    /// Keeping it separate from `selected` means returning from a detail page does not yank the
+    /// list back to the pin the reader chose earlier; the pin stays selected for the map, while the
+    /// list keeps the place the reader left it.
+    @State private var scrollTarget: String?
+
     private var pins: [DivisionPin] {
         divisions.compactMap { division in
             guard
@@ -48,6 +55,11 @@ struct DivisionCatalogueView: View {
                 CatalogueModeMenu(title: "Divisions", mode: $mode)
             }
         }
+        .onChange(of: mode) { _, newMode in
+            if newMode == .list, let selected = selected {
+                scrollTarget = selected
+            }
+        }
     }
 
     private var list: some View {
@@ -63,10 +75,18 @@ struct DivisionCatalogueView: View {
                 }
             }
             .onAppear {
-                // A pin chosen on the map is the reader's place; bring the list back to it.
-                if let selected = selected {
-                    proxy.scrollTo(selected, anchor: .center)
+                // A pin chosen on the map is the reader's place; bring the list back to it once.
+                if let scrollTarget = scrollTarget {
+                    proxy.scrollTo(scrollTarget, anchor: .center)
+                    self.scrollTarget = nil
                 }
+            }
+            .onChange(of: scrollTarget) { _, target in
+                // The mode change and the list's appearance can arrive in either order; whichever
+                // is second performs the scroll, and the target is cleared so it happens once.
+                guard let target else { return }
+                proxy.scrollTo(target, anchor: .center)
+                self.scrollTarget = nil
             }
             .softScrollEdge()
         }
