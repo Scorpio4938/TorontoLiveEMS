@@ -93,6 +93,18 @@ public struct FireStations: Sendable {
         byNumber[number]
     }
 
+    /// The station an incident's Area names, or `nil` when the value is not a station number.
+    ///
+    /// Area is published as a bare station number and is the run area the City filed the incident
+    /// under. The number is the station's, so a value the catalogue knows opens that station; a value
+    /// it does not know is not a link that can lead anywhere. The trimming is here because the value
+    /// arrives as a string, and a published field is not a parser's problem at the call site.
+    public func station(forArea area: String) -> FireStation? {
+        let trimmed = area.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let number = Int(trimmed) else { return nil }
+        return station(number: number)
+    }
+
     /// The stations that shipped with the app — or an empty set.
     ///
     /// Empty rather than fatal when the resource is missing or unreadable, because a screen that

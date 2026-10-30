@@ -95,6 +95,15 @@ struct FireStationsTests {
         #expect(stations.station(number: 0) == nil)
     }
 
+    @Test("an incident's Area resolves to its station only when it is a station number")
+    func areaResolvesToStation() {
+        #expect(stations.station(forArea: "231")?.number == 231)
+        #expect(stations.station(forArea: " 231 ")?.number == 231)
+        #expect(stations.station(forArea: "999") == nil)
+        #expect(stations.station(forArea: "") == nil)
+        #expect(stations.station(forArea: "not a number") == nil)
+    }
+
     @Test("something that is not the file is refused")
     func refusesRubbish() {
         #expect(throws: (any Error).self) {

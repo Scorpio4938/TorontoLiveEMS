@@ -40,9 +40,7 @@ struct IncidentDetailView: View {
     /// reader can find out where it is. A number the catalogue does not know stays a plain value
     /// rather than a link that cannot lead anywhere.
     private var stationForArea: FireStation? {
-        let number = Int(incident.area.trimmingCharacters(in: .whitespacesAndNewlines))
-        guard let number else { return nil }
-        return FireStations.bundled.station(number: number)
+        FireStations.bundled.station(forArea: incident.area)
     }
 
     var body: some View {
