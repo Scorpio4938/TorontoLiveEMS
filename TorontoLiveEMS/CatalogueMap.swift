@@ -56,7 +56,7 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
 
     let items: [Item]
     let title: (Item) -> String
-    let subtitle: (Item) -> String?
+    let subtitle: (Item) -> String
     let coordinate: (Item) -> CLLocationCoordinate2D
 
     /// The camera and the card, held by the catalogue so flipping to the list and back does not
@@ -71,7 +71,7 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
     init(
         items: [Item],
         title: @escaping (Item) -> String,
-        subtitle: @escaping (Item) -> String?,
+        subtitle: @escaping (Item) -> String,
         coordinate: @escaping (Item) -> CLLocationCoordinate2D,
         position: Binding<MapCameraPosition>,
         selected: Binding<Item.ID?>,
@@ -155,17 +155,15 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
 struct ReferenceMapCard: View {
 
     let title: String
-    let subtitle: String?
+    let subtitle: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.headline)
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(Color.secondary)
-            }
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(Color.secondary)
         }
         .padding(8)
         .frame(maxWidth: 240, alignment: .leading)

@@ -76,7 +76,7 @@ struct DivisionCatalogueView: View {
         CatalogueMap(
             items: pins,
             title: { $0.division.feedCode },
-            subtitle: { $0.facility.address as String? },
+            subtitle: { $0.facility.address },
             coordinate: { pin in
                 CLLocationCoordinate2D(
                     latitude: pin.facility.coordinate.latitude,

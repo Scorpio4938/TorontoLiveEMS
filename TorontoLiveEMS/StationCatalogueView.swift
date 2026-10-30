@@ -67,7 +67,7 @@ struct StationCatalogueView: View {
         CatalogueMap(
             items: stations,
             title: { "Station \($0.number)" },
-            subtitle: { $0.address as String? },
+            subtitle: { $0.address },
             coordinate: { station in
                 CLLocationCoordinate2D(
                     latitude: station.coordinate.latitude,
