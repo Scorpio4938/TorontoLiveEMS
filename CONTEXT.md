@@ -76,7 +76,7 @@ _Avoid_: Truck, vehicle, resource
 The run area the City files an incident under, published as a bare station
 number. The number is a fire station's, but the area is not necessarily the
 station that responded.
-_Avoid_: Beat, district, zone, station area, nearest station
+_Avoid_: Beat, district, zone, station area
 
 **Station**:
 A numbered Toronto fire facility the City publishes: address, municipality,

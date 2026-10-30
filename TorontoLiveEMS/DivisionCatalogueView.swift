@@ -88,13 +88,13 @@ struct DivisionCatalogueView: View {
         ) { pin in
             DivisionPage(division: pin.division, policeFeed: policeFeed)
         }
-        .overlay(alignment: .bottomLeading) {
+        .overlay(alignment: .bottomTrailing) {
             // Three divisions have no published facility point. Saying so prevents the map from
             // being read as a complete list of the 19; the list remains the complete catalogue.
             Text("Pins are published facility locations. Divisions without one are in the list only.")
                 .font(.caption2)
                 .foregroundStyle(Color.secondary)
-                .padding(.leading, 12)
+                .padding(.trailing, 12)
                 .padding(.bottom, 10)
         }
     }
