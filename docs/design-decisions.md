@@ -569,12 +569,18 @@ is being described. "Fire division" remains a phrase this project does not use.
   under Ontario's, carrying the two clauses that constrain the app and the grant that excludes
   personal information. None is stated generically — a licence that names the wrong provider is
   worse than one that is missing, because it reads as compliance.
+- **The licence pages reproduce the text, not just link it.** A link can move, needs the network,
+  and leaves a reader unable to check the terms the app says it follows. Each page states the
+  licence's version and last-updated date, summarises what it requires, and opens a page carrying
+  the publisher's full text in its own order. The publisher's official page is linked as the
+  authoritative copy, but the text is readable without it. `DataLicence` holds the text and the
+  metadata together so the attribution, title and address cannot drift from the terms beside them.
 
-- **It is unresolved whether the licence formally covers this feed.**
-  `livecad.xml` is not on the City's Open Data portal — searching that portal for
-  "livecad" and for "active incidents" both return nothing — and the page hosting
-  the feed carries no licence notice of any kind. We use the City's statement
-  regardless: it is the City's information, and the statement costs nothing.
+- **It is unresolved whether the licence formally covers this feed, and the Fire page says so.**
+  `livecad.xml` is not on the City's Open Data portal — searching that portal for "livecad" and for
+  "active incidents" both return nothing — and the page hosting the feed carries no licence notice
+  of any kind. We use the City's statement regardless: it is the City's information, and the
+  statement costs nothing. The page does not claim a formal grant the City never published.
 
 - **Nothing may imply official status or City endorsement.** The licence grants no
   right to suggest the City endorses this app, and explicitly excludes the City's

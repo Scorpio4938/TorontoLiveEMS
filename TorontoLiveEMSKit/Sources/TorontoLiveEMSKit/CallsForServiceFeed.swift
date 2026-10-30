@@ -25,7 +25,7 @@ public enum CallsForServiceFeed {
     public static let provider = "Toronto Police Service"
 
     /// The licence the calls are published under, which is neither Toronto's nor Canada's.
-    public static let licenceName = "Open Government Licence – Ontario"
+    public static let licenceName = DataLicence.ontario.title
 
     /// The Service's web app, which is the page a person can open.
     ///

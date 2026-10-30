@@ -111,7 +111,7 @@ struct PoliceCallTests {
     func thePageURLIsUsable() throws {
         let url = try #require(CallsForServiceFeed.pageURL)
         #expect(url.scheme == "https")
-        #expect(CallsForServiceFeed.licenceName.contains("Ontario"))
+        #expect(CallsForServiceFeed.licenceName == DataLicence.ontario.title)
     }
 
     // MARK: - The columns
