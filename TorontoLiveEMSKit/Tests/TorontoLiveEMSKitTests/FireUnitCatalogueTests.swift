@@ -73,8 +73,10 @@ struct FireUnitCatalogueTests {
         #expect(groups.map(\.letter) == groups.map(\.letter).sorted())
         #expect(groups.flatMap { $0.units }.count == FireUnits.bundled.count)
 
-        // The group letter is the code's first character, never a reading of the name.
+        // The group letter is the code's first character, never a reading of the name; within a
+        // group the rows are in code order.
         for group in groups {
+            #expect(group.units.map(\.code) == group.units.map(\.code).sorted())
             for unit in group.units {
                 #expect(String(unit.code.prefix(1)).uppercased() == group.letter)
             }
