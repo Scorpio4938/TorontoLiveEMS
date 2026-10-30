@@ -325,7 +325,7 @@ struct RootView: View {
             }
 
             // Home is never stored: a launch restores the last page with content, not the index.
-            if let section = selected.section, section.isRestorable {
+            if recordsLaunch, let section = selected.section, section.isRestorable {
                 lastSection = section
             }
         }
