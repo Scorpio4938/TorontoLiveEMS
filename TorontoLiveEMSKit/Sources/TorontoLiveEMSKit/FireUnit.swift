@@ -92,6 +92,16 @@ public struct FireUnits: Sendable {
         byCode[code.trimmingCharacters(in: .whitespacesAndNewlines)]
     }
 
+    /// The units the catalogue places at one station, in code order.
+    ///
+    /// **An empty array is a real answer.** A station with no captured unit is not an error, and a
+    /// screen showing that station omits the section rather than drawing a blank one. The station
+    /// number is the only key: a unit whose digits are not a published station has no station, so it
+    /// cannot appear under one.
+    public func units(at station: Int) -> [FireUnit] {
+        units.filter { $0.station == station }
+    }
+
     /// The units that shipped with the app — or an empty set.
     ///
     /// Empty rather than fatal when the resource is missing or unreadable, because a screen that

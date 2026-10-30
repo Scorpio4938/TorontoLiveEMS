@@ -114,6 +114,23 @@ struct FireUnitsTests {
         #expect(units.unit(code: " \(first.code) ") == first)
     }
 
+    @Test("the units at a station are the ones the catalogue places there")
+    func unitsAtAStation() {
+        // Station 331 in the committed capture has two: one named, one not.
+        let at331 = units.units(at: 331)
+        #expect(at331.map(\.code) == ["L331", "P331"])
+        #expect(at331.allSatisfy { $0.station == 331 })
+
+        // A station the capture knows no unit for is an empty list, not an error.
+        #expect(units.units(at: 999).isEmpty)
+
+        // And every station the file does place a unit at really has it.
+        for unit in units.units {
+            guard let station = unit.station else { continue }
+            #expect(units.units(at: station).contains(unit))
+        }
+    }
+
     @Test("a unit the capture did not hold is nil")
     func unknownUnitIsNil() {
         #expect(units.unit(code: "ZZZ999") == nil)
