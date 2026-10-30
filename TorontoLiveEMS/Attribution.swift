@@ -2,11 +2,13 @@ import Foundation
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The app's attribution and licence line.
+/// The app's attribution and licence lines.
 ///
-/// In one place because two screens show it: the detail view and Settings. The licence
-/// name is an inline markdown link, so it reads as part of the sentence rather than as a
-/// separate control beside it.
+/// In one place because several screens show them: an incident's detail view, the two information
+/// screens, and the Sources section those screens share. A licence that names the wrong provider is
+/// worse than one that is missing, because it reads as compliance — so the provider and the licence
+/// are always stated together, and the reference datasets' licence strings come from the files
+/// themselves.
 enum Attribution {
 
     /// The sentence, with both of its links written as markdown.
