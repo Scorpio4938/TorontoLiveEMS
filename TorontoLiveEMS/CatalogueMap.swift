@@ -187,7 +187,7 @@ struct ReferenceMapCard: View {
                 .foregroundStyle(Color.secondary)
         }
         .padding(8)
-        .frame(maxWidth: 240, alignment: .leading)
+        .frame(maxWidth: 260, alignment: .leading)
         .glassSurface(cornerRadius: 12)
     }
 }
