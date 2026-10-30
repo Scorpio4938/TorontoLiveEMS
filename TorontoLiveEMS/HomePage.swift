@@ -63,7 +63,7 @@ struct HomePage: View {
             } header: {
                 Text("Sources")
             } footer: {
-                Text("Station and division facts come from the City's open data; incidents and calls come from their publishers' own feeds.")
+                Text("Station and division facts come from the City's open data; the unit list is derived from the live fire feed, and incidents and calls come from their publishers' own feeds.")
             }
 
             Section {
