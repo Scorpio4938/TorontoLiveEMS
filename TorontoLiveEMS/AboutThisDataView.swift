@@ -8,9 +8,10 @@ import TorontoLiveEMSKit
 /// ways — the info button in the chrome presents it, and *About* pushes it — which is why the list
 /// and the way of leaving it are two types rather than one.
 ///
-/// The prose is the City's, quoted rather than paraphrased, and it lives with the thing it
-/// describes in the package — `LiveCADFeed.sourceNote`, `AlarmLevel.escalationNote`,
-/// `AlarmLevel.countingNote` — so a wording change happens beside the field, not in a view.
+/// The prose paraphrases the City's own descriptions, and quotes only where the exact wording
+/// carries the meaning — the vehicle counts, mainly. It lives with the thing it describes in the
+/// package — `LiveCADFeed.sourceNote`, `AlarmLevel.escalationNote`, `AlarmLevel.countingNote` — so
+/// a wording change happens beside the field, not in a view.
 /// The levels and the apparatus legend are *rendered from* the same tables the app parses
 /// with, so this screen cannot drift from what the rest of the app believes.
 struct AboutThisDataContent: View {
@@ -23,9 +24,8 @@ struct AboutThisDataContent: View {
                 Text("The Data")
             } footer: {
                 LinkedText(markdown: """
-                    Taken from the City of Toronto's own \
-                    [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page, which is \
-                    the page this feed belongs to.
+                    From the City of Toronto's own \
+                    [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page.
                     """)
             }
 
@@ -42,8 +42,8 @@ struct AboutThisDataContent: View {
             }
 
             Section {
-                LabeledContent("Area", value: "Nearest fire station")
-                LabeledContent("Dispatched Units", value: "Fire trucks dispatched")
+                LabeledContent("Area", value: "The fire station area the incident falls in")
+                LabeledContent("Dispatched Units", value: "Apparatus sent to it")
             } header: {
                 Text("Fields")
             }
@@ -55,7 +55,7 @@ struct AboutThisDataContent: View {
             } header: {
                 Text("Dispatched Unit Codes")
             } footer: {
-                Text("The City's own legend, in full. A code that is not here is one the City has not named, and it is shown as published rather than guessed at.")
+                Text("Toronto Fire Services' apparatus codes, as the City publishes them. A code not listed here is unnamed, and is shown as published.")
             }
 
             Section {
@@ -67,7 +67,7 @@ struct AboutThisDataContent: View {
             } header: {
                 Text("Postal Areas")
             } footer: {
-                Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy. These are Statistics Canada's boundaries for those areas, so the map shows the area the City named — never a point inside it. A postal area the boundary file does not know is drawn as a circle, which is an approximation and still not a point.")
+                Text("A medical incident's location is a postal area, not an address, to protect privacy. These are Statistics Canada's boundaries, so the map draws the area the City published — a circle where it knows no boundary, and never a point.")
             }
         }
         .navigationTitle("About this Data")

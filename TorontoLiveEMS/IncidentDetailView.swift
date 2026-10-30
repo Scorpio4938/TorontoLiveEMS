@@ -44,7 +44,7 @@ struct IncidentDetailView: View {
             } header: {
                 Text("Incident")
             } footer: {
-                Text("Area is the nearest fire station. Alarm Level is the City's response escalation, where 0 is an initial response.")
+                Text("Area is the fire station area the incident falls in. Alarm Level is Toronto Fire Services' response escalation, where 0 is an initial response.")
             }
 
             Section {

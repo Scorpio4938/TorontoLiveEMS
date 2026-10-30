@@ -75,7 +75,7 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   two states that used to be written into the status line — are now the `ProgressView` and
   the `ContentUnavailableView` instead.
 - **The feed's own timestamp is always shown**, in that header, labelled
-  **"City data as of …"**. That value is `update_from_db_time` —
+  **"City fire data as of …"**. That value is `update_from_db_time` —
   the City's own refresh tick, which lands on a five-minute boundary — and not the moment
   we fetched it. "Last updated" left that open to the wrong reading, and was changed after
   it was mistaken for our own fetch time.
@@ -332,12 +332,28 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **The `.street` case does not occur in the current capture**, where every addressable incident
   publishes an intersection. Kept and tested because the feed changes without telling anyone.
 
+## Naming: the publisher and the subject
+
+**Name the publisher when talking about publication; name the service when talking about the
+data.** "The City did not publish a location" is right, because it describes an act of publishing.
+"City data as of" was wrong, because on the fire page it named a publisher and left the subject
+unsaid, beside a police line that says "TPS data as of" and names both.
+
+So the fire line reads **"City fire data as of …"**, and prose about the incidents says **Toronto
+Fire Services** — the service whose incidents they are — naming the City where publishing is what
+is being described. "Fire division" remains a phrase this project does not use.
+
 ## What the app explains
 
-- **The City's own explanations are in the app, quoted rather than paraphrased**, and they live
-  with the thing they describe: `LiveCADFeed.sourceNote` for where the incidents come from and
-  how often, `AlarmLevel.escalationNote` for how a level is arrived at, `AlarmLevel.countingNote`
-  for what its vehicle counts count. A wording change happens beside the field, not in a view.
+- **The City's own explanations are in the app, paraphrased**, and they live with the thing they
+  describe: `LiveCADFeed.sourceNote` for where the incidents come from and how often,
+  `AlarmLevel.escalationNote` for how a level is arrived at, `AlarmLevel.countingNote` for what
+  its vehicle counts count. A wording change happens beside the field, not in a view.
+
+  **Paraphrased, not quoted, and the app no longer says otherwise.** The City's escalation
+  paragraph ran to a hundred words of dispatcher procedure to make a point that takes forty, on a
+  screen a reader opens once. Where the exact wording carries the meaning — the vehicle counts —
+  it is still quoted, and the screen does not present itself as a transcript.
 - **A screen of its own, behind an info button beside Settings.** Reference material rather than
   a preference: somebody wondering what an Alarm Level is should not have to guess that it is
   filed under settings. Settings keeps the attribution; this screen carries the licence too,

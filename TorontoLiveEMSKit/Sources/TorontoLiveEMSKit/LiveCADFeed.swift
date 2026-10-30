@@ -8,15 +8,18 @@ import Foundation
 /// See `docs/adr/0001-toronto-livecad-xml-as-live-source.md`.
 public enum LiveCADFeed {
 
-    /// Where the incidents come from, in the City's own words.
+    /// Where the incidents come from, in our own words.
     ///
     /// The app has always known the five-minute cadence — the refresh button is gated on it —
-    /// and never once said so on screen. This is the sentence that says it, from the page the
-    /// feed belongs to.
+    /// and never once said so on screen. This is the sentence that says it: **the fire service
+    /// dispatches the incidents, and the City publishes them.** The detail is on the City's page.
+    ///
+    /// Paraphrased rather than quoted, deliberately. The City's own sentences are longer than the
+    /// fact they carry, and a reader wants to know whose incidents these are and how fresh they
+    /// are, not to read a department's prose.
     public static let sourceNote = """
-        The following active incidents are dispatched from Toronto Fire Services Communication \
-        Centre. The contents are updated at five minute intervals from the CAD (Computer Aided \
-        Dispatch) system.
+        Active incidents dispatched by Toronto Fire Services' Communication Centre. The City \
+        republishes the list every five minutes from its CAD (Computer Aided Dispatch) system.
         """
 
 

@@ -115,7 +115,7 @@ enum PreviewIncidents {
 /// What the status line says in the previews. The real value is the City's refresh tick,
 /// which lands on a five-minute boundary — see `IncidentFeed.status`.
 private let previewStatus = FeedStatus(
-    text: "City data as of 2026-09-29 20:00:01",
+    text: "City fire data as of 2026-09-29 20:00:01",
     isStale: false
 )
 
@@ -205,7 +205,7 @@ private func fireCards(
     fireCards(
         .twelveHour,
         status: FeedStatus(
-            text: "City data as of 2026-09-29 20:00:01 · showing the last result",
+            text: "City fire data as of 2026-09-29 20:00:01 · showing the last result",
             isStale: true
         )
     )

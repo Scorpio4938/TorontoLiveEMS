@@ -535,7 +535,7 @@ struct IncidentsMapPage: View {
     private var noticeText: String {
         switch mapFilter {
         case .fire:
-            return "City data as of \(firePublished ?? Self.unknownTime)"
+            return "City fire data as of \(firePublished ?? Self.unknownTime)"
         case .police:
             return "TPS data as of \(policeAsOf ?? Self.unknownTime)"
         case .all:

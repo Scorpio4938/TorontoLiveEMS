@@ -301,7 +301,7 @@ struct IncidentFeedTests {
 
         await feed.load()
 
-        #expect(feed.status.text == "City data as of \(Self.tick)")
+        #expect(feed.status.text == "City fire data as of \(Self.tick)")
         #expect(feed.status.isStale == false)
     }
 
@@ -322,7 +322,7 @@ struct IncidentFeedTests {
         await feed.load()
         await feed.load()
 
-        #expect(feed.status.text == "City data as of \(Self.tick) · showing the last result")
+        #expect(feed.status.text == "City fire data as of \(Self.tick) · showing the last result")
         #expect(feed.status.isStale == true)
     }
 

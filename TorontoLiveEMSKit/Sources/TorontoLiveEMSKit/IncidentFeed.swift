@@ -136,11 +136,12 @@ public final class IncidentFeed {
     /// are said by the `ProgressView` and the `ContentUnavailableView` that stand in the
     /// list's place, which is where a reader looks for them anyway.
     public var status: FeedStatus {
-        // "City data as of", not "Last updated". The value is the City's own refresh tick —
+        // "City fire data as of", not "Last updated". The value is the City's own refresh tick,
+        // and the subject is named so a reader knows whose data this is.
         // update_from_db_time, which lands on a five-minute boundary — and not the moment we
         // fetched it. "Last updated" left that open to exactly the wrong reading.
         let updated = snapshot?.updatedFromDatabaseAt ?? "unknown"
-        let base = "City data as of \(updated)"
+        let base = "City fire data as of \(updated)"
 
         if isShowingStaleResult {
             return FeedStatus(text: "\(base) · showing the last result", isStale: true)
