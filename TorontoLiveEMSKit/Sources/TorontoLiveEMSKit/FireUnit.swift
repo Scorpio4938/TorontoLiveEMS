@@ -49,6 +49,37 @@ public struct FireUnit: Sendable, Equatable, Identifiable, Decodable {
     }
 }
 
+extension FireUnit {
+
+    /// Whether an incident's published roster names this unit.
+    ///
+    /// **Exact code, not a substring.** The feed publishes a comma-separated roster of codes, and
+    /// `P24` must not match an incident carrying `P244`. `DispatchedUnit.roster` already splits and
+    /// trims that value, so this asks it rather than splitting the string a second time.
+    ///
+    /// An incident that published no roster names no unit, which is not an error: the feed omits
+    /// `units_disp` for roughly one incident in five.
+    public func isDispatched(to incident: Incident) -> Bool {
+        DispatchedUnit.roster(from: incident.dispatchedUnits).contains { $0.code == code }
+    }
+}
+
+/// One letter's worth of the units catalogue.
+///
+/// **The letter groups rows; it does not name them.** A `C` section holds Chief cars and Command
+/// Vehicles together, and each row still says which it is. Grouping by the first letter is a way to
+/// find a code quickly, not a reading of the legend.
+public struct FireUnitGroup: Sendable, Equatable, Identifiable {
+
+    public var id: String { letter }
+
+    /// The leading letter of every code in this group, e.g. `C`.
+    public let letter: String
+
+    /// The units in this group, in code order.
+    public let units: [FireUnit]
+}
+
 /// The apparatus codes seen in one capture of the live fire feed, and where the file came from.
 ///
 /// **Ours, not the City's.** The City publishes no list of apparatus; it publishes the units it
@@ -100,6 +131,32 @@ public struct FireUnits: Sendable {
     /// cannot appear under one.
     public func units(at station: Int) -> [FireUnit] {
         units.filter { $0.station == station }
+    }
+
+    /// The catalogue grouped by the leading letter of each code, in letter order.
+    ///
+    /// The group is found from `code` and nothing else — never from `name`. A `C` section therefore
+    /// mixes Chief cars and Command Vehicles, and each row still says what it is.
+    public var groups: [FireUnitGroup] {
+        Self.groups(of: units)
+    }
+
+    /// Groups any list of units by the leading letter of each code, in letter order.
+    ///
+    /// Exposed rather than kept private so a test can group the letter-collision pair the bundled
+    /// capture does not happen to contain (`C23` and `CMD…`) without inventing a second rule.
+    public static func groups(of units: [FireUnit]) -> [FireUnitGroup] {
+        let byLetter = Dictionary(grouping: units) { unit in
+            String(unit.code.prefix(1)).uppercased()
+        }
+
+        return byLetter.keys.sorted().compactMap { letter in
+            guard let group = byLetter[letter] else { return nil }
+            return FireUnitGroup(
+                letter: letter,
+                units: group.sorted { $0.code < $1.code }
+            )
+        }
     }
 
     /// The units that shipped with the app — or an empty set.
