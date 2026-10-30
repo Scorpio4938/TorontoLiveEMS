@@ -395,9 +395,9 @@ is being described. "Fire division" remains a phrase this project does not use.
   its icon, its name, which version is in the reader's hand, what it is for, both publishers'
   pages, the repository and the app's own licence. *About this Data* is about the fire feed's
   fields and an Alarm Level, reached from the **info button** beside Settings. *Data Licences*
-  holds all three providers' terms, reached from Settings and from the notice on every screen that
-  shows data; a reader looking for a licence does not have to know which screen explains which feed
-  first.
+  indexes a page for each provider's terms, reached from Settings and from the notice on every
+  screen that shows data; a reader looking for a licence does not have to know which screen explains
+  which feed first.
 - **Every external link on *About* says whose it is.** The City's and the Service's pages sit under
   *Sources*, each row labelled with its publisher; the repository row says it is this app's source.
   An About screen is about *this* app, so a row that opened somebody else's page without saying so
@@ -550,11 +550,12 @@ is being described. "Fire division" remains a phrase this project does not use.
 
 ## Attribution and data terms
 
-- **One sentence and one button on a data screen; the terms on *Data Licences*.** The fire screens
-  say "Not affiliated with the City of Toronto. Fire data licensed under the Open Government
+- **One sentence and one button on a data screen; the terms behind *Data Licences*.** The fire
+  screens say "Not affiliated with the City of Toronto. Fire data licensed under the Open Government
   Licence – Toronto." and the police screens say the same of the Toronto Police Service and the
   Ontario licence. The sentence names the publisher and the licence; a row to *Data Licences* opens
-  the attribution, the licence link and what the licence requires. "Not affiliated" stays in the
+  the index, and each provider's page there carries the attribution, the licence link and what the
+  licence requires. "Not affiliated" stays in the
   sentence deliberately — it is not a licence clause, and the screen showing somebody's data is
   where a reader may think the app is official.
 
@@ -562,12 +563,12 @@ is being described. "Fire division" remains a phrase this project does not use.
   the police call detail. A licence paragraph on each of them was four copies of terms that belong
   in one place, and the police detail had none at all.
 
-- **Three sections on *Data Licences*, one per provider.** *Fire* is the City of Toronto's under
-  Toronto's open licence; *Postal areas* is Statistics Canada's under Canada's, with the privacy
-  reason the areas are drawn as areas; *Police* is the Toronto Police Service's under Ontario's,
-  carrying the two clauses that constrain the app and the grant that excludes personal information.
-  None is stated generically — a licence that names the wrong provider is worse than one that is
-  missing, because it reads as compliance.
+- **Three licence pages behind *Data Licences*, one per provider.** *Fire data* is the City of
+  Toronto's under Toronto's open licence; *Postal areas* is Statistics Canada's under Canada's, with
+  the privacy reason the areas are drawn as areas; *Police data* is the Toronto Police Service's
+  under Ontario's, carrying the two clauses that constrain the app and the grant that excludes
+  personal information. None is stated generically — a licence that names the wrong provider is
+  worse than one that is missing, because it reads as compliance.
 
 - **It is unresolved whether the licence formally covers this feed.**
   `livecad.xml` is not on the City's Open Data portal — searching that portal for
@@ -645,8 +646,8 @@ say which of them mattered.
   published for a postal area.
 - **The postal area is the real one, not a circle around a guess.** An FSA is drawn as Statistics
   Canada's boundary for it, generated into the package by `scripts/make_postal_areas.py`
-  (Open Government Licence – Canada, and the attribution is shown on *Data Licences* because it is
-  required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
+  (Open Government Licence – Canada, and the attribution is shown behind *Data Licences* because it
+  is required). The 1,200 m circle was an approximation drawn around wherever a geocoder landed,
   and it could spill into a neighbouring FSA or out into the lake — claiming ground the City never
   named. A postal area also needs **no geocoding at all** now, which removes a network round trip
   per postal incident: nine of the fifteen incidents in the live capture were postal areas.

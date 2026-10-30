@@ -12,7 +12,7 @@ import TorontoLiveEMSKit
 /// machine-readable form. Two claims that appear in ADR-0006 could not be reproduced from the
 /// published metadata, and this screen does not repeat them. See the note there.
 ///
-/// **The licences are not here.** They live on *Data Licences*, which the notice at the bottom
+/// **The licences are not here.** They live behind *Data Licences*, which the notice at the bottom
 /// opens; this screen is about the calls, not their terms.
 struct PoliceCallsInformationContent: View {
 

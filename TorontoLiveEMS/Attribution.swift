@@ -4,12 +4,13 @@ import TorontoLiveEMSKit
 
 /// The app's attribution and licence sentences.
 ///
-/// **One place now.** *Data Licences* states each provider's attribution and links its licence; a
-/// data screen carries one sentence naming the publisher and the licence, and a row to that screen.
-/// Three licences, three providers, and no screen has to spell a provider differently from another.
+/// **One place now.** The licence pages behind *Data Licences* state each provider's attribution and
+/// link its licence; a data screen carries one sentence naming the publisher and the licence, and a
+/// row to those pages. Three licences, three providers, and no screen has to spell a provider
+/// differently from another.
 enum Attribution {
 
-    /// The fire feed's attribution, for *Data Licences*.
+    /// The fire feed's attribution, for *Fire Data Licence*.
     ///
     /// The City publishes the incidents and licenses them under Toronto's open licence. The sentence
     /// names both and links the licence text, so a reader who wants the terms is one tap away.
@@ -45,7 +46,7 @@ enum Attribution {
         )
     }
 
-    /// The police calls' attribution, for *Data Licences*.
+    /// The police calls' attribution, for *Police Data Licence*.
     ///
     /// The attribution names the Service whose calls these are, and the licence is Ontario's rather
     /// than Toronto's or Canada's. Both names come from the feed, so a renamed provider or licence

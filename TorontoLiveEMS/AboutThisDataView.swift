@@ -15,7 +15,7 @@ import TorontoLiveEMSKit
 /// The levels and the apparatus legend are *rendered from* the same tables the app parses
 /// with, so this screen cannot drift from what the rest of the app believes.
 ///
-/// **The licences are not here.** They live on *Data Licences*, which the notice at the bottom
+/// **The licences are not here.** They live behind *Data Licences*, which the notice at the bottom
 /// opens; this screen is about the feed's fields, not its terms.
 struct AboutThisDataContent: View {
 

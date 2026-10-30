@@ -188,6 +188,6 @@ position ADR-0004 already takes for the fire feed.
   than a decision about police.
 - **The police information screen, and where the licence goes.** The information button on the
   police tab leads to a police screen, not to the fire one: what a call, a call type and a division
-  mean. The licence is not there: all three licences live on *Data Licences*, reached from Settings
-  and from the single-sentence notice each data screen carries. Three licences, three providers,
-  one home.
+  mean. The licence is not there: each provider has a licence page behind *Data Licences*, reached
+  from Settings and from the single-sentence notice each data screen carries. Three licences, three
+  providers, one index.
