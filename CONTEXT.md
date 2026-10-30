@@ -73,8 +73,25 @@ station number.
 _Avoid_: Truck, vehicle, resource
 
 **Area**:
-The fire station nearest an incident, published as a bare station number.
-_Avoid_: Beat, district, zone, station area
+The run area the City files an incident under, published as a bare station
+number. The number is a fire station's, but the area is not necessarily the
+station that responded.
+_Avoid_: Beat, district, zone, station area, nearest station
+
+**Station**:
+A numbered Toronto fire facility the City publishes: address, municipality,
+year built, ward, offices, and a point. It is the entity an Area number names
+and the station number a unit's code places it at.
+_Avoid_: Firehouse, hall, fire division
+
+**Division**:
+A Toronto Police Service patrol area, published as 19 boundary features and
+written by the feed as `D14`. It is the entity a police call's Division field
+names.
+_Avoid_: Fire division, district, zone
+
+**Fire division** is not a term. Toronto Fire publishes no such thing, and the
+word Division belongs to the Police Service alone.
 
 **Medical Incident**:
 An incident whose Prime Street is an FSA rather than a street, because

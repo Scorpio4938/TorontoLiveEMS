@@ -36,6 +36,8 @@ extension View {
 //   StationPage.swift          a station's facts and units
 //   UnitCatalogueView.swift    the units list
 //   UnitPage.swift             a unit's facts and live section
+//   DivisionCatalogueView.swift the divisions list
+//   DivisionPage.swift          a division's facts and live calls
 //
 // **The map page is deliberately not in this list.** It carries no edge treatment at all: its
 // tab has no navigation bar, so there is no boundary to treat and no scroll view to treat it.

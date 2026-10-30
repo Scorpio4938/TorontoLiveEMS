@@ -1,4 +1,3 @@
-import Foundation
 import SwiftUI
 import TorontoLiveEMSKit
 
@@ -51,9 +50,11 @@ struct HomePage: View {
             }
 
             Section {
-                // The Divisions catalogue is #28. Until it exists the row carries the count the
-                // index promises rather than pretending to lead somewhere it does not.
-                LabeledContent("Divisions", value: "\(divisions.count)")
+                NavigationLink {
+                    DivisionCatalogueView(policeFeed: policeFeed)
+                } label: {
+                    LabeledContent("Divisions", value: "\(divisions.count)")
+                }
             } header: {
                 Text("Police")
             }
@@ -63,7 +64,7 @@ struct HomePage: View {
             } header: {
                 Text("Sources")
             } footer: {
-                Text("Station and division facts come from the City's open data; the unit list is derived from the live fire feed, and incidents and calls come from their publishers' own feeds.")
+                Text("Each source is named with the licence it is published under in About this Data.")
             }
 
             Section {
@@ -90,29 +91,11 @@ struct HomePage: View {
     /// the page that describes the data, not the download that happens to be behind it.
     @ViewBuilder
     private var sources: some View {
-        if let url = LiveCADFeed.pageURL {
-            Link(LiveCADFeed.pageName, destination: url)
-                .tint(.blue)
-        }
-        if let url = CallsForServiceFeed.pageURL {
-            Link(CallsForServiceFeed.pageName, destination: url)
-                .tint(.blue)
-        }
-        if let url = OpenData.fireStations {
-            Link("Fire Station Locations", destination: url)
-                .tint(.blue)
-        }
-        if let url = OpenData.policeDivisions {
-            Link("Police Boundaries", destination: url)
+        ForEach(Attribution.sources) { source in
+            Link(source.name, destination: source.url)
                 .tint(.blue)
         }
     }
-}
-
-/// The City's open data pages, which are human pages rather than the resource downloads.
-private enum OpenData {
-    static let fireStations = URL(string: "https://open.toronto.ca/dataset/fire-station-locations/")
-    static let policeDivisions = URL(string: "https://open.toronto.ca/dataset/police-boundaries/")
 }
 
 #Preview("Home") {

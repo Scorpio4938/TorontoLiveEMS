@@ -543,6 +543,52 @@ is being described. "Fire division" remains a phrase this project does not use.
 - **Unknown incident types and undecodable unit codes surface here** as raw
   strings, so nothing is silently relabelled.
 
+## The reference section
+
+**Recorded on `feat/home-screen` before the reference pages were finalised.** The
+reference section answers *what is this number* — an Area, a station, a unit, a
+division — and it is deliberately the quietest part of the app.
+
+- **Home is a directory, not a dashboard.** Its job is to get a reader to a
+  catalogue. It is a platform `List` with two service sections, a count trailing each
+  row, a Sources section, and the same two provenance lines the Fire and Police tabs
+  lead with, at the bottom. There is **no masthead and no mark**: About already carries
+  the icon and the app's name, and a second identity block on a screen whose only job
+  is navigation would be an element that exists to fill space. The navigation title is
+  enough. The counts are trailing values, not badges or charts: they say how large a
+  catalogue is, not how it is doing.
+- **Sources are a section, not a footer.** They are destinations; a reader should be
+  able to tap them. Provenance is the last section because it is context for the rows
+  above, not a link. The five sources are named with their own licences — the City's
+  fire data and its three reference datasets under Toronto's open licence, the
+  Service's calls under Ontario's — rather than lumped under one licence that would be
+  wrong for two of them. The ticket that asked for the credit parenthesised both live
+  feeds as Ontario's; the fire feed is the City's, and the licence the app has stated
+  since ADR-0001 is Toronto's.
+- **Area is a run area, not a nearest station.** The City's run-area data has 84 areas
+  numbered like the 84 stations, and the number does not claim which station responded;
+  in our own capture it matched a dispatched unit about half the time. The interface
+  says *the run area the City files the incident under, numbered as its station*, and
+  the Area row opens that station's page. The glossary says the same.
+- **A catalogue can be a list or points, never a coverage map.** The Stations and
+  Divisions catalogues offer a List/Map toggle; the map draws one pin per published
+  point and no boundary or polygon, because the reference data is points only. The
+  camera and the open card survive the toggle, so a reader does not lose their place.
+  Units have no map: a unit has no location of its own, and its station's coordinate is
+  not the unit's.
+- **Pins behave like the live map's, not like a second map.** Nothing is tagged and the
+  map's own selection is not used. A tap becomes a point, the nearest pin within the
+  same 22-point radius wins, the card is drawn inside the map on the same glass
+  surface, and a tap on nothing dismisses it. The card opens the entity's page.
+- **A station page carries no roster and no photographs.** The City's station file
+  publishes the number, address, municipality, year built, ward, offices and a point;
+  it publishes nothing about what apparatus is parked there and no imagery. A roster
+  would be an inference from dispatch history or a guess, and a photograph would be an
+  external asset with rights of its own. The page shows the published facts, a
+  one-pin locator, and the catalogue's cross-reference of unit codes whose station is
+  this one — which is not a roster of what is parked there. That distinction is the
+  directory's whole premise: it says what it knows and nothing else.
+
 ## Attribution and data terms
 
 - **The City is credited, non-affiliation is stated, and the licence is linked inline.**

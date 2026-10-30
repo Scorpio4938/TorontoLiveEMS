@@ -63,6 +63,77 @@ enum Attribution {
         )
     }
 
+
+    /// One of the five sources the reference section is built from, and the licence it is under.
+    struct SourceCredit: Identifiable, Sendable {
+        let name: String
+        let url: URL
+        let licence: String
+
+        var id: String { name }
+    }
+
+    /// The five sources, each with its own licence.
+    ///
+    /// **Not one licence for all five.** The fire incidents are the City of Toronto's, under
+    /// Toronto's open licence; the police calls are the Toronto Police Service's, under Ontario's;
+    /// the station, division and facility datasets are the City's, under Toronto's. Naming them
+    /// together would read as compliance while being wrong about two of them.
+    ///
+    /// The three reference licences are read from the generated files rather than typed here, so a
+    /// credit follows the file it describes. The live feeds' licences are the publishers' own:
+    /// Toronto's open licence for the City's fire data, Ontario's for the Service's calls.
+    static var sources: [SourceCredit] {
+        [
+            credit(
+                LiveCADFeed.pageName,
+                LiveCADFeed.pageURLString,
+                torontoLicenceName
+            ),
+            credit(
+                CallsForServiceFeed.pageName,
+                CallsForServiceFeed.pageURLString,
+                CallsForServiceFeed.licenceName
+            ),
+            credit(
+                "Fire Station Locations",
+                fireStationsDatasetURL,
+                FireStations.bundled.licence
+            ),
+            credit(
+                "Police Boundaries",
+                policeBoundariesDatasetURL,
+                PoliceDivisions.bundled.licence
+            ),
+            credit(
+                "Police Facility Locations",
+                policeFacilitiesDatasetURL,
+                PoliceFacilities.bundled.licence
+            ),
+        ].compactMap { $0 }
+    }
+
+    private static func credit(
+        _ name: String,
+        _ urlString: String,
+        _ licence: String
+    ) -> SourceCredit? {
+        guard let url = URL(string: urlString) else { return nil }
+        return SourceCredit(name: name, url: url, licence: licence)
+    }
+
+    /// Toronto's open-data licence, which the City's fire feed and its three reference datasets
+    /// are published under. The feed's own page carries no licence notice; the City's open-data
+    /// licence is the one its other published data uses.
+    private static let torontoLicenceName = "Open Government Licence – Toronto"
+
+    private static let fireStationsDatasetURL =
+        "https://open.toronto.ca/dataset/fire-station-locations/"
+    private static let policeBoundariesDatasetURL =
+        "https://open.toronto.ca/dataset/police-boundaries/"
+    private static let policeFacilitiesDatasetURL =
+        "https://open.toronto.ca/dataset/police-facility-locations/"
+
     /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
     /// Statistics Canada's own metadata names it in exactly these terms.
     private static let canadaLicenceURL =

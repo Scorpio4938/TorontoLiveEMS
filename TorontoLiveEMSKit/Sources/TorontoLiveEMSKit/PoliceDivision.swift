@@ -22,6 +22,14 @@ public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
     /// show both as if they were two things, so a screen renders this form throughout, and the
     /// stored `number` never reaches a label.
     public var feedCode: String { "D" + number }
+
+    /// Whether a published division string — `D14` or `14` — names this division.
+    ///
+    /// This is what a live call's `division` is tested with. The value is the feed's, so it must
+    /// accept both spellings without the call site learning the rule.
+    public func matches(published: String) -> Bool {
+        PoliceDivisions.normalised(published) == number
+    }
 }
 
 /// The police divisions the City publishes boundaries for, and where the file came from.

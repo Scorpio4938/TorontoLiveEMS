@@ -604,7 +604,7 @@ struct IncidentsMapPage: View {
             case .police(let calls):
                 ForEach(calls) { call in
                     NavigationLink {
-                        PoliceCallDetailView(call: call)
+                        PoliceCallDetailView(call: call, policeFeed: policeFeed)
                     } label: {
                         policeRow(for: call)
                     }

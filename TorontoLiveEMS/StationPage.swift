@@ -37,6 +37,8 @@ struct StationPage: View {
                 LabeledContent("Ward", value: "\(station.ward.number) · \(station.ward.name)")
             } header: {
                 Text("Station")
+            } footer: {
+                Text("A station is the numbered fire facility the City publishes. An incident's Area is the run area the City files it under, numbered as a station; it is not necessarily the station that responded.")
             }
 
             if !station.offices.isEmpty {
@@ -50,7 +52,13 @@ struct StationPage: View {
             }
 
             Section {
-                StationLocationMap(station: station)
+                ReferenceLocationMap(
+                    title: "Station \(station.number)",
+                    coordinate: CLLocationCoordinate2D(
+                        latitude: station.coordinate.latitude,
+                        longitude: station.coordinate.longitude
+                    )
+                )
             }
 
             if !units.isEmpty {
@@ -69,37 +77,6 @@ struct StationPage: View {
         }
         .navigationTitle("Station \(station.number)")
         .softScrollEdge()
-    }
-}
-
-/// The station's one published point, on a small map.
-///
-/// **No geocoder.** A station's coordinate is published in the reference file, so this is the one map
-/// in the app that never asks Apple where the thing is. The pin is a pin rather than a circle because
-/// the City published a point, not an area.
-private struct StationLocationMap: View {
-
-    let station: FireStation
-
-    private var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(
-            latitude: station.coordinate.latitude,
-            longitude: station.coordinate.longitude
-        )
-    }
-
-    var body: some View {
-        Map(
-            initialPosition: .region(
-                IncidentMapScale.region(around: coordinate, isArea: false)
-            ),
-            interactionModes: [.pan, .zoom]
-        ) {
-            Marker("Station \(station.number)", coordinate: coordinate)
-        }
-        .frame(height: 220)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .listRowInsets(EdgeInsets())
     }
 }
 

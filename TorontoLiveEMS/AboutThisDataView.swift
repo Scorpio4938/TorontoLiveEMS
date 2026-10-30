@@ -59,7 +59,19 @@ struct AboutThisDataContent: View {
             }
 
             Section {
-                LinkedText(Attribution.attributed)
+                ForEach(Attribution.sources) { source in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Link(source.name, destination: source.url)
+                            .tint(.blue)
+                        Text(source.licence)
+                            .font(.caption)
+                            .foregroundStyle(Color.secondary)
+                    }
+                }
+            } header: {
+                Text("Sources")
+            } footer: {
+                Text("Not affiliated with the City of Toronto. Each source is named with the licence it is published under; the two live feeds and the three reference datasets are different publishers under two different open-government licences.")
             }
 
             Section {

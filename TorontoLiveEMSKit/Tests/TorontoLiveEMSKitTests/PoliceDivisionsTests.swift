@@ -37,6 +37,17 @@ struct PoliceDivisionsTests {
         #expect(divisions.division(forPublished: "D") == nil)
     }
 
+    @Test("a division matches a published call in either spelling")
+    func matchesBothSpellings() throws {
+        let division = try #require(divisions.division(forPublished: "D14"))
+
+        #expect(division.matches(published: "D14"))
+        #expect(division.matches(published: "14"))
+        #expect(division.matches(published: " d14 "))
+        #expect(!division.matches(published: "D13"))
+        #expect(!division.matches(published: "D99"))
+    }
+
     @Test("normalising trims whitespace and ignores case")
     func normalisingIsForgiving() {
         #expect(divisions.division(forPublished: " d14 ")?.number == "14")

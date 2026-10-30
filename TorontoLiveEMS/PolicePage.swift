@@ -66,7 +66,7 @@ struct PolicePage: View {
                     timeFormat: dispatchTimeFormat,
                     status: feed.status
                 ) { call in
-                    PoliceCallDetailView(call: call)
+                    PoliceCallDetailView(call: call, policeFeed: feed)
                 }
             case .cards:
                 // **Four hours of calls is more than a reader can use**, so the recent ones get the page
@@ -93,7 +93,7 @@ struct PolicePage: View {
                             rows: split.folded
                         )
                 ) { call in
-                    PoliceCallDetailView(call: call)
+                    PoliceCallDetailView(call: call, policeFeed: feed)
                 }
             }
         } else if let failureMessage = feed.failureMessage {

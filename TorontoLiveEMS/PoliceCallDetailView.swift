@@ -16,6 +16,9 @@ struct PoliceCallDetailView: View {
 
     let call: PoliceCall
 
+    /// The shared police feed, handed on so a division page opened from here has its live section.
+    let policeFeed: PoliceCallFeed
+
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
@@ -36,7 +39,15 @@ struct PoliceCallDetailView: View {
                     LabeledContent("Code", value: call.callTypeCode)
                 }
 
-                LabeledContent("Division", value: call.division)
+                if let division = PoliceDivisions.bundled.division(forPublished: call.division) {
+                    NavigationLink {
+                        DivisionPage(division: division, policeFeed: policeFeed)
+                    } label: {
+                        LabeledContent("Division", value: call.division)
+                    }
+                } else {
+                    LabeledContent("Division", value: call.division)
+                }
                 // The instant, rendered in the reader's own clock. The Service publishes milliseconds
                 // since 1970, which is an instant rather than a time of day, so there is no published
                 // wall-clock string to show instead.
