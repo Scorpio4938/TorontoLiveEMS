@@ -140,7 +140,7 @@ police code the app had not met.
 
 **Run on a device: v0.0.18's map changes.** Taps land where they are aimed after the padded compass clearance moved the map's coordinates into `.global`. The pin callout's stacking is still unstable, above and below its pin, and is open as #34.
 
-**`swift test` has still never been run.** There are **238 tests** across 24 files, with 681
+**`swift test` has still never been run.** There are **238 tests** across 24 files, with 680
 expectations, and they are the only thing that can check the parsers, the query builders, the gate and
 the projections, the two windows and their exemption, the legend and the sentences. Nothing in this
 checkpoint has been through a compiler's tests — only through a build.

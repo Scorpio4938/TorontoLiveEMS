@@ -1,12 +1,12 @@
 import Foundation
 
-/// One heading-and-paragraph block of a licence's text.
-public struct LicenceSection: Sendable, Equatable {
+/// One heading-and-paragraph block used to assemble a licence's one text.
+private struct LicenceSection {
 
-    public let heading: String?
-    public let paragraphs: [String]
+    let heading: String?
+    let paragraphs: [String]
 
-    public init(heading: String? = nil, paragraphs: [String]) {
+    init(heading: String? = nil, paragraphs: [String]) {
         self.heading = heading
         self.paragraphs = paragraphs
     }
@@ -16,9 +16,9 @@ public struct LicenceSection: Sendable, Equatable {
 ///
 /// **The full text is here, not only a link.** A link is not a copy: it can move, it needs the
 /// network, and it leaves a reader unable to check the terms the app says it follows. Each licence
-/// is reproduced from its publisher's official page, section by section, with its version and the
-/// date the publisher last changed it. The page keeps a link to the source as the authoritative
-/// copy, but the text below is readable without one.
+/// is reproduced from its publisher's official page, with its headings and paragraphs in their own
+/// order, and displayed as one continuous text block rather than a set of app-styled sections. The
+/// page keeps a link to the source as the authoritative copy, but the text is readable without one.
 ///
 /// **The metadata is here too**, so the attribution statement, the title and the source address
 /// cannot drift from the text beside them. The app composes its short notices from these values.
@@ -92,16 +92,10 @@ public enum DataLicence: String, CaseIterable, Equatable, Sendable {
         }
     }
 
-    /// The licence's full text, in the order the publisher lays it out.
-    public var sections: [LicenceSection] {
-        switch self {
-        case .toronto: return Self.torontoSections
-        case .canada: return Self.canadaSections
-        case .ontario: return Self.ontarioSections
-        }
-    }
-
-    /// The whole reproduced text, for the checks that pin the clauses.
+    /// The licence's full text, as one string in the order the publisher lays it out.
+    ///
+    /// The text is assembled from the publisher's headings and paragraphs, but there is one text:
+    /// the app displays it in a single block, not as separate app-styled sections.
     public var fullText: String {
         sections
             .map { section in
@@ -111,6 +105,14 @@ public enum DataLicence: String, CaseIterable, Equatable, Sendable {
                 return parts.joined(separator: "\n\n")
             }
             .joined(separator: "\n\n")
+    }
+
+    private var sections: [LicenceSection] {
+        switch self {
+        case .toronto: return Self.torontoSections
+        case .canada: return Self.canadaSections
+        case .ontario: return Self.ontarioSections
+        }
     }
 
     // MARK: - Open Government Licence – Toronto
@@ -124,18 +126,18 @@ public enum DataLicence: String, CaseIterable, Equatable, Sendable {
             "Use of any Information indicates your acceptance of the terms below.",
             "The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below.",
             "You are free to:",
-            "Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
+            "• Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
             "You must, where you do any of the above:",
-            "Acknowledge the source of the Information by including any attribution statement specified by the Information Provider and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement, or if you are using Information from several information providers and multiple attributions are not practical for your product or application, you must use the following attribution statement: Contains information licensed under the Open Government Licence – Toronto.",
+            "• Acknowledge the source of the Information by including any attribution statement specified by the Information Provider and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement, or if you are using Information from several information providers and multiple attributions are not practical for your product or application, you must use the following attribution statement: Contains information licensed under the Open Government Licence – Toronto.",
             "The terms of this licence are important, and if you fail to comply with any of them, the rights granted to you under this licence, or any similar licence granted by the Information Provider, will end automatically.",
         ]),
         LicenceSection(heading: "Exemptions", paragraphs: [
             "This licence does not grant you any right to use:",
-            "Personal Information;",
-            "Information not accessible under the Ontario Municipal Freedom of Information and Protection of Privacy Act or the Ontario Personal Health Information Protection Act, 2004;",
-            "Third party rights the Information Provider is not authorized to licence;",
-            "The names, crests, logos, or other official symbols of the Information Provider; and",
-            "Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
+            "• Personal Information;",
+            "• Information not accessible under the Ontario Municipal Freedom of Information and Protection of Privacy Act or the Ontario Personal Health Information Protection Act, 2004;",
+            "• Third party rights the Information Provider is not authorized to licence;",
+            "• The names, crests, logos, or other official symbols of the Information Provider; and",
+            "• Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
         ]),
         LicenceSection(heading: "Non-endorsement", paragraphs: [
             "This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information.",
@@ -172,19 +174,19 @@ public enum DataLicence: String, CaseIterable, Equatable, Sendable {
             "Use of any Information indicates your acceptance of the terms below.",
             "The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below.",
             "You are free to:",
-            "Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
+            "• Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
             "You must, where you do any of the above:",
-            "Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence.",
+            "• Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence.",
             "If the Information Provider does not provide a specific attribution statement, or if you are using Information from several information providers and multiple attributions are not practical for your product or application, you must use the following attribution statement:",
             "Contains information licensed under the Open Government Licence – Canada.",
             "The terms of this licence are important, and if you fail to comply with any of them, the rights granted to you under this licence, or any similar licence granted by the Information Provider, will end automatically.",
         ]),
         LicenceSection(heading: "Exemptions", paragraphs: [
             "This licence does not grant you any right to use:",
-            "Personal Information;",
-            "Third party rights the Information Provider is not authorized to license;",
-            "The names, crests, logos, or other official symbols of the Information Provider; and",
-            "Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
+            "• Personal Information;",
+            "• Third party rights the Information Provider is not authorized to license;",
+            "• The names, crests, logos, or other official symbols of the Information Provider; and",
+            "• Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
         ]),
         LicenceSection(heading: "Non-endorsement", paragraphs: [
             "This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information.",
@@ -220,20 +222,20 @@ public enum DataLicence: String, CaseIterable, Equatable, Sendable {
             "Use of any Information indicates your acceptance of the terms below.",
             "The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below.",
             "You are free to:",
-            "Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
+            "• Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.",
             "You must, where you do any of the above:",
-            "Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence.",
+            "• Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence.",
             "If the Information Provider does not provide a specific attribution statement, or if you are using Information from several Information Providers and multiple attributions are not practical for your product or application, you must use the following attribution statement:",
             "Contains information licensed under the Open Government Licence – Ontario.",
             "The terms of this licence are important, and if you fail to comply with any of them, the rights granted to you under this licence, or any similar licence granted by the Information Provider, will end automatically.",
         ]),
         LicenceSection(heading: "Exemptions", paragraphs: [
             "This licence does not grant you any right to use:",
-            "Personal Information;",
-            "Information or Records not accessible under the Freedom of Information and Protection of Privacy Act (Ontario);",
-            "Third party rights the Information Provider is not authorized to license;",
-            "The names, crests, logos, or other official symbols of the Information Provider; and",
-            "Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
+            "• Personal Information;",
+            "• Information or Records not accessible under the Freedom of Information and Protection of Privacy Act (Ontario);",
+            "• Third party rights the Information Provider is not authorized to license;",
+            "• The names, crests, logos, or other official symbols of the Information Provider; and",
+            "• Information subject to other intellectual property rights, including patents, trade-marks and official marks.",
         ]),
         LicenceSection(heading: "Non-endorsement", paragraphs: [
             "This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information.",

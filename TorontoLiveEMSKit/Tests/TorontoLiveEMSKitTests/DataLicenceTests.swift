@@ -70,11 +70,10 @@ struct DataLicenceTests {
         #expect(text.contains("Freedom of Information and Protection of Privacy Act (Ontario)"))
     }
 
-    @Test("the full text keeps its paragraph order")
-    func sectionsAreOrdered() {
+    @Test("the one full text keeps the publisher's order")
+    func fullTextIsOrdered() {
         for licence in DataLicence.allCases {
-            let headings = licence.sections.compactMap(\.heading)
-            #expect(headings == [
+            let headings = [
                 "Using Information under this licence",
                 "Exemptions",
                 "Non-endorsement",
@@ -82,7 +81,17 @@ struct DataLicenceTests {
                 "Governing Law",
                 "Definitions",
                 "Versioning",
-            ])
+            ]
+
+            let text = licence.fullText
+            var searchStart = text.startIndex
+            for heading in headings {
+                guard let range = text.range(of: heading, range: searchStart..<text.endIndex) else {
+                    Issue.record("\(licence.title): \(heading) is missing or out of order")
+                    break
+                }
+                searchStart = range.upperBound
+            }
         }
     }
 }

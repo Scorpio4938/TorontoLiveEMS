@@ -572,8 +572,8 @@ is being described. "Fire division" remains a phrase this project does not use.
 - **The licence pages reproduce the text, not just link it.** A link can move, needs the network,
   and leaves a reader unable to check the terms the app says it follows. Each page states the
   licence's version and last-updated date, summarises what it requires, and opens a page carrying
-  the publisher's full text in its own order. The publisher's official page is linked as the
-  authoritative copy, but the text is readable without it. `DataLicence` holds the text and the
+  the publisher's full text as one continuous text block, in its own order. The publisher's official
+  page is linked as the authoritative copy, but the text is readable without it. `DataLicence` holds the text and the
   metadata together so the attribution, title and address cannot drift from the terms beside them.
 
 - **It is unresolved whether the licence formally covers this feed, and the Fire page says so.**

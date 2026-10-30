@@ -216,52 +216,28 @@ private struct LicenceFullTextSection: View {
     }
 }
 
-/// The complete licence text, in the publisher's order.
+/// The complete licence text, as the publisher presents it: one text block, not a set of sections.
 private struct LicenceTextView: View {
 
     let licence: DataLicence
 
     var body: some View {
-        List {
-            Section {
-                LabeledContent("Version", value: licence.version)
-                LabeledContent("Updated", value: licence.updated)
-            } footer: {
-                LinkedText(markdown: "Reproduced from the [official licence page](\(licence.urlString)). That page is the authoritative copy.")
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(licence.fullText)
+                    .textSelection(.enabled)
 
-            ForEach(licence.sections.indices, id: \.self) { index in
-                LicenceTextSectionView(section: licence.sections[index])
+                LinkedText(markdown: "Reproduced from the [official licence page](\(licence.urlString)). That page is the authoritative copy.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
         .navigationTitle(licence.title)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-    }
-}
-
-/// One heading-and-paragraph block of the reproduced text.
-private struct LicenceTextSectionView: View {
-
-    let section: LicenceSection
-
-    var body: some View {
-        if let heading = section.heading {
-            Section {
-                ForEach(section.paragraphs, id: \.self) { paragraph in
-                    Text(paragraph)
-                }
-            } header: {
-                Text(heading)
-            }
-        } else {
-            Section {
-                ForEach(section.paragraphs, id: \.self) { paragraph in
-                    Text(paragraph)
-                }
-            }
-        }
     }
 }
 
