@@ -93,9 +93,10 @@ position ADR-0004 already takes for the fire feed.
 
 - **Twenty minutes, or five, or neither.** The item's summary says the data is updated every 20
   minutes; the application's own description says it is refreshed every five. The publisher
-  contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. **Twenty is the figure
-  the app now gates on**, and the reason is below: it is the one the layer's own clock supports, and a
-  gate is only as good as the interval behind it.
+  contradicts itself, and two samples 14 and 17½ minutes old cannot settle it. The layer's own clock
+  is the only measurable cadence (see the measurement below), and the app does not gate on it: a pace
+  describes the publisher, and the calls on screen can be a write behind it. Twenty minutes survives
+  as what the information screen states, not as a reason to skip a refresh.
 
   > **The item metadata carries no cadence on 2026-10-05, but the layer's own clock does.** The
   > contradiction above was read from rendered text in the Service's web application; the item and
@@ -104,8 +105,7 @@ position ADR-0004 already takes for the fire feed.
   > apart, the stamp went from `17:31:16Z` to `17:50:47Z` — **19.5 minutes**, the first hard support
   > for the twenty-minute figure, and **one interval rather than a schedule.** Note the phase: the
   > stamp is not on a :00/:20/:40 grid, so the next change cannot be predicted to the minute, only
-  > observed after the fact. That is why the app *asks* rather than counting down, and why the gate is
-  > checked again after a fetch.
+  > observed after the fact. That is why the app *asks* rather than counting down.
 - **There is no published legend for the call type codes, so the app carries its own.** Checked
   everywhere one could have been: the item's `description` is empty, its `licenseInfo` is the licence
   alone, no field on the layer carries a coded-value domain, the service has no other layer or table,
@@ -135,16 +135,20 @@ position ADR-0004 already takes for the fire feed.
   rather than with a `DateFormatter`, for the reason this type gives throughout and one more: a
   formatter would put the calendar in a locale's hands, and a device set to a non-Gregorian calendar
   would render the Service's clock in a year the Service has never published.
-- **The layer does publish a last-edit time, and the app gates on it.** An earlier version of the
-  companion code said the layer "carries no time info at all". It does: `editingInfo.dataLastEditDate`
-  moves with the data — measured 2026-10-05 at 17:31:16Z, fifteen minutes old while the newest call
-  the layer held was thirty, and again at 17:50:47Z, nineteen and a half minutes later. A `query`
-  cannot be asked for it, because `advancedQueryCapabilities` offers no `returnEditMoment`, so it
-  costs a request of its own: **10.5 KB, against 22.7 KB for the calls.** That price is worth paying
-  because the same response is what the status line needs — one request buys the gate *and* the
-  sentence, and without it no screen could say "TPS data as of 17:31" at all. So the gate is before
-  the fetch, as fire's is, and it is checked **again** after one, because twenty minutes is the
-  Service's pace rather than a promise and a late write must not be reported as a change.
+- **The layer does publish a last-edit time, and the app compares the stamp it holds.** An earlier
+  version of the companion code said the layer "carries no time info at all". It does:
+  `editingInfo.dataLastEditDate` moves with the data — measured 2026-10-05 at 17:31:16Z, fifteen
+  minutes old while the newest call the layer held was thirty, and again at 17:50:47Z, nineteen and a
+  half minutes later. A `query` cannot be asked for it, because `advancedQueryCapabilities` offers no
+  `returnEditMoment`, so it costs a request of its own: **10.5 KB, against 22.7 KB for the calls.**
+  That price is paid on every refresh, and it is what makes a skip honest. The feed keeps the stamp
+  the calls on screen were read under — the **as-of** — and reads the Service's latest stamp first.
+  It skips the calls only when the two are equal: an unchanged stamp proves the Service has not
+  written since those calls were read. A stamp that has moved is a write the screen has not fetched,
+  and it is fetched; so is a stamp that could not be read, because there is then no proof at all.
+  After the fetch the calls are compared with the calls that were there, because a stamp can move
+  while the calls do not. What the status line and the "nothing newer" sentence quote is the
+  **as-of**, not the latest stamp: the two differ the moment a write lands between two reads.
 - **Traps the client has to handle.** A time filter needs a literal: `OCCURRENCE_TIME > TIMESTAMP
   '…'` works and a bare millisecond number answers 400 — and the literal is read as **UTC**, which
   was measured too. A value standing in for nothing is recognised by the fire feed's own rule, that
@@ -163,14 +167,13 @@ position ADR-0004 already takes for the fire feed.
 - **`returnCountOnly` is not supported**, so counting means fetching. At eighty records that is not
   a hardship.
 - **Politeness.** It is a public service on somebody else's infrastructure, read on the fire feed's
-  terms: once at launch, once per explicit refresh, and never on a timer of its own. A refresh inside
-  the Service's twenty minutes costs **no request at all** — the clock the app already holds decides —
-  and one outside it, with a second only when that clock says something has been written and the calls
-  have to be fetched. The metadata is never read merely to ask a question the app can answer itself,
-  which is the difference between an instant tap and one that looks frozen. The client also gives up
-  on a request in **fifteen seconds rather than sixty** and ignores the cache: sixty is what made an
-  unreachable service look like a dead app, and a cached metadata response would hand the gate a stale
-  write time — which is the one value in this feed that has to be current.
+  terms: once at launch, once per explicit refresh, and never on a timer of its own. A refresh always
+  reads the stamp — one 10.5 KB request — and fetches the calls only when that stamp is not the one
+  the calls on screen were read under. So the common tap costs the metadata request and no calls, and
+  a write the screen has not fetched is never refused. The client also gives up on a request in
+  **fifteen seconds rather than sixty** and ignores the cache: sixty is what made an unreachable
+  service look like a dead app, and a cached metadata response would hide a write and leave the
+  screen stale.
 - **A second feed, not a second list.** The police page owns its own client, its own clock and its
   own age. See `docs/design-decisions.md` for why the fire feed is not copied.
 

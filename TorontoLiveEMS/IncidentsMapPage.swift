@@ -190,19 +190,28 @@ struct IncidentsMapPage: View {
             // on this page changes it: the control that does lives in the chrome above.
             .mapStyle(mapKind.style)
             .mapControls {
+                // **Kept clear by padding the map's safe area, not by inserting a strip.** The first
+                // attempt used `safeAreaInset`, which shifted the map's frame between the `MapReader`
+                // and its tap gesture and made incidents hard to tap. This adds the capsule's band to
+                // the safe area instead, leaving the frame and the tap space alone. If this does not
+                // reflow the compass either, delete the control rather than hand-roll a substitute.
                 MapCompass()
                 // `alignment` given rather than left off. `MapScaleView` has two initialisers and
                 // every parameter of both has a default, so a bare `MapScaleView()` is ambiguous
                 // between them — it reads as the natural call and is not one.
                 MapScaleView(alignment: .leading)
             }
+            // **Padding the safe area, not adding a view to it.** `safeAreaInset` changed the map's
+            // layout and broke tap conversion. This keeps the map's frame, though the padded origin
+            // still differs from the reader's — which is why the tap path now works in `.global`.
+            .mapCompassPadding()
             // **Every tap is decided here, and only here.** The map's own selection is not used
             // at all: with it, a tap on a pin set the selection twice — once by MapKit and once by
             // this — and a card that flashed and vanished was the result. There is one mechanism
             // now, and one rule: a tap that lands on a place shows its card, and a tap that lands
             // on nothing puts the card away. The second half is the dismissal, which is why this
             // sets the selection whether or not something was hit.
-            .onTapGesture(coordinateSpace: .local) { point in
+            .onTapGesture(coordinateSpace: .global) { point in
                 selected = place(at: point, in: proxy)?.id
             }
             // **This page sits under no bar; its title and controls float, from `RootView`.**
@@ -232,14 +241,14 @@ struct IncidentsMapPage: View {
 
     // MARK: - What the feed gave us
 
-    /// Every distinct place the feed named, in the order the incidents were published.
+    /// Every distinct place the feed named, in the order its newest incident appears.
     ///
     /// Nothing is filtered by whether it can be **found** — a postal area with no boundary and a
     /// cross street are both questions worth asking. What is filtered, further down, is what
     /// needs asking at all.
     private var namedPlaces: [IncidentLocation] {
         var seen: [IncidentLocation] = []
-        for incident in feed.snapshot?.incidents ?? [] {
+        for incident in feed.incidents ?? [] {
             let location = IncidentLocation.from(incident)
             guard location != .unpublished, !seen.contains(location) else { continue }
             seen.append(location)
@@ -282,7 +291,7 @@ struct IncidentsMapPage: View {
 
     /// The fire places that can be drawn: a location, something to draw for it, and its mark.
     private var firePlaces: [Place] {
-        let incidents = feed.snapshot?.incidents ?? []
+        let incidents = feed.incidents ?? []
         return namedPlaces.compactMap { location in
             let here = incidents.filter { IncidentLocation.from($0) == location }
             // The mark first, because a place with no incidents at it is not a place. It cannot happen
@@ -438,22 +447,22 @@ struct IncidentsMapPage: View {
     /// to test, so it is tested with the same radius it is drawn at. Nil means the tap hit nothing,
     /// which is how the card is dismissed.
     ///
-    /// **`.local`, on both sides.** `MapProxy.convert` is documented as being relative to the
-    /// coordinate space associated with the `MapReader`, and the map fills that reader exactly, so
-    /// the tap and the conversion are talking about the same space by construction rather than by
-    /// agreement.
+    /// **`.global`, on both sides.** The map's top safe area is padded so the compass clears the app's
+    /// capsule, which means the map no longer shares the `MapReader`'s `.local` origin: a tap's local
+    /// point and the proxy's local conversion are offset by that band. The window is the one space
+    /// both agree on, so the tap and every conversion are made in `.global`.
     private func place(at point: CGPoint, in proxy: MapProxy) -> Place? {
         for place in places {
             guard
                 case .pin(let coordinate) = place.geometry,
-                let centre = proxy.convert(coordinate, to: .local)
+                let centre = proxy.convert(coordinate, to: .global)
             else { continue }
             if hypot(centre.x - point.x, centre.y - point.y) <= 22 {
                 return place
             }
         }
 
-        guard let coordinate = proxy.convert(point, from: .local) else { return nil }
+        guard let coordinate = proxy.convert(point, from: .global) else { return nil }
         let tapped = PostalAreas.Point(
             latitude: coordinate.latitude,
             longitude: coordinate.longitude
@@ -526,15 +535,15 @@ struct IncidentsMapPage: View {
     private var noticeText: String {
         switch mapFilter {
         case .fire:
-            return "City data as of \(firePublished ?? Self.unknownTime)"
+            return "City fire data as of \(firePublished ?? Self.unknownTime)"
         case .police:
-            return "TPS data as of \(policePublished ?? Self.unknownTime)"
+            return "TPS data as of \(policeAsOf ?? Self.unknownTime)"
         case .all:
             // **Compared as strings, which is safe because both are the same shape**: `yyyy-MM-dd
             // HH:mm:ss`, biggest part first and every field the same width, so the later string is the
             // later time. A change of shape on either side would make this wrong rather than crash,
             // and the police side's shape is pinned by a test.
-            let latest = [firePublished, policePublished].compactMap { $0 }.max()
+            let latest = [firePublished, policeAsOf].compactMap { $0 }.max()
             return "City/TPS data as of \(latest ?? Self.unknownTime)"
         }
     }
@@ -546,12 +555,12 @@ struct IncidentsMapPage: View {
         feed.snapshot?.updatedFromDatabaseAt
     }
 
-    /// The Service's, written the way the City writes its own.
+    /// The Service's as-of, written the way the City writes its own.
     ///
     /// `DispatchTimestamp.publishedStamp` renders it on Toronto's clock in that same shape — which is
     /// what lets the two be compared and read as one column rather than as two conventions.
-    private var policePublished: String? {
-        policeFeed.publishedAt.map { DispatchTimestamp.publishedStamp($0) }
+    private var policeAsOf: String? {
+        policeFeed.asOf.map { DispatchTimestamp.publishedStamp($0) }
     }
 
     /// Whether anything **being drawn** is known to be out of date.
@@ -803,6 +812,23 @@ struct MapInformationContent: View {
         .navigationTitle("About the Map")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+}
+
+private extension View {
+    /// Adds the app's control band to the map's safe area, on the platform that has one.
+    ///
+    /// Unlike `safeAreaInset`, this does not insert a view or resize the map: it pads the safe area
+    /// the platform lays its controls inside, which is the part the compass is placed by. The padded
+    /// origin still differs from the reader's, so the tap path converts in `.global`. iOS only —
+    /// elsewhere the controls live in the window toolbar and no capsule floats over the map.
+    @ViewBuilder
+    func mapCompassPadding() -> some View {
+        #if os(iOS)
+        safeAreaPadding(.top, ScreenControls.bandHeight)
+        #else
+        self
         #endif
     }
 }

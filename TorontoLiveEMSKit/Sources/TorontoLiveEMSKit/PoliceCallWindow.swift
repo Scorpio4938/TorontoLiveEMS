@@ -19,6 +19,13 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     /// choice about taste — it is the whole of the data, and every call on it is inside the window.
     case fourHours
 
+    /// The default for the police page's window.
+    ///
+    /// Settings displays it and the police page applies it, and Settings is now the only writer, so
+    /// the two read one constant instead of each carrying a copy of `.oneHour`. The map's window is a
+    /// separate preference with its own default, and does not read this.
+    public static let policePageDefault: PoliceCallWindow = .oneHour
+
     /// The name a reader sees in Settings.
     public var label: String {
         switch self {
@@ -43,8 +50,8 @@ public enum PoliceCallWindow: String, CaseIterable, Sendable {
     ///
     /// **One filter and its complement**, rather than two passes over the list: a call is shown if it is
     /// inside the window, or if it is critical and the reader has asked for critical calls to be kept.
-    /// The list arrives newest first from the Service and neither half is re-sorted, so what a reader
-    /// sees is still in the order the Service published.
+    /// The feed hands this list over newest first and neither half is re-sorted, so a call keeps the
+    /// place the feed's rule gave it.
     ///
     /// **The exemption is about severity, not about kind.** A shooting three hours ago is worth a
     /// reader's attention now; a theft three hours ago is not. `Urgency` is where that lives, so this

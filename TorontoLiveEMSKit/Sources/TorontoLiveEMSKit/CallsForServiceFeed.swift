@@ -41,8 +41,8 @@ public enum CallsForServiceFeed {
     /// **Not the query endpoint, and it must ask for JSON.** A `query` cannot be asked for the layer's
     /// edit time — this service's `advancedQueryCapabilities` offers no `returnEditMoment`, checked —
     /// so the app asks the layer what it is and reads `editingInfo.dataLastEditDate` out of the answer.
-    /// That response is 10.5 KB against 22.7 KB for the calls themselves. See `interval` for why it is
-    /// worth it.
+    /// That response is 10.5 KB against 22.7 KB for the calls themselves, and it is what the police
+    /// feed compares on every refresh — see `PoliceCallFeed`.
     ///
     /// **`?f=json` is not decoration.** Without it this same address answers an 8.8 KB *HTML page* —
     /// ArcGIS's human-readable layer directory, `Layer: C4S_Public_NoGO (ID:0)` — which decodes to
@@ -56,17 +56,6 @@ public enum CallsForServiceFeed {
         URL(string: layerURLString)
     }
 
-    /// How often the Service writes to the layer.
-    ///
-    /// **Twenty minutes, and it is what makes a gate possible at all.** Measured once: the layer's
-    /// own stamp moved from 17:31:16Z to 17:50:47Z — nineteen and a half minutes — between two samples
-    /// six minutes apart. That supports the figure the Service states for itself, and it is one
-    /// interval rather than a schedule, which is why the gate is checked after a fetch as well as
-    /// before one.
-    ///
-    /// Kept beside this feed rather than in `FeedRefresh`, whose five minutes are Toronto Fire's.
-    public static let interval: TimeInterval = 20 * 60
-
     /// What the dataset is, in the Service's own words.
     ///
     /// Quoted verbatim from the item that publishes it, which is the whole of what the Service says
@@ -78,15 +67,16 @@ public enum CallsForServiceFeed {
 
     /// How current the data is, in this app's words.
     ///
-    /// **It names the Service's own pace, because the app now depends on it.** Nothing in the layer's
-    /// metadata states an interval; twenty minutes is the figure the app measured and now gates on, so
-    /// a screen saying "we claim no cadence" would be describing a design that no longer exists. What
-    /// it must not do is promise a *schedule* — the writes are roughly twenty minutes apart and not on
-    /// a grid, which is why the app asks when the last one was rather than counting down to the next.
+    /// **It names the Service's own pace, but the app no longer gates on it.** Nothing in the layer's
+    /// metadata states an interval; twenty minutes is the figure the app measured, and the information
+    /// screen states it so a reader knows roughly how often to expect a new write. What it must not do
+    /// is promise a *schedule* — the writes are roughly twenty minutes apart and not on a grid, which
+    /// is why the app asks when the last one was rather than counting down to the next.
     public static let cadenceNote = """
         A call stays here for four hours and then goes. The Service writes about every twenty \
-        minutes, and this app asks it when it last did before fetching anything: between two of its \
-        writes there is nothing new to fetch, and the app says so rather than pretending to work.
+        minutes, and this app asks it when it last did on every refresh. It fetches the calls only \
+        when that stamp is not the one the calls on screen were read under, so it never claims they \
+        are current on the strength of a pace.
         """
 
     /// How far back a read reaches.
@@ -120,6 +110,10 @@ public enum CallsForServiceFeed {
     /// literal read as local time four hours behind would have returned records.
     ///
     /// `returnGeometry=false` because the point is in the attributes, so nothing is fetched twice.
+    ///
+    /// **`orderByFields` is a convenience, not the app's ordering.** It asks for newest first, and the
+    /// Service currently answers that way — but a response's order is the Service's to change, so
+    /// `PoliceCallFeed` sorts the calls it receives by their instants and never relies on this.
     public static func queryURL(now: Date) -> URL? {
         let since = now.addingTimeInterval(-window)
         let stamp = utcStamp(since)

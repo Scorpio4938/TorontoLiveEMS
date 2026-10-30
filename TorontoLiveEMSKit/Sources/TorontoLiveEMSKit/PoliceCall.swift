@@ -3,7 +3,7 @@ import Foundation
 /// One call for service, as published by the Toronto Police Service.
 ///
 /// **A model of its own, and not an `Incident`.** The fire feed's incidents and these calls are
-/// different things: an incident has an alarm level, a nearest fire station and a roster of
+/// different things: an incident has an alarm level, a fire station area and a roster of
 /// apparatus, and a call has a division, a call type and an intersection. Forcing one into the
 /// other would mean fields that are always empty and names that lie about what they hold, and the
 /// point of the two models is that each says what its own publisher says.

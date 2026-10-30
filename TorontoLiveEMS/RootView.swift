@@ -81,7 +81,6 @@ struct RootView: View {
     /// the dispatch-time format already uses, so nothing new is being invented to make it work.
     @AppStorage(SettingsKey.mapKind) private var mapKind: MapKind = .standard
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
-    @AppStorage(SettingsKey.policeCallWindow) private var policeCallWindow: PoliceCallWindow = .oneHour
     @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
     @State private var isShowingSettings = false
@@ -142,8 +141,7 @@ struct RootView: View {
                 // move when it appears.
                 mapKind: screen == .map ? $mapKind : nil,
                 mapFilter: screen == .map ? $mapFilter : nil,
-                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil,
-                policeWindow: screen == .police ? $policeCallWindow : nil
+                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
@@ -312,9 +310,10 @@ struct RootView: View {
             outcome = await policeFeed.refresh()
             message = policeFeed.nothingNewerMessage
         case .map:
-            // **The map draws both feeds, so a refresh on it asks both.** Each keeps its own gate, so
-            // inside the Service's twenty minutes the police half costs no request at all and inside
-            // the City's five the fire half costs none — a tap with nothing to fetch is still instant.
+            // **The map draws both feeds, so a refresh on it asks both.** Fire can still answer from
+            // the clock it holds, because the City's republish tick rides inside the document it
+            // already fetched. The police half always asks the Service whether it has written, and
+            // fetches the calls only when it has. A tap with nothing to fetch is still instant.
             //
             // The alert only appears when **neither** found anything: saying "nothing newer" while one
             // of the two had in fact refreshed would be the kind of half-truth this alert exists to
@@ -355,8 +354,7 @@ private extension View {
         onSettings: @escaping () -> Void,
         mapKind: Binding<MapKind>? = nil,
         mapFilter: Binding<MapFilter>? = nil,
-        mapPoliceWindow: Binding<PoliceCallWindow>? = nil,
-        policeWindow: Binding<PoliceCallWindow>? = nil
+        mapPoliceWindow: Binding<PoliceCallWindow>? = nil
     ) -> some View {
         #if os(iOS)
         overlay(alignment: .topTrailing) {
@@ -365,14 +363,12 @@ private extension View {
                 onSettings: onSettings,
                 mapKind: mapKind,
                 mapFilter: mapFilter,
-                // One order throughout: the map's three, then the police page's one.
-                mapPoliceWindow: mapPoliceWindow,
-                policeWindow: policeWindow
+                mapPoliceWindow: mapPoliceWindow
             )
                 // Centred in a bar's height at a content margin, which is where the bar's own
-                // items sat before this layer replaced them. These two numbers are the placement,
-                // and the only ones in it.
-                .frame(height: 44, alignment: .center)
+                // items sat before this layer replaced them. The band height and the trailing inset
+                // are the placement, and the only numbers in it.
+                .frame(height: ScreenControls.bandHeight, alignment: .center)
                 .padding(.trailing, 12)
         }
         #else

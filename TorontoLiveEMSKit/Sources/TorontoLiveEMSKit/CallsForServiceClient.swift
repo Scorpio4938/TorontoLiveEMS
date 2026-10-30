@@ -56,16 +56,20 @@ public struct CallsForServiceClient: Sendable {
         return try CallsForServiceParser.parse(data)
     }
 
-    /// When the Service last wrote to the layer.
+    /// The Service's latest write time, as the layer states it.
     ///
-    /// **A request of its own, and the one that makes the gate possible.** The time is in the layer's
-    /// metadata rather than in a query response, so this asks the layer about itself: 10.5 KB, against
-    /// 22.7 KB for the calls. It is worth the price because the same answer is what the status line
-    /// quotes — the request buys the gate and the sentence together.
+    /// **A request of its own, and the value the police feed compares on every refresh.** The time is
+    /// in the layer's metadata rather than in a query response, so this asks the layer about itself:
+    /// 10.5 KB, against 22.7 KB for the calls. The calls are fetched only when this stamp is not the
+    /// one they were read under — so the request is what stops a write the screen has not seen from
+    /// being refused.
     ///
-    /// Answered as an optional: a layer that has stopped stating a time means "no gate", not
-    /// "a failure". A network failure still throws, because that is a different thing.
-    public func publishedAt() async throws -> Date? {
+    /// **The latest stamp, not an as-of.** It may describe a write whose calls the screen has never
+    /// fetched; `PoliceCallFeed` keeps the as-of separately, and that is what the status line quotes.
+    ///
+    /// Answered as an optional: a layer that has stopped stating a time means "no proof the calls are
+    /// current", not "a failure". A network failure still throws, because that is a different thing.
+    public func latestStamp() async throws -> Date? {
         guard let url = CallsForServiceFeed.layerURL else {
             throw CallsForServiceClientError.invalidURL
         }
@@ -77,6 +81,6 @@ public struct CallsForServiceClient: Sendable {
             throw CallsForServiceClientError.unexpectedStatus(http.statusCode)
         }
 
-        return CallsForServiceParser.publishedAt(from: data)
+        return CallsForServiceParser.latestStamp(from: data)
     }
 }

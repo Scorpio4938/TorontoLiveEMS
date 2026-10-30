@@ -39,7 +39,7 @@ public struct Incident: Identifiable, Equatable, Sendable {
     /// The response-escalation ordinal, as published, e.g. `0`.
     public let alarmLevel: String
 
-    /// The nearest fire station, as a bare station number, e.g. `426`.
+    /// The fire station area it falls in, as a bare station number, e.g. `426`.
     public let area: String
 
     /// Apparatus dispatched, as published codes, e.g. `P231, P234`. `nil` when the

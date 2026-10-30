@@ -17,7 +17,7 @@ import TorontoLiveEMSKit
 /// replace the list instead.
 ///
 /// The value is the City's own refresh tick, `update_from_db_time`, not the moment we
-/// fetched it. "City data as of" says so; "Last updated" left that open to the wrong
+/// fetched it. "City fire data as of" says so; "Last updated" left that open to the wrong
 /// reading and was changed after it was mistaken for our own fetch time.
 ///
 /// Which sentence it shows is not decided here. That is `IncidentFeed.status`, because it

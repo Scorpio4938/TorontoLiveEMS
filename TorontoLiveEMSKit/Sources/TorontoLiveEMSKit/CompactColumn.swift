@@ -154,12 +154,12 @@ extension CompactColumn where Row == Incident {
         )
     }
 
-    /// The apparatus the City sent, exactly as published.
+    /// The apparatus the City sent, with a repeated unit shown once.
     public static let dispatchedUnits = CompactColumn<Incident>(label: "Dispatched Units") { incident, _ in
-        // Left exactly as published. Decoding `P231` to `Pumper 231` is worth the
-        // characters in the detail view and not here, where width is the scarcest
-        // thing we have.
-        CompactCell(incident.dispatchedUnits)
+        // The published tokens, not decoded: `P231` becomes `Pumper 231` in the detail view, where
+        // there is room, and stays as it was sent here. A token the feed repeats is shown once — a
+        // display rule from `DispatchedUnit`, not a change to the incident's string.
+        CompactCell(DispatchedUnit.displayRoster(from: incident.dispatchedUnits))
     }
 
     /// The fire feed's columns, in the order the table shows them.

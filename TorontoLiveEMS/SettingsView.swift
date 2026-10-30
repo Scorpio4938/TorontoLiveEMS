@@ -11,7 +11,7 @@ enum SettingsKey {
     static let presentation = "incidentPresentation"
     /// Which half of a police call's type the table and the card show.
     static let policeCallTypeStyle = "policeCallTypeStyle"
-    /// How far back the police page looks. Read there and in the page's own clock menu.
+    /// How far back the police page looks. Read there and written in Settings.
     static let policeCallWindow = "policeCallWindow"
     /// How far back the map draws police calls — the map's own, deliberately unrelated to the row above.
     static let mapPoliceWindow = "mapPoliceWindow"
@@ -45,10 +45,10 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
-    // The defaults here must be the defaults the police page and the map read, or Settings would
-    // display a value the other screens are not using — the store is empty until something writes it.
+    // Settings is the only writer now, and the page reads the same
+    // `PoliceCallWindow.policePageDefault`, so an empty store shows the value the page uses.
     @AppStorage(SettingsKey.policeCallWindow)
-    private var policeCallWindow: PoliceCallWindow = .oneHour
+    private var policeCallWindow: PoliceCallWindow = PoliceCallWindow.policePageDefault
 
 
 

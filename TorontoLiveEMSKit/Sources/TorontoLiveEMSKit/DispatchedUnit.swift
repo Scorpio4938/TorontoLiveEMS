@@ -50,18 +50,47 @@ public struct DispatchedUnit: Equatable, Sendable {
         self.station = digits.isEmpty ? nil : digits
     }
 
-    /// The units in a published roster such as `P231, P234`.
+    /// The units in a published roster such as `P231, P234`, with a repeated unit shown once.
     ///
-    /// Returns an empty array when the feed published nothing — which it does for
-    /// roughly one incident in five, by omitting the element entirely.
+    /// **No capture in this repository contains a duplicate roster.** The fixture is clean; the live
+    /// feed has been seen naming the same token twice for one incident, so this is defensive against a
+    /// defect observed rather than one reproducible from the capture. Identity is the trimmed token
+    /// compared case-insensitively, and the first occurrence keeps its position.
+    ///
+    /// The published string is left untouched on `Incident.dispatchedUnits`: this is a reading of it,
+    /// not a correction to what the City sent.
     public static func roster(from published: String?) -> [DispatchedUnit] {
+        uniqueTokens(from: published).map { DispatchedUnit(code: String($0)) }
+    }
+
+    /// The published roster as the compact table shows it, with a repeated unit shown once.
+    ///
+    /// The same identity rule as `roster(from:)`, applied to the table's raw-token form rather than to
+    /// decoded units. The kept token is the text the City sent, so its case and spacing are not
+    /// normalised, and the published order is preserved. `nil` when there is nothing to show.
+    public static func displayRoster(from published: String?) -> String? {
+        let tokens = uniqueTokens(from: published)
+        return tokens.isEmpty ? nil : tokens.joined(separator: ",")
+    }
+
+    /// The published tokens, one per unit, in published order, with a repeated unit removed.
+    ///
+    /// The one place the comparison is decided, so the table and the detail view cannot disagree about
+    /// whether two tokens are the same unit. The first occurrence is the one kept, which is why this
+    /// builds a list rather than a set.
+    private static func uniqueTokens(from published: String?) -> [Substring] {
         guard let published else {
             return []
         }
-        return published
-            .split(separator: ",")
-            .map { DispatchedUnit(code: String($0)) }
-            .filter { !$0.code.isEmpty }
+
+        var seen: Set<String> = []
+        var kept: [Substring] = []
+        for token in published.split(separator: ",") {
+            let identity = token.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !identity.isEmpty, seen.insert(identity).inserted else { continue }
+            kept.append(token)
+        }
+        return kept
     }
 
     private static func trailingDigits(of token: String) -> String {

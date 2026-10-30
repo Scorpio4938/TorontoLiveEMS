@@ -73,10 +73,11 @@ struct AlarmLevelTests {
         // they exist and say what they are for. The counting note is the one that stops a
         // reader concluding the app has miscounted their incident's vehicles.
         #expect(!AlarmLevel.escalationNote.isEmpty)
-        #expect(AlarmLevel.escalationNote.contains("Toronto Fire Services determines the Alarm Level"))
+        #expect(AlarmLevel.escalationNote.contains("911 calls"))
+        #expect(AlarmLevel.escalationNote.contains("smoke"))
 
         #expect(!AlarmLevel.countingNote.isEmpty)
         #expect(AlarmLevel.countingNote.contains("Pumpers"))
-        #expect(AlarmLevel.countingNote.contains("not included"))
+        #expect(AlarmLevel.countingNote.contains("are not counted"))
     }
 }

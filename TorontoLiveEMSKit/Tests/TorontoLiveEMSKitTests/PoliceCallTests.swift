@@ -178,13 +178,11 @@ struct PoliceCallTests {
         #expect(CallsForServiceFeed.sourceNote.contains("prepared for public use"))
     }
 
-    @Test("the note and the interval say the same twenty minutes")
-    func theNoteAgreesWithTheInterval() {
-        // Tied together on purpose. The sentence on screen, the interval the query asks for, and the
-        // interval the *gate* reasons with are one claim in three places, and a change to any of them
-        // that leaves the others behind is a lie with a test missing.
+    @Test("the note says the window and the Service's pace")
+    func theNoteSaysTheWindowAndPace() {
+        // The note is what a reader sees, and the window is what the query asks for. The twenty-minute
+        // pace is stated as a pace, not used as a gate — the app compares the Service's stamp instead.
         #expect(CallsForServiceFeed.window == 4 * 60 * 60)
-        #expect(CallsForServiceFeed.interval == 20 * 60)
         #expect(CallsForServiceFeed.cadenceNote.contains("four hours"))
         #expect(CallsForServiceFeed.cadenceNote.contains("twenty minutes"))
     }
@@ -218,24 +216,20 @@ struct PoliceCallTests {
         {"currentVersion":12,"id":0,"name":"C4S_Public_NoGO","editingInfo":{"lastEditDate":1791222647982,"schemaLastEditDate":1791222646638,"dataLastEditDate":1791222647982}}
         """#.utf8)
 
-        let stamp = try #require(CallsForServiceParser.publishedAt(from: json))
+        let stamp = try #require(CallsForServiceParser.latestStamp(from: json))
         #expect(stamp == Date(timeIntervalSince1970: 1_791_222_647.982))
     }
 
     @Test("a layer response with no clock in it is not a time")
     func noClockIsNotATime() {
-        // A layer that stops stating one costs the gate and the line, and must never be a failure.
-        #expect(CallsForServiceParser.publishedAt(from: Data(#"{"id":0,"name":"C4S_Public_NoGO"}"#.utf8)) == nil)
+        // A layer that stops stating one costs the line and the proof that the calls are current,
+        // and must never be a failure.
+        #expect(CallsForServiceParser.latestStamp(from: Data(#"{"id":0,"name":"C4S_Public_NoGO"}"#.utf8)) == nil)
 
         // And the HTML this endpoint answers when it is not asked for JSON — the shape the missing
         // `?f=json` produced. Asserted rather than trusted: it is the reason this test exists.
         let html = Data(#"<html lang="en"><head><title>Layer: C4S_Public_NoGO (ID:0)</title></head></html>"#.utf8)
-        #expect(CallsForServiceParser.publishedAt(from: html) == nil)
-    }
-
-    @Test("the Service's interval is the twenty minutes it writes on")
-    func theIntervalIsTwentyMinutes() {
-        #expect(CallsForServiceFeed.interval == 20 * 60)
+        #expect(CallsForServiceParser.latestStamp(from: html) == nil)
     }
 
     @Test("the call type column hears the reader's setting")

@@ -31,31 +31,27 @@ public enum AlarmLevel {
         Level(published: "6", meaning: "29–32 emergency vehicles"),
     ]
 
-    /// The City's explanation of *how* a level is arrived at.
+    /// Toronto Fire Services' explanation of *how* a level is arrived at, paraphrased.
     ///
-    /// Their words. The levels above say what a number means; this says why a number changes,
-    /// which is the thing a reader who has seen an incident escalate actually wonders.
+    /// The levels above say what a number means; this says why a number changes, which is the
+    /// thing a reader who has seen an incident escalate actually wonders. The factors are the
+    /// service's own; the sentences are ours, because the original ran to a paragraph of
+    /// dispatcher procedure that no reader of a number needs.
     public static let escalationNote = """
-        Toronto Fire Services determines the Alarm Level based upon any one of a number of \
-        factors. Initially an incident can be upgraded to a working fire response by a \
-        dispatcher, based upon the numerous 911 calls received and the detail provided by the \
-        public. Alternatively it may be upgraded once TFS arrives on scene and sees smoke or \
-        they receive a report from persons on site. If these conditions were not present \
-        initially, an Alarm Level may still be upgraded based upon the size and duration of \
-        the fire, rotation of crews due to extreme hot or cold weather conditions, numbers and \
-        disabilities of people within the structure, or additional specialized apparatus and \
-        crews required.
+        A level can be raised at any time: by a dispatcher reading the 911 calls, by crews who \
+        arrive to smoke or are told what is inside, or by the size and duration of the fire, the \
+        weather, the people inside, or the extra apparatus needed.
         """
 
-    /// What the vehicle counts above actually count.
+    /// What the vehicle counts above actually count, paraphrased.
     ///
     /// The sentence that stops a reader thinking the app is wrong. They see *Alarm Level 2 =
     /// 10–14 emergency vehicles* beside a roster of five tokens and conclude something has been
-    /// miscounted; the City's own footnote is the answer.
+    /// miscounted; this is the answer. The rule is the service's and must stay exact; the
+    /// sentence wrapping it does not have to be.
     public static let countingNote = """
-        Alarm levels are determined by the number of vehicles consisting of Pumpers, Aerials, \
-        Rescues and Squads responding to the event. Support vehicles such as Hazmat, Air \
-        Lights, District Chiefs and Command vehicles are not included in that count.
+        Only Pumpers, Aerials, Rescues and Squads are counted. Hazmat, Air Lights, District \
+        Chiefs and Command vehicles are not.
         """
 
     /// The City's meaning for a published level, or `nil` if it publishes a level we

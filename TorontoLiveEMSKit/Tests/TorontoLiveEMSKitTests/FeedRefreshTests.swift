@@ -52,43 +52,4 @@ struct FeedRefreshTests {
         #expect(!FeedRefresh.mayHaveRefreshed(since: Self.tick, now: at(59)))
         #expect(!FeedRefresh.mayHaveRefreshed(since: Self.tick, now: at(60)))
     }
-
-    // MARK: - A publisher that states an instant
-
-    @Test("an instant gates the same way a wall-clock string does")
-    func anInstantGatesTheSameWay() {
-        // The police feed's rule, which is this one with the publisher's own interval instead of the
-        // City's five minutes.
-        let written = Date(timeIntervalSince1970: 1_791_219_259)
-        let twenty = 20 * 60
-
-        #expect(
-            !FeedRefresh.mayHaveRefreshed(
-                since: written,
-                interval: twenty,
-                now: written.addingTimeInterval(19 * 60)
-            )
-        )
-        #expect(
-            FeedRefresh.mayHaveRefreshed(
-                since: written,
-                interval: twenty,
-                now: written.addingTimeInterval(20 * 60)
-            )
-        )
-    }
-
-    @Test("an instant gate fails open when there is no stamp to reason from")
-    func anInstantGateFailsOpen() {
-        // Reachable in practice: the stamp arrives in a response of its own, and that response can
-        // fail or omit it. A gate that failed closed would leave a reader on old calls with nothing
-        // on screen to say why.
-        #expect(
-            FeedRefresh.mayHaveRefreshed(
-                since: nil,
-                interval: 20 * 60,
-                now: Date(timeIntervalSince1970: 1_791_219_259)
-            )
-        )
-    }
 }

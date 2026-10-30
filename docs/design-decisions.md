@@ -16,6 +16,16 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   we already know. The alert is the point: a silent skip is indistinguishable from a dead
   button, which is exactly the bug reported earlier. The gate **fails open** — no tick, or
   one of an unexpected shape, allows the fetch rather than blocking it.
+- **The police feed skips only on an unchanged stamp, never on a pace.** The
+  Service states when it last wrote to the layer. The app keeps the stamp the calls on
+  screen were read under — the **as-of**, not the Service's latest stamp — and reads the
+  Service's stamp on every refresh. If it is unchanged, the calls are already current and
+  are not fetched. If it has moved, the write is fetched: a pace describes the publisher,
+  not our copy, and our copy can be a write behind. After a fetch the calls are compared
+  with the calls that were there, because a stamp can move while the calls do not. The
+  status line and the "nothing newer" sentence quote the as-of, never the Service's newest
+  write. Fire keeps its five-minute gate because the City's tick rides inside the document
+  it already fetched.
 - **One fetch when the app has no data to show** — a cold launch, so it is never
   empty on arrival. This matches the City's own page, whose AJAX call fires on
   `document.ready` and whose refresh button is `location.reload()`.
@@ -65,7 +75,7 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   two states that used to be written into the status line — are now the `ProgressView` and
   the `ContentUnavailableView` instead.
 - **The feed's own timestamp is always shown**, in that header, labelled
-  **"City data as of …"**. That value is `update_from_db_time` —
+  **"City fire data as of …"**. That value is `update_from_db_time` —
   the City's own refresh tick, which lands on a five-minute boundary — and not the moment
   we fetched it. "Last updated" left that open to the wrong reading, and was changed after
   it was mistaken for our own fetch time.
@@ -82,6 +92,15 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **Offline or feed-down shows the last successful snapshot, clearly marked
   stale** — never a blank screen. Staleness is only ever within one session, since
   nothing persists.
+- **Each page lists its own feed newest first, by a rule the app applies.** The two
+  sources order differently, and neither order is something the app controls: the City's
+  document runs oldest first and the Service's response is only newest first because it was
+  asked to be. So each feed sorts its own collection by the time its publisher states,
+  descending, and the parsers keep reporting the publisher's order unchanged. Fire sorts the
+  published timestamp string — zero-padded ISO-8601, so string order is time order and no
+  timezone is chosen. Calls sort their instant. Neither is ever compared with the other,
+  because the two pages never show them together. An incident with no Dispatch Time sorts
+  last: the empty string compares below every digit, so it cannot claim to be the newest.
 
 ## Platform scope
 
@@ -313,12 +332,28 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **The `.street` case does not occur in the current capture**, where every addressable incident
   publishes an intersection. Kept and tested because the feed changes without telling anyone.
 
+## Naming: the publisher and the subject
+
+**Name the publisher when talking about publication; name the service when talking about the
+data.** "The City did not publish a location" is right, because it describes an act of publishing.
+"City data as of" was wrong, because on the fire page it named a publisher and left the subject
+unsaid, beside a police line that says "TPS data as of" and names both.
+
+So the fire line reads **"City fire data as of …"**, and prose about the incidents says **Toronto
+Fire Services** — the service whose incidents they are — naming the City where publishing is what
+is being described. "Fire division" remains a phrase this project does not use.
+
 ## What the app explains
 
-- **The City's own explanations are in the app, quoted rather than paraphrased**, and they live
-  with the thing they describe: `LiveCADFeed.sourceNote` for where the incidents come from and
-  how often, `AlarmLevel.escalationNote` for how a level is arrived at, `AlarmLevel.countingNote`
-  for what its vehicle counts count. A wording change happens beside the field, not in a view.
+- **The City's own explanations are in the app, paraphrased**, and they live with the thing they
+  describe: `LiveCADFeed.sourceNote` for where the incidents come from and how often,
+  `AlarmLevel.escalationNote` for how a level is arrived at, `AlarmLevel.countingNote` for what
+  its vehicle counts count. A wording change happens beside the field, not in a view.
+
+  **Paraphrased, not quoted, and the app no longer says otherwise.** The City's escalation
+  paragraph ran to a hundred words of dispatcher procedure to make a point that takes forty, on a
+  screen a reader opens once. Where the exact wording carries the meaning — the vehicle counts —
+  it is still quoted, and the screen does not present itself as a transcript.
 - **A screen of its own, behind an info button beside Settings.** Reference material rather than
   a preference: somebody wondering what an Alarm Level is should not have to guess that it is
   filed under settings. Settings keeps the attribution; this screen carries the licence too,
@@ -452,6 +487,12 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   `FI` Fire Investigator. That is the City's vocabulary, not ours. The table keeps the
   published tokens — `P231, P234` — because it has the least room and the detail view is
   one tap away.
+- **A unit the feed publishes twice is shown once.** The roster is read through one rule in
+  `DispatchedUnit`: identity is the trimmed token compared case-insensitively, the first
+  occurrence keeps its place, and the published order survives. The correction is silent — a
+  source glitch the reader can do nothing about is not worth a sentence — and it is applied
+  where the roster is read, not to the payload. The stored `dispatchedUnits` string stays
+  exactly as the City sent it.
 - **Codes we cannot decode are shown raw.** The legend appears not to be
   exhaustive — `L325` was observed once and is undefined. An undecodable code
   falls back to its raw token rather than a guess.
@@ -668,6 +709,26 @@ say which of them mattered.
   either page, the container draws it, and that is why it cannot differ between them. Apple
   provides no top-side equivalent — `tabViewBottomAccessory` is the only accessory API and it is
   the bottom — so an overlay on the container is how that arrangement is reached.
+- **The police page's window has no control of its own.** The capsule carried a clock menu for it,
+  which covered the page's header; the window is settable in Settings, so that second route was
+  removed and Settings is now the only writer. The old rationale — that two routes to one preference
+  cannot disagree — went with the control: one route cannot disagree with itself, and the default is
+  stated once in `PoliceCallWindow.policePageDefault`, read by Settings and the page alike. What the
+  page shows of the window now is the fold row counting the calls held back, which is accepted: the
+  reader chose the window, and the fold already says older calls exist.
+- **The platform's compass is kept clear by padding the map's safe area — to be checked on a device.**
+  Rotated away from north, `MapCompass` appears in the map's top-trailing corner, under the app's
+  capsule. There is no placement API for it — one initialiser, no alignment, and `mapControls` shows
+  or hides every control at once. The first attempt reserved a transparent strip with
+  `safeAreaInset`; the strip sat between the `MapReader` and its tap gesture, and tapping incidents
+  became unreliable at the same time, so it was withdrawn. The second attempt adds the capsule's
+  band to the map's safe area with `safeAreaPadding` instead, which keeps the map's frame — but the
+  padded origin meant a tap's local point and the proxy's local conversion no longer agreed, so taps
+  landed above their target. The tap and both proxy conversions now use `.global`, which the padded
+  map and the reader share. **Whether the platform reflows the compass below the capsule has not
+  been seen on a device.** If it does not, delete the compass and record the cost to north-reset
+  beside the remaining controls. A hand-rolled compass is not the platform's control, and a rotation
+  gesture is a poor north-reset.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule
@@ -707,7 +768,8 @@ say which of them mattered.
   the police feed arrives it will show both.
 
 **Unverifiable on this machine, to be checked on the Mac:** MapKit. There is no MapKit
-`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles` and
-`MapCompass` are evidenced only by code that has already compiled in this project. For the
-same reason selection is done with `.onTapGesture` on the annotation content — plain
-SwiftUI — rather than `MapSelection`.
+`.swiftinterface` here, so `Map`, `MapCircle`, `Annotation`, `.annotationTitles`,
+`.safeAreaPadding` on the map and `MapCompass` are evidenced only by code that has already
+compiled in this project. For the same reason selection is done with `.onTapGesture` on the
+annotation content — plain SwiftUI — rather than `MapSelection`. What has to be looked at on a
+device is both whether the compass is reflowed below the capsule and whether map taps still land.
