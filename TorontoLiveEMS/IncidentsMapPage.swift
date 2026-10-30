@@ -755,7 +755,7 @@ struct MapInformationContent: View {
     var body: some View {
         List {
             Section {
-                Text("Both feeds on one map: the City's fire incidents as the areas and points it publishes, and the Service's police calls as the points it publishes. Every mark is a symbol for what kind of incident it is, in a colour for how much it matters.")
+                Text("Both feeds on one map: the City's fire incidents and the Service's police calls. Symbols say what kind it is; colours say how much it matters.")
             } header: {
                 Text("The Map")
             }
@@ -777,7 +777,7 @@ struct MapInformationContent: View {
             } header: {
                 Text("Symbols")
             } footer: {
-                Text("The symbol says what kind of incident it is, and the nine are shared by both feeds — which is why a fire alarm and a police call about a fire wear the same bell. A call this app has no kind for is drawn as a question mark.")
+                Text("The symbol says the incident's kind. Both feeds share the set, so a fire alarm and a police fire call wear the same bell; an unknown kind is a question mark.")
             }
 
             Section {
@@ -806,7 +806,7 @@ struct MapInformationContent: View {
             } header: {
                 Text("Colours")
             } footer: {
-                Text("The colour says how much an incident matters, and never what kind it is. Grey is most of the map on purpose: a colour that marks exceptions has to leave the majority quiet, or it marks nothing.\n\nThe fire severities are the City's own — a dangerous kind of call, or a response of ten or more vehicles. The police severities are this app's inference from the call type, because the Service publishes none and nothing in a call says how serious it is. A police code this app has not met yet is Unknown as well.")
+                Text("The colour says how much an incident matters, never what kind it is. Grey is most of the map on purpose: marking exceptions means leaving the majority quiet.\n\nThe fire severities are the City's own. The police severities are this app's inference from the call type, because the Service publishes none and a call says nothing.")
             }
         }
         .navigationTitle("About the Map")

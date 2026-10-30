@@ -732,6 +732,14 @@ say which of them mattered.
   been seen on a device.** If it does not, delete the compass and record the cost to north-reset
   beside the remaining controls. A hand-rolled compass is not the platform's control, and a rotation
   gesture is a poor north-reset.
+- **The map's legend is prose, not a manual.** Three blocks, each at most 60 words: what the
+  map draws, what a symbol means, what a colour means. The symbols footer used to say *the nine*
+  above ten rendered rows — the tenth being the question mark the next sentence describes — and a
+  count of a UI table is a fact about the implementation rather than about the city. The colour
+  footer keeps only the three claims that change how a reader looks at the map: colour is how much
+  an incident matters and never what kind; grey is the majority on purpose; the fire severities are
+  the publisher's own while the police severities are this app's inference, because the Service
+  publishes none.
 - **That is the end of a long road, and it is worth recording** because each step was a real
   hypothesis and most were wrong. Two toolbar items were tuned to match by numbers. The bar's
   items were then assumed to be the reference and the capsule was shrunk to them. Then the capsule
