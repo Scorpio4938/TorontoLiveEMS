@@ -51,6 +51,8 @@ struct CatalogueModeMenu: View {
             HStack(spacing: 4) {
                 Text(title)
                     .font(.headline)
+                Image(systemName: mode.systemImage)
+                    .font(.caption2)
                 Image(systemName: "chevron.down")
                     .font(.caption2)
             }
