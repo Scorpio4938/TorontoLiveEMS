@@ -24,7 +24,7 @@ struct UnitCatalogueView: View {
                         NavigationLink {
                             UnitPage(unit: unit, feed: feed)
                         } label: {
-                            UnitRow(unit: unit)
+                            FireUnitRow(unit: unit)
                         }
                     }
                 } header: {
@@ -34,23 +34,6 @@ struct UnitCatalogueView: View {
         }
         .navigationTitle("Units")
         .softScrollEdge()
-    }
-}
-
-/// One unit in the catalogue: its code, and the apparatus the legend names when it names one.
-private struct UnitRow: View {
-
-    let unit: FireUnit
-
-    var body: some View {
-        HStack {
-            Text(unit.code)
-            Spacer()
-            if let name = unit.name {
-                Text(name)
-                    .foregroundStyle(Color.secondary)
-            }
-        }
     }
 }
 

@@ -59,14 +59,7 @@ struct StationPage: View {
                         NavigationLink {
                             UnitPage(unit: unit, feed: feed)
                         } label: {
-                            HStack {
-                                Text(unit.code)
-                                Spacer()
-                                if let name = unit.name {
-                                    Text(name)
-                                        .foregroundStyle(Color.secondary)
-                                }
-                            }
+                            FireUnitRow(unit: unit)
                         }
                     }
                 } header: {
