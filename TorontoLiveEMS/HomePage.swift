@@ -16,6 +16,10 @@ import TorontoLiveEMSKit
 /// **The provenance lines are the same values the two tabs show, not a paraphrase.** They are
 /// `FeedStatusLine` over the two feeds' own `status`, so a refresh on Home has something visible to
 /// change and cannot say something different from the page it belongs to.
+///
+/// The design is recorded in `docs/design-decisions.md`, *The reference section*: a directory
+/// rather than a dashboard, no masthead or mark, counts as trailing values, and Sources as a
+/// section because it is a destination. Nothing here exists only to fill the screen.
 struct HomePage: View {
 
     let feed: IncidentFeed
