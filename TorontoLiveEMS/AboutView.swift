@@ -52,14 +52,15 @@ struct AboutView: View {
             }
 
             Section {
-                Text("A reader for Toronto Fire Services' active incidents, as a list and as a map.")
+                Text("A reader for Toronto Fire Services' active incidents and the Toronto Police Service's recent calls, as lists and as a map.")
             } header: {
                 Text("What this is")
             } footer: {
                 Text(
                     """
-                    Nothing is collected, and the only things this app asks the network for are the \
-                    City's feed and — for a location with no published shape — Apple's geocoder.
+                    Nothing is collected. The app asks the City for its fire incidents, the Toronto \
+                    Police Service for its recent calls, and — for a location with no published \
+                    shape — Apple's geocoder.
                     """
                 )
             }

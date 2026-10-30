@@ -1,5 +1,3 @@
-import Foundation
-
 /// One of the app's four sections.
 ///
 /// **The tab bar's sections, and the launch rule's vocabulary.** Home is the index; Fire, Police
