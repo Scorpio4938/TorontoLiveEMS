@@ -23,6 +23,10 @@ struct AppSectionTests {
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .fire) == .fire)
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .police) == .police)
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .map) == .map)
+
+        // Any non-empty version means the app has launched. An older one still restores, which is
+        // what lets the welcome greeting later compare versions without changing this rule.
+        #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.1", lastUsed: .map) == .map)
     }
 
     @Test("Home is never restored, and no stored page means Fire")

@@ -33,6 +33,18 @@ struct IncidentDetailView: View {
         units.contains { $0.apparatus == nil }
     }
 
+    /// The station the incident's Area names, when the catalogue knows that number.
+    ///
+    /// Area is a run area the City files the incident under, numbered as a station — not necessarily
+    /// the station that responded. When the number is one of the 84, the row opens that station so a
+    /// reader can find out where it is. A number the catalogue does not know stays a plain value
+    /// rather than a link that cannot lead anywhere.
+    private var stationForArea: FireStation? {
+        let number = Int(incident.area.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard let number else { return nil }
+        return FireStations.bundled.station(number: number)
+    }
+
     var body: some View {
         List {
             Section {
@@ -40,11 +52,19 @@ struct IncidentDetailView: View {
                 LabeledContent("Incident Type", value: incident.incidentType)
                 LabeledContent("Alarm Level", value: incident.alarmLevel)
                 LabeledContent("Dispatch Time", value: incident.dispatchTime)
-                LabeledContent("Area", value: incident.area)
+                if let station = stationForArea {
+                    NavigationLink {
+                        StationPage(station: station)
+                    } label: {
+                        LabeledContent("Area", value: incident.area)
+                    }
+                } else {
+                    LabeledContent("Area", value: incident.area)
+                }
             } header: {
                 Text("Incident")
             } footer: {
-                Text("Area is the fire station area the incident falls in. Alarm Level is Toronto Fire Services' response escalation, where 0 is an initial response.")
+                Text("Area is the run area the City files the incident under, numbered as its station. Alarm Level is Toronto Fire Services' response escalation, where 0 is an initial response.")
             }
 
             Section {

@@ -2,9 +2,9 @@ import Foundation
 
 /// One fire station, as the City of Toronto publishes it.
 ///
-/// The live feed names the station nearest an incident as a bare number — `231` — and names
-/// apparatus by the station it belongs to — `P231`. A number is not a place, so the app needs the
-/// City's own row for the station before it can say where that number is. This is that row.
+/// The live feed names an incident's Area as a bare station number — `231` — and names apparatus by
+/// the station it belongs to — `P231`. A number is not a place, so the app needs the City's own row
+/// for the station before it can say where that number is. This is that row.
 public struct FireStation: Sendable, Equatable, Identifiable, Decodable {
 
     /// The station number the feed uses, e.g. `231`.

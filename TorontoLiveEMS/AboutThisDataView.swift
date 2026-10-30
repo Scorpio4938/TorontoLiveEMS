@@ -42,7 +42,7 @@ struct AboutThisDataContent: View {
             }
 
             Section {
-                LabeledContent("Area", value: "The fire station area the incident falls in")
+                LabeledContent("Area", value: "The run area the City files the incident under, numbered as its station")
                 LabeledContent("Dispatched Units", value: "Apparatus sent to it")
             } header: {
                 Text("Fields")

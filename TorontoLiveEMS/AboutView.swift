@@ -38,10 +38,10 @@ struct AboutView: View {
                         .frame(width: 88, height: 88)
                         .clipShape(RoundedRectangle(cornerRadius: 88 * 0.2237, style: .continuous))
 
-                    Text(Self.name)
+                    Text(AppIdentity.name)
                         .font(.title3.weight(.semibold))
 
-                    Text(Self.version)
+                    Text(AppIdentity.version)
                         .font(.subheadline)
                         .foregroundStyle(Color.secondary)
                 }
@@ -87,44 +87,6 @@ struct AboutView: View {
         .navigationTitle("About")
     }
 
-    /// The app's name, as the device shows it.
-    ///
-    /// Read rather than typed, so the row and the Home screen cannot disagree. The project sets no
-    /// `CFBundleDisplayName`, so this is the target name — `TorontoLiveEMS`, without the spaces the
-    /// app is called in prose. Setting `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is
-    /// the whole of that change, and then both places say it without being told.
-    private static var name: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
-            ?? "This app"
-    }
-
-    /// The number the bundle carries, which is `MARKETING_VERSION` in the project.
-    ///
-    /// **Read, never written, and that is what the row is for.** A version typed into a screen is
-    /// one that will one day disagree with the project it was built from — so that sentence lives
-    /// here, with the decision, rather than in front of a reader who is looking for what their
-    /// version *means*.
-    ///
-    /// Whether a *tag* carries the same number is `scripts/version_check.py`'s business rather than
-    /// this screen's — a screen cannot check a repository — and `docs/releasing.md` holds the scheme.
-    private static var bundleVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-            ?? "unknown"
-    }
-
-    /// The version as a reader should see it: the checkpoint, and the build.
-    ///
-    /// **The build is shown even though it stays at 1 until the app is distributed.** It is the one
-    /// number that changes with every upload, so it is the number someone reporting a problem will
-    /// be asked for — and a version row that conceals a number the app has is a row that leaves the
-    /// reader wondering what else it is not saying.
-    private static var version: String {
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            ?? "unknown"
-        return "\(bundleVersion) (\(build))"
-    }
-
     /// What the two numbers are, and what the version says about the app.
     ///
     /// The first sentence is for a reader looking at two numbers and wondering which is which. The
@@ -134,7 +96,9 @@ struct AboutView: View {
     private static var versionNote: String {
         let whatTheNumbersAre =
             "The version is the checkpoint, and the number in brackets is the build."
-        guard let stage = VersionStage.of(bundleVersion) else { return whatTheNumbersAre }
+        guard let stage = VersionStage.of(AppIdentity.marketingVersion) else {
+            return whatTheNumbersAre
+        }
         return "\(whatTheNumbersAre) \(stage.note)"
     }
 }

@@ -1,9 +1,9 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// The app: the feed, the screens, and the chrome around them.
+/// The app: the feeds, the screens, and the chrome around them.
 ///
-/// **Two screens, and Apple's own control between them.** `TabView` and `Tab`, not a segmented
+/// **The app's sections, and Apple's own control between them.** `TabView` and `Tab`, not a segmented
 /// picker: a segmented control filters content rather than moving between places, and the tab
 /// bar is what a reader already knows. It is also the control whose absence has been chased
 /// six times, so it is worth saying why it was never there — a tab bar is at the bottom of the
@@ -43,15 +43,19 @@ import TorontoLiveEMSKit
 /// as a second bar, of its own height, above the tab bar. That is now known from looking rather
 /// than assumed.
 ///
-/// **The feed is owned here, once.** Both screens read the same incidents and the same age for
-/// them. A feed per screen could let them disagree about what is happening, which a reader
-/// would never think to check — and the map's own author said so before this was rewritten.
+/// **The feeds are owned here, once.** Every screen reads the same incidents and the same calls, and
+/// the same age for them. A feed per screen could let them disagree about what is happening, which a
+/// reader would never think to check — and the map's own author said so before this was rewritten.
 struct RootView: View {
 
     /// Which page the bar is showing.
     ///
-    /// Named `Screen` rather than `Section`, which is a SwiftUI type.
-    private enum Screen: Hashable {
+    /// Named `Screen` rather than `Section`, which is a SwiftUI type. The raw string matches
+    /// `AppSection` for the four sections a launch can restore, with `refresh` as the one value that
+    /// is chrome rather than a page.
+    private enum Screen: String, Hashable {
+        /// The app's index. The first launch opens here; no launch after does.
+        case home
         /// The fire feed's list. Named for the source rather than the content, because a police
         /// one is coming and two screens cannot both be called "Active Incidents".
         case fire
@@ -61,16 +65,27 @@ struct RootView: View {
         case map
         /// Not a page. See the refresh tab, which is put back the moment it is chosen.
         case refresh
+
+        init(section: AppSection) {
+            self = Screen(rawValue: section.rawValue) ?? .fire
+        }
+
+        /// The section this screen is, or `nil` for the refresh control.
+        var section: AppSection? {
+            AppSection(rawValue: rawValue)
+        }
     }
 
     @State private var feed: IncidentFeed
-    @State private var screen: Screen = .fire
 
-    /// The police calls, owned here for the same reason the fire feed is: two screens reading two
-    /// copies could disagree about what is happening, and about how current it is.
+    /// The screen during this run, fixed at launch and then changed by the tab bar.
+    @State private var screen: Screen
+
+    /// The police calls, owned here for the same reason the fire feed is: multiple screens reading
+    /// two copies could disagree about what is happening, and about how current it is.
     ///
-    /// It is read when the reader opens the police tab rather than at launch — nothing else shows
-    /// these calls — and that load lives on the page.
+    /// The police page and the map load it on arrival; Home loads it too because Home shows its
+    /// provenance line. The load itself belongs to whichever screen the reader has opened.
     @State private var policeFeed: PoliceCallFeed
 
     /// Which kind of map the map page draws.
@@ -83,6 +98,19 @@ struct RootView: View {
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
     @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
+    /// The version this device last acknowledged.
+    ///
+    /// **Empty means this app has never been launched**, and that is the same emptiness the welcome
+    /// greeting will read (#33). Home opens only while this is empty; the first launch writes the
+    /// bundle's version so the fact cannot be true twice.
+    @AppStorage(SettingsKey.acknowledgedVersion) private var acknowledgedVersion = ""
+
+    /// The last section the reader used that is not Home.
+    ///
+    /// Written on every page change except Home and the refresh control. A launch reads it through
+    /// `LaunchBehaviour`, which never restores Home.
+    @AppStorage(SettingsKey.lastSection) private var lastSection: AppSection = .fire
+
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
@@ -94,6 +122,13 @@ struct RootView: View {
     /// comes back, and an alert that described whatever tab they had moved to would be describing
     /// the wrong feed.
     @State private var nothingNewerMessage = ""
+
+    /// Whether this instance may write the launch acknowledgement.
+    ///
+    /// True for the app, false for a preview that chose its own launch section. A preview that
+    /// writes the real preference store would mark the developer's simulator as launched and make
+    /// the next real launch skip Home.
+    private let recordsLaunch: Bool
 
     /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
     /// never touch the City's server.
@@ -108,9 +143,29 @@ struct RootView: View {
     /// "call to main actor-isolated initializer 'init(fetch:now:)' in a synchronous nonisolated
     /// context". Every caller here — the app entry point and the preview — is already a main
     /// actor context, so they can pass it themselves. Found by the compiler, not by thinking.
-    init(feed: IncidentFeed, policeFeed: PoliceCallFeed) {
+    ///
+    /// `launchSection` is for previews and tests of the chrome: a preview should not inherit
+    /// whatever this device last opened. The app leaves it `nil`, which reads the stored fact.
+    init(
+        feed: IncidentFeed,
+        policeFeed: PoliceCallFeed,
+        launchSection: AppSection? = nil
+    ) {
         _feed = State(initialValue: feed)
         _policeFeed = State(initialValue: policeFeed)
+
+        let storedVersion =
+            UserDefaults.standard.string(forKey: SettingsKey.acknowledgedVersion) ?? ""
+        let storedSection = UserDefaults.standard
+            .string(forKey: SettingsKey.lastSection)
+            .flatMap { AppSection(rawValue: $0) }
+        let section = launchSection
+            ?? LaunchBehaviour.section(
+                acknowledgedVersion: storedVersion,
+                lastUsed: storedSection
+            )
+        _screen = State(initialValue: Screen(section: section))
+        recordsLaunch = launchSection == nil
     }
 
     var body: some View {
@@ -170,7 +225,15 @@ struct RootView: View {
             // cannot have changed more than once in five minutes anyway. The feed is an
             // undocumented path on the City's server, so the app asks for it only when it has
             // nothing to show, or when someone taps refresh.
+            //
+            // The first launch also becomes the launch this device has acknowledged. The key is a
+            // version string rather than a boolean because the welcome greeting (#33) compares
+            // versions against it; until that sheet lands, recording the current version is what
+            // stops Home opening on every launch.
             .task {
+                if recordsLaunch, acknowledgedVersion.isEmpty {
+                    acknowledgedVersion = AppIdentity.marketingVersion
+                }
                 if feed.snapshot == nil {
                     await feed.load()
                 }
@@ -179,6 +242,15 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $screen) {
+            Tab("Home", systemImage: "house", value: Screen.home) {
+                NavigationStack {
+                    HomePage(feed: feed, policeFeed: policeFeed)
+                        .navigationTitle("Home")
+                        .inlineNavigationTitle()
+                        .barControls { toolbar }
+                }
+            }
+
             Tab("Fire", systemImage: "fire.extinguisher", value: Screen.fire) {
                 // Each tab carries its own `NavigationStack`, which is what gives it its own
                 // title and its own navigation bar. That is the reason the toolbar is applied
@@ -240,16 +312,22 @@ struct RootView: View {
             #endif
         }
         .onChange(of: screen) { previous, selected in
-            guard selected == .refresh else { return }
+            if selected == .refresh {
+                // Back to the tab they were on, **not** to Incidents. This read `.incidents` until
+                // the map became a real page: refreshing while looking at the map would have moved
+                // the reader somewhere else entirely. Put back first, because otherwise the refresh
+                // would work exactly once — the second tap would not change the selection, so
+                // nothing would change and nothing would fire. It is also why the bar's selection is
+                // seen to move.
+                screen = previous
+                Task { await refresh() }
+                return
+            }
 
-            // Back to the tab they were on, **not** to Incidents. This read `.incidents` until
-            // the map became a real page: refreshing while looking at the map would have moved
-            // the reader somewhere else entirely. Put back first, because otherwise the refresh
-            // would work exactly once — the second tap would not change the selection, so
-            // nothing would change and nothing would fire. It is also why the bar's selection is
-            // seen to move.
-            screen = previous
-            Task { await refresh() }
+            // Home is never stored: a launch restores the last page with content, not the index.
+            if let section = selected.section, section.isRestorable {
+                lastSection = section
+            }
         }
     }
 
@@ -309,11 +387,12 @@ struct RootView: View {
         case .police:
             outcome = await policeFeed.refresh()
             message = policeFeed.nothingNewerMessage
-        case .map:
-            // **The map draws both feeds, so a refresh on it asks both.** Fire can still answer from
-            // the clock it holds, because the City's republish tick rides inside the document it
-            // already fetched. The police half always asks the Service whether it has written, and
-            // fetches the calls only when it has. A tap with nothing to fetch is still instant.
+        case .home, .map:
+            // **Both of these screens show both feeds, so a refresh on either asks both.** Fire can
+            // still answer from the clock it holds, because the City's republish tick rides inside
+            // the document it already fetched. The police half always asks the Service whether it has
+            // written, and fetches the calls only when it has. A tap with nothing to fetch is still
+            // instant.
             //
             // The alert only appears when **neither** found anything: saying "nothing newer" while one
             // of the two had in fact refreshed would be the kind of half-truth this alert exists to
@@ -410,6 +489,7 @@ private extension View {
 #Preview("App — sample data") {
     RootView(
         feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
-        policeFeed: PreviewCalls.feed()
+        policeFeed: PreviewCalls.feed(),
+        launchSection: .home
     )
 }

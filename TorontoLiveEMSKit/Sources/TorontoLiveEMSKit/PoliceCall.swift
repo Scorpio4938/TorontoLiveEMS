@@ -3,10 +3,10 @@ import Foundation
 /// One call for service, as published by the Toronto Police Service.
 ///
 /// **A model of its own, and not an `Incident`.** The fire feed's incidents and these calls are
-/// different things: an incident has an alarm level, a fire station area and a roster of
-/// apparatus, and a call has a division, a call type and an intersection. Forcing one into the
-/// other would mean fields that are always empty and names that lie about what they hold, and the
-/// point of the two models is that each says what its own publisher says.
+/// different things: an incident has an alarm level, a run area and a roster of apparatus, and a
+/// call has a division, a call type and an intersection. Forcing one into the other would mean
+/// fields that are always empty and names that lie about what they hold, and the point of the two
+/// models is that each says what its own publisher says.
 ///
 /// **The publisher gives a point**, so nothing here is geocoded: `latitude` and `longitude` are
 /// published outright, where the fire feed publishes a street and makes the app ask Apple where it

@@ -7,6 +7,21 @@ import TorontoLiveEMSKit
 /// `DispatchTimeFormat` is `RawRepresentable` over `String`, which is what it wants.
 /// There is no settings model and no synchronisation: a preference is a key and a default.
 enum SettingsKey {
+    /// The version this device last acknowledged.
+    ///
+    /// **A version string, not a boolean.** Empty means this app has never been launched, and that
+    /// is the one fact both the launch rule and the welcome greeting read (#33). Anything else is a
+    /// version this device has seen, which a later "what's new" notice can compare against without a
+    /// migration.
+    static let acknowledgedVersion = "acknowledgedVersion"
+
+    /// The last section the reader used that is not Home.
+    ///
+    /// **Home is never written here.** A launch restores this value, so storing Home would make the
+    /// index a place the app could reopen on, which it is not. It does not answer whether the app has
+    /// launched before; `acknowledgedVersion` does.
+    static let lastSection = "lastSection"
+
     static let dispatchTimeFormat = "dispatchTimeFormat"
     static let presentation = "incidentPresentation"
     /// Which half of a police call's type the table and the card show.
