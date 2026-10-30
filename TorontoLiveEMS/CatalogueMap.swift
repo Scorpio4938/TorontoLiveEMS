@@ -69,7 +69,7 @@ struct CatalogueModeMenu: View {
 ///
 /// **Pins, not discs.** The live map draws a thirteen-point dot because a place there can hold
 /// several incidents and the mark is about urgency. A catalogue's rows are places with names and
-/// addresses, so this uses the platform's own marker — 84 of them should read as pins.
+/// addresses, so this draws a pin glyph — 84 of them should read as pins.
 ///
 /// **No shape is drawn.** The catalogue knows points; it does not know what ground a station or a
 /// division covers, and a boundary drawn from nothing would be an invention.
@@ -108,7 +108,7 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
     }
 
     private var selectedItem: Item? {
-        guard let selected else { return nil }
+        guard let selected = selected else { return nil }
         return items.first { $0.id == selected }
     }
 
@@ -171,8 +171,8 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
 /// The card a catalogue pin opens.
 ///
 /// The same glass surface and the same padding as a live-map card; what differs is that a
-/// catalogue row is one entity rather than a group, so this is a title and one optional line and
-/// nothing else.
+/// catalogue row is one entity rather than a group, so this is a title and one line and nothing
+/// else.
 struct ReferenceMapCard: View {
 
     let title: String
