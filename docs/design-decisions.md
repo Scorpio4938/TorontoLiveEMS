@@ -574,8 +574,10 @@ division — and it is deliberately the quietest part of the app.
   Divisions catalogues offer a List/Map toggle; the map draws one pin per published
   point and no boundary or polygon, because the reference data is points only. The
   camera and the open card survive the toggle, so a reader does not lose their place.
-  Units have no map: a unit has no location of its own, and its station's coordinate is
-  not the unit's.
+  The choice is a menu on the catalogue's own title, not a control in the shared trailing
+  chrome: the Info/Settings capsule already occupies that corner on every page. Units have
+  no map: a unit has no location of its own, and its station's coordinate is not the
+  unit's.
 - **Pins behave like the live map's, not like a second map.** Nothing is tagged and the
   map's own selection is not used. A tap becomes a point, the nearest pin within the
   same 22-point radius wins, the card is drawn inside the map on the same glass

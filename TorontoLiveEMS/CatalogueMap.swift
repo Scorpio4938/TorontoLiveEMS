@@ -16,25 +16,46 @@ enum CatalogueMode: String, CaseIterable, Identifiable {
         case .map: return "Map"
         }
     }
+
+    var systemImage: String {
+        switch self {
+        case .list: return "list.bullet"
+        case .map: return "map"
+        }
+    }
 }
 
 
-/// The List/Map toggle a catalogue carries.
+/// The List/Map choice a catalogue carries, as its navigation title.
 ///
-/// A segmented picker rather than a menu: there are exactly two ways to see the same rows, and the
-/// choice is one a reader flips back and forth. The labels are words rather than glyphs because a
-/// map glyph and a list glyph side by side are a puzzle; "List" and "Map" are not.
-struct CatalogueModePicker: View {
+/// **A title menu rather than a toolbar button.** The app's Info and Settings capsule is drawn
+/// over the trailing end of every page, so a second trailing control would sit under it. The
+/// title is otherwise a label that does nothing; making it the menu keeps the catalogue's name,
+/// puts the choice where a reader already looks for the page's identity, and leaves the shared
+/// chrome alone. The menu's Pickers give the current view the platform's own checkmark.
+struct CatalogueModeMenu: View {
+
+    let title: String
 
     @Binding var mode: CatalogueMode
 
     var body: some View {
-        Picker("View", selection: $mode) {
-            ForEach(CatalogueMode.allCases) { option in
-                Text(option.label).tag(option)
+        Menu {
+            Picker("View", selection: $mode) {
+                ForEach(CatalogueMode.allCases) { option in
+                    Label(option.label, systemImage: option.systemImage)
+                        .tag(option)
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
             }
         }
-        .pickerStyle(.segmented)
+        .accessibilityLabel("\(title), view, \(mode.label)")
     }
 }
 

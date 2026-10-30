@@ -44,8 +44,8 @@ struct DivisionCatalogueView: View {
         }
         .navigationTitle("Divisions")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                CatalogueModePicker(mode: $mode)
+            ToolbarItem(placement: .principal) {
+                CatalogueModeMenu(title: "Divisions", mode: $mode)
             }
         }
     }

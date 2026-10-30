@@ -35,8 +35,8 @@ struct StationCatalogueView: View {
         }
         .navigationTitle("Stations")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                CatalogueModePicker(mode: $mode)
+            ToolbarItem(placement: .principal) {
+                CatalogueModeMenu(title: "Stations", mode: $mode)
             }
         }
     }
