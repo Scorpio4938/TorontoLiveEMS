@@ -22,7 +22,7 @@ enum SettingsKey {
     static let mapFilter = "mapFilter"
 }
 
-/// The app's preferences, and one row to everything that is not one.
+/// The app's preferences, and the rows to everything that is not one.
 ///
 /// **Preferences inline; reference material behind a row.** A picker is a value being chosen, and it
 /// belongs where it is chosen. A version number, a description of the app and a licence are things
@@ -31,9 +31,12 @@ enum SettingsKey {
 /// made once for *About this Data*: reference material is a screen of its own behind a row, not a
 /// section in Settings.
 ///
-/// The version and the attribution moved to *About* rather than being copied into it, so each has
-/// one home — and the licences keep theirs in *About this Data*, which *About* links to rather than
-/// repeating.
+/// **Grouped by what a setting affects, not by which feed its name mentions.** Layout and the time
+/// format apply to every page, so they sit together under *Display*; the two police preferences sit
+/// under *Police*; and what a reader opens rather than chooses sits under *About*. The old grouping
+/// put Layout under *Incidents* and gave the time format a section of its own, so three of four
+/// sections named a source and the one cross-cutting setting that was misfiled needed a footer to
+/// say it applied to fire and police alike. The header says it now, once.
 struct SettingsView: View {
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
@@ -50,8 +53,6 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.policeCallWindow)
     private var policeCallWindow: PoliceCallWindow = PoliceCallWindow.policePageDefault
 
-
-
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -65,21 +66,14 @@ struct SettingsView: View {
                             Text(option.label).tag(option)
                         }
                     }
-                } header: {
-                    Text("Incidents")
-                } footer: {
-                    Text("The table fits more incidents on a screen. Cards give each one a block of its own. This applies to the fire and police pages alike.")
-                }
-
-                Section {
-                    Picker("Format", selection: $dispatchTimeFormat) {
+                    Picker("Time Format", selection: $dispatchTimeFormat) {
                         Text("12-Hour").tag(DispatchTimeFormat.twelveHour)
                         Text("24-Hour").tag(DispatchTimeFormat.twentyFourHour)
                     }
                 } header: {
-                    Text("Dispatch Time")
+                    Text("Display")
                 } footer: {
-                    Text("How the time of day is shown.")
+                    Text("The table fits more incidents on a screen; cards give each one a block of its own.")
                 }
 
                 Section {
@@ -97,9 +91,9 @@ struct SettingsView: View {
                 } header: {
                     Text("Police")
                 } footer: {
-                    Text("Whether a call's type is shown as the words the Service sends or as the Service's own code. A call's detail view shows both.")
+                    Text("A call's detail view shows both.")
 
-                    Text("Recent Calls is how far back the police page looks, and that page shows exactly that — a call outside it is folded into Earlier Calls however serious it is. The map's window is its own, in the map's filter.")
+                    Text("The map's window is its own, in the map's filter.")
                 }
 
                 Section {
@@ -108,6 +102,14 @@ struct SettingsView: View {
                     } label: {
                         Text("About")
                     }
+
+                    NavigationLink {
+                        DataLicencesView()
+                    } label: {
+                        Text("Data Licences")
+                    }
+                } header: {
+                    Text("About")
                 }
             }
             .navigationTitle("Settings")

@@ -385,18 +385,21 @@ is being described. "Fire division" remains a phrase this project does not use.
 - **The City's `10-14` stays `10–14`.** Their list uses a hyphen and the app uses an en dash.
   Ours is typographically right and theirs is what they published; the difference is a
   deliberate one, not a transcription slip.
-- **Settings holds preferences; everything else sits behind a row.** The version, the app's own
-  description and the attribution had collected into sections of Settings, which is a screen for
-  *choosing* things and had become a screen for reading them too. Settings keeps its two pickers and
-  gains one row — *About* — with a chevron, and what a reader might want to read lives one push
-  away. That is the judgement this project had already made once for *About this Data*, applied to
-  the rest of what had gathered here.
-- **Two About screens, because they answer different questions.** *About* is about the app: its
-  icon, its name, which version is in the reader's hand, what it is for, and the City's page it
-  reads. *About this Data* is about the feed: what each field means, and the licences the data and
-  the postal-area shapes come under — and it is reached from the **info button** beside Settings
-  rather than from *About*, which has no row to it. A second way in would be a second place to keep
-  the same list true, and the licences have one home already.
+- **Settings is grouped by what a setting affects, not by which feed its name mentions.** Three
+  sections: *Display* holds Layout and Time Format, *Police* holds Call Type and Recent Calls, and
+  *About* holds the rows to *About* and *Data Licences*. Layout used to sit under *Incidents* and
+  the time format in a section of its own, so a footer had to say that a display choice applied to
+  the fire and police pages alike; the header says it now. Footers survive only where they add what
+  the picker's options do not — the table-and-cards trade, the detail view showing both type styles,
+  the map's separate window — and the time format's went because *12-Hour* and *24-Hour* already say
+  it.
+- **Two About screens and a licences screen, because they answer different questions.** *About* is
+  about the app: its icon, its name, which version is in the reader's hand, what it is for, and the
+  City's page it reads. *About this Data* is about the feed: what each field means, and the licences
+  the data and the postal-area shapes come under — and it is reached from the **info button** beside
+  Settings rather than from *About*, which has no row to it. *Data Licences* is the
+  provider-by-provider list behind a row in Settings, so a reader looking for a licence does not
+  have to know which screen explains which feed first.
 - **The one external link on *About* says whose it is.** It sits under a header naming the City,
   with a footer saying that the app only reads what they publish and is not affiliated with them.
   An About screen is about *this* app, so a row that opened somebody else's page without saying so

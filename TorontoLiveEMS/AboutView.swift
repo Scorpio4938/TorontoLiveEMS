@@ -7,8 +7,8 @@ import TorontoLiveEMSKit
 /// an Alarm Level means, what the unit codes are, which licences the shapes are under — and it is
 /// reached from the info button beside Settings. This one is about the app: the icon, the name,
 /// which version is in the reader's hand, and where the incidents it shows are published. There is
-/// deliberately **no row to that other screen**: the licences have one home already, and a second
-/// way in would be a second place to keep true.
+/// deliberately **no row to that other screen**: it is reached from the info button beside Settings,
+/// and a second way in would be a second place to keep true.
 ///
 /// **One external link, and it says whose it is.** An About screen is about *this* app, so a row
 /// that opened somebody else's page without saying so would be a mistake the reader had no way to

@@ -4,9 +4,9 @@ import TorontoLiveEMSKit
 
 /// The app's attribution and licence line.
 ///
-/// In one place because two screens show it: the detail view and Settings. The licence
-/// name is an inline markdown link, so it reads as part of the sentence rather than as a
-/// separate control beside it.
+/// In one place because several screens show it: the detail views, the information screens
+/// and *Data Licences*. The licence name is an inline markdown link, so it reads as part of
+/// the sentence rather than as a separate control beside it.
 enum Attribution {
 
     /// The sentence, with both of its links written as markdown.
@@ -48,11 +48,11 @@ enum Attribution {
 
     /// The police calls' licence, which is a third one and has to be shown on the police screens.
     ///
-    /// **Three licences, three providers, three places.** The fire feed is the City of Toronto's,
-    /// the postal-area shapes are Statistics Canada's under the Canadian licence, and the police
-    /// calls are the Toronto Police Service's under Ontario's. Each is stated where its data is
-    /// explained, and none is stated generically — a licence that names the wrong provider is
-    /// worse than one that is missing, because it reads as compliance.
+    /// **Three licences, three providers.** The fire feed is the City of Toronto's, the postal-area
+    /// shapes are Statistics Canada's under the Canadian licence, and the police calls are the
+    /// Toronto Police Service's under Ontario's. Each is stated where its data is explained, and
+    /// *Data Licences* gathers the three — none is stated generically, because a licence that names
+    /// the wrong provider is worse than one that is missing: it reads as compliance.
     ///
     /// The attribution string is the provider's own: *Toronto Police Service*, which is what the
     /// item's `accessInformation` says.
