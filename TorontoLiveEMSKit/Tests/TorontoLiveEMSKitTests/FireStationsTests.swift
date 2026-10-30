@@ -23,6 +23,7 @@ struct FireStationsTests {
         #expect(stations.count == 84, "the published file has 85 rows; 84 are fire stations")
         #expect(stations.stations.count == 84)
         #expect(stations.numbers.count == 84)
+        #expect(stations.numbers == stations.numbers.sorted())
         #expect(!stations.source.isEmpty)
         #expect(!stations.licence.isEmpty)
         #expect(!stations.retrieved.isEmpty)

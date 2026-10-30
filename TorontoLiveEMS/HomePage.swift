@@ -5,9 +5,10 @@ import TorontoLiveEMSKit
 /// The app's index.
 ///
 /// **A list, because the platform's list is the right shape for an index.** Two sections grouped by
-/// service, each row carrying the size of the catalogue behind it, then the two provenance lines the
-/// Fire and Police pages lead with, then the sources they come from. Nothing here is live content of
-/// its own, which is why Home is the only page that can be opened before either feed has answered.
+/// service, each row carrying the size of the catalogue behind it, then the sources the data comes
+/// from, and at the bottom the two provenance lines the Fire and Police pages lead with. Nothing
+/// here is live content of its own, which is why Home is the only page that can be opened before
+/// either feed has answered.
 ///
 /// **Home is the first-launch screen, not the launch screen.** A fresh install opens here because it
 /// has no last page to restore; every launch after opens the last of Fire, Police or Map. The rule
