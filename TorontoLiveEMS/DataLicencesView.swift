@@ -9,8 +9,8 @@ import TorontoLiveEMSKit
 /// the Toronto Police Service's under Ontario's. Keeping them apart is deliberate — a licence that
 /// named the wrong provider would read as compliance while being false.
 ///
-/// A data screen carries one sentence and a row to this index. The provider, the attribution and
-/// the licence text are on the page for that data.
+/// A data screen carries one sentence and a row to this index. The provider, the data source, the
+/// attribution and the licence text are on the page for that data.
 struct DataLicencesView: View {
 
     var body: some View {
@@ -34,7 +34,7 @@ struct DataLicencesView: View {
                     LabeledContent("Police data", value: CallsForServiceFeed.provider)
                 }
             } footer: {
-                Text("Each page names the publisher, states the attribution and includes a copy of the licence.")
+                Text("Each page names the publisher, links the data source, states the attribution and includes a copy of the licence.")
             }
         }
         .navigationTitle("Data Licences")
@@ -60,16 +60,13 @@ struct FireDataLicenceView: View {
             Section {
                 Text(Self.coverage)
                 Text("Required attribution: \(licence.attributionStatement)")
+
+                if let url = LiveCADFeed.pageURL {
+                    Link(LiveCADFeed.pageName, destination: url)
+                        .tint(.blue)
+                }
             } header: {
                 Text("The data")
-            }
-
-            Section {
-                Text(Self.requirements)
-            } header: {
-                Text("What it requires")
-            } footer: {
-                Text("Summary only; the full licence is the operative text.")
             }
 
             LicenceFullTextSection(licence: licence)
@@ -88,10 +85,6 @@ struct FireDataLicenceView: View {
     /// sentence says that rather than claiming a formal grant the City never published.
     private static let coverage =
         "The incidents in this app are Toronto Fire Services', published by the City of Toronto on its \(LiveCADFeed.pageName) page. That page carries no separate licence notice, and the City has not said that its open licence covers this feed. This app credits the City and uses the City's Open Government Licence – Toronto as the licence for the information."
-
-    /// The licence in the reader's terms, with the full text one row below.
-    private static let requirements =
-        "You may copy, modify, publish, translate, adapt and distribute the information for any lawful purpose. You must acknowledge the source and, where possible, link to the licence. The licence does not grant rights to personal information, third-party rights, the City's names, crests or logos, or other intellectual property, and it does not imply City endorsement or any warranty."
 }
 
 /// Statistics Canada's licence for the postal-area shapes.
@@ -107,16 +100,13 @@ struct PostalAreaLicenceView: View {
                 LinkedText(Attribution.postalAreas)
 
                 Text(Self.postalAreaExplanation)
+
+                if let url = PostalAreas.sourceURL {
+                    Link(PostalAreas.sourceName, destination: url)
+                        .tint(.blue)
+                }
             } header: {
                 Text("The data")
-            }
-
-            Section {
-                Text(Self.requirements)
-            } header: {
-                Text("What it requires")
-            } footer: {
-                Text("Summary only; the full licence is the operative text.")
             }
 
             LicenceFullTextSection(licence: licence)
@@ -133,16 +123,13 @@ struct PostalAreaLicenceView: View {
     /// licence requires.
     private static let postalAreaExplanation =
         "A medical incident's location is a postal area, not an address, to protect privacy. These are Statistics Canada's boundaries, so the map draws the area the City published — a circle where it knows no boundary, and never a point."
-
-    private static let requirements =
-        "You may copy, modify, publish, translate, adapt and distribute the information for any lawful purpose. You must acknowledge Statistics Canada as the source and, where possible, link to the licence. The licence does not grant rights to personal information, third-party rights, official symbols, or other intellectual property, and it does not imply endorsement or any warranty."
 }
 
 /// The Toronto Police Service's calls, under the Government of Ontario's licence.
 ///
 /// **Short on purpose.** The previous page carried four long paragraphs explaining the two clauses
 /// and the app's answer to each. The licence itself is the authority, so this page states the
-/// constraints in one paragraph and puts the text one row below.
+/// attribution, links the data and puts the full text one row below.
 struct PoliceDataLicenceView: View {
 
     private let licence = DataLicence.ontario
@@ -153,16 +140,13 @@ struct PoliceDataLicenceView: View {
 
             Section {
                 LinkedText(Attribution.policeCalls)
+
+                if let url = CallsForServiceFeed.pageURL {
+                    Link(CallsForServiceFeed.pageName, destination: url)
+                        .tint(.blue)
+                }
             } header: {
                 Text("The data")
-            }
-
-            Section {
-                Text(Self.requirements)
-            } header: {
-                Text("What it requires")
-            } footer: {
-                Text("Summary only; the full licence is the operative text.")
             }
 
             Section {
@@ -176,9 +160,6 @@ struct PoliceDataLicenceView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
     }
-
-    private static let requirements =
-        "The licence requires attribution. It forbids merging this data with another database to identify a person, and presenting it as personal information held by the Service. This app does neither."
 }
 
 /// A licence's title, version, provider and last-updated date.

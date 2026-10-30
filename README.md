@@ -26,7 +26,7 @@ MFIPPA — `docs/adr/0004` records that the app must never try to narrow them.
 
 ```
 TorontoLiveEMS/         the app — the views, and the table's measurements
-TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 238 tests
+TorontoLiveEMSKit/      the data logic, as a local Swift package, and all 239 tests
 scripts/check_swift.py  a structural check, see below
 docs/                   the decisions
 ```
@@ -60,7 +60,7 @@ cross-reference check only sees types declared in the roots it was given.
 ## Building and testing
 
 ```bash
-cd TorontoLiveEMSKit && swift test        # the 238 tests
+cd TorontoLiveEMSKit && swift test        # the 239 tests
 ```
 
 Then open `TorontoLiveEMS.xcodeproj` and press **⌘R**.
@@ -140,7 +140,7 @@ police code the app had not met.
 
 **Run on a device: v0.0.18's map changes.** Taps land where they are aimed after the padded compass clearance moved the map's coordinates into `.global`. The pin callout's stacking is still unstable, above and below its pin, and is open as #34.
 
-**`swift test` has still never been run.** There are **238 tests** across 24 files, with 680
+**`swift test` has still never been run.** There are **239 tests** across 24 files, with 684
 expectations, and they are the only thing that can check the parsers, the query builders, the gate and
 the projections, the two windows and their exemption, the legend and the sentences. Nothing in this
 checkpoint has been through a compiler's tests — only through a build.

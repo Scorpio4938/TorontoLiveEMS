@@ -89,6 +89,23 @@ public struct PostalAreas: Sendable {
         }
     }
 
+    /// The publisher's own name for the boundary file.
+    public static let sourceName = "2021 Census forward sortation area boundary file"
+
+    /// Where a reader can download the boundary file the shapes came from.
+    ///
+    /// The direct download, not a landing page: this is the file `scripts/make_postal_areas.py`
+    /// reads, and the link is here so a reader can check the source rather than take the app's word
+    /// for the shapes. It is a 162 MB zip archive, which is why the app carries a derived file
+    /// rather than this one.
+    public static let sourceURLString =
+        "https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lfsa000b21a_e.zip"
+
+    /// The same download as a URL, for the screens that link to it.
+    public static var sourceURL: URL? {
+        URL(string: sourceURLString)
+    }
+
     /// Required by the licence that governs the shapes. Empty only if the file failed to load.
     public let attribution: String
 

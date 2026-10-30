@@ -566,9 +566,14 @@ is being described. "Fire division" remains a phrase this project does not use.
 - **Three licence pages behind *Data Licences*, one per provider.** *Fire data* is the City of
   Toronto's under Toronto's open licence; *Postal areas* is Statistics Canada's under Canada's, with
   the privacy reason the areas are drawn as areas; *Police data* is the Toronto Police Service's
-  under Ontario's, carrying the two clauses that constrain the app and the grant that excludes
-  personal information. None is stated generically — a licence that names the wrong provider is
-  worse than one that is missing, because it reads as compliance.
+  under Ontario's, with the full text carrying the two clauses that constrain the app and the grant
+  that excludes personal information. None is stated generically — a licence that names the wrong
+  provider is worse than one that is missing, because it reads as compliance.
+- **Each data section links to the publisher's actual data.** The Fire page opens the City's
+  Toronto Fire Active Incidents page, the police page opens the Service's calls web app, and the
+  postal page downloads the Statistics Canada boundary file the shapes were generated from. The
+  links sit beside the attribution, so a reader can check the source rather than take the app's
+  word for what was published.
 - **The licence pages reproduce the text, not just link it.** A link can move, needs the network,
   and leaves a reader unable to check the terms the app says it follows. Each page states the
   licence's version and last-updated date, summarises what it requires, and opens a page carrying

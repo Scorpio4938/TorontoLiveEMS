@@ -72,6 +72,14 @@ struct PostalAreasTests {
         #expect(areas.attribution.contains("Statistics Canada"))
     }
 
+    @Test("the boundary file's source is a real download")
+    func sourceIsUsable() throws {
+        let url = try #require(PostalAreas.sourceURL)
+        #expect(url.scheme == "https")
+        #expect(url.host() == "www12.statcan.gc.ca")
+        #expect(PostalAreas.sourceName.contains("2021 Census"))
+    }
+
     // MARK: - the coordinates are degrees, in Toronto
 
     @Test("every point is inside Toronto")
