@@ -72,6 +72,8 @@ struct PoliceCallsInformationContent: View {
             Section {
                 LinkedText(Attribution.policeCalls)
             }
+
+            SourcesSection()
         }
         .navigationTitle("About Police Calls")
         #if os(iOS)

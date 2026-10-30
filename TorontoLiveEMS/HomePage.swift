@@ -64,7 +64,7 @@ struct HomePage: View {
             } header: {
                 Text("Sources")
             } footer: {
-                Text("Each source is named with the licence it is published under in About this Data.")
+                Text("Each source is named with the licence it is published under where the data is explained.")
             }
 
             Section {
