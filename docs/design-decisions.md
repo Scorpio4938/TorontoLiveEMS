@@ -549,6 +549,13 @@ is being described. "Fire division" remains a phrase this project does not use.
 reference section answers *what is this number* — an Area, a station, a unit, a
 division — and it is deliberately the quietest part of the app.
 
+- **A launch returns where the reader was, Home included.** The last section is
+  written on every tab change, and seeded with the section a launch opened on. A fresh
+  install still opens Home, and an acknowledged install with no stored section still
+  falls back to Fire, so Home has not become the default. The earlier rule excluded Home
+  because restoring it was confused with defaulting to it; that made a reader who was
+  browsing the directory reopen on Fire. If the Home tab is hidden, a stored Home cannot
+  be selected and Fire opens instead; the house control still reaches the index.
 - **Home is a directory, not a dashboard.** Its job is to get a reader to a
   catalogue. It is a platform `List` with two service sections, a count trailing each
   row, a Sources section, and the same two provenance lines the Fire and Police tabs

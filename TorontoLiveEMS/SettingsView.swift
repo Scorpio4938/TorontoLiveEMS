@@ -15,11 +15,11 @@ enum SettingsKey {
     /// migration.
     static let acknowledgedVersion = "acknowledgedVersion"
 
-    /// The last section the reader used that is not Home.
+    /// The last section the reader used, including Home.
     ///
-    /// **Home is never written here.** A launch restores this value, so storing Home would make the
-    /// index a place the app could reopen on, which it is not. It does not answer whether the app has
-    /// launched before; `acknowledgedVersion` does.
+    /// **A launch restores this value.** It is written on every tab change, and seeded with the
+    /// section a launch opened on, so the first launch also leaves Home behind as the fact to
+    /// restore. It does not answer whether the app has launched before; `acknowledgedVersion` does.
     static let lastSection = "lastSection"
 
     static let dispatchTimeFormat = "dispatchTimeFormat"

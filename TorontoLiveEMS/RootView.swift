@@ -54,7 +54,8 @@ struct RootView: View {
     /// `AppSection` for the four sections a launch can restore, with `refresh` as the one value that
     /// is chrome rather than a page.
     private enum Screen: String, Hashable {
-        /// The app's index. The first launch opens here; no launch after does.
+        /// The app's index. The first launch opens here; a later launch opens here when Home was
+        /// the last section.
         case home
         /// The fire feed's list. Named for the source rather than the content, because a police
         /// one is coming and two screens cannot both be called "Active Incidents".
@@ -101,14 +102,14 @@ struct RootView: View {
     /// The version this device last acknowledged.
     ///
     /// **Empty means this app has never been launched**, and that is the same emptiness the welcome
-    /// greeting will read (#33). Home opens only while this is empty; the first launch writes the
-    /// bundle's version so the fact cannot be true twice.
+    /// greeting will read (#33). The first launch opens Home and writes the bundle's version so the
+    /// fact cannot be true twice.
     @AppStorage(SettingsKey.acknowledgedVersion) private var acknowledgedVersion = ""
 
-    /// The last section the reader used that is not Home.
+    /// The last section the reader used, including Home.
     ///
-    /// Written on every page change except Home and the refresh control. A launch reads it through
-    /// `LaunchBehaviour`, which never restores Home.
+    /// Written on every page change except the refresh control, and seeded on the way in with the
+    /// section the launch opened on. A launch reads it through `LaunchBehaviour`.
     @AppStorage(SettingsKey.lastSection) private var lastSection: AppSection = .fire
 
     /// Whether Home is one of the tab bar's tabs. iOS only: the other platforms have no bottom
@@ -171,7 +172,8 @@ struct RootView: View {
             )
 
         // A launch cannot select a tab that is not in the bar. If the reader has hidden Home and
-        // this is a first launch, open Fire instead; every other launch is already non-Home.
+        // Home is the stored last section, open Fire instead; the house control still reaches the
+        // index. This is the one case where a stored Home is not restored.
         let initialSection: AppSection
         #if os(iOS)
         let storedShowsHomeTab = UserDefaults.standard
@@ -266,11 +268,20 @@ struct RootView: View {
             //
             // The first launch also becomes the launch this device has acknowledged. The key is a
             // version string rather than a boolean because the welcome greeting (#33) compares
-            // versions against it; until that sheet lands, recording the current version is what
-            // stops Home opening on every launch.
+            // versions against it; recording the current version is what makes the first launch
+            // happen once. The section just opened is stored at the same time so a reader who
+            // stays on Home, including on the first launch, comes back to Home.
             .task {
-                if recordsLaunch, acknowledgedVersion.isEmpty {
-                    acknowledgedVersion = AppIdentity.marketingVersion
+                if recordsLaunch {
+                    // The section first: if the app is killed between these two writes, the next
+                    // launch is still a first launch and opens Home anyway. The reverse order could
+                    // acknowledge the launch while losing Home as the thing to restore.
+                    if let section = screen.section {
+                        lastSection = section
+                    }
+                    if acknowledgedVersion.isEmpty {
+                        acknowledgedVersion = AppIdentity.marketingVersion
+                    }
                 }
                 if feed.snapshot == nil {
                     await feed.load()
@@ -374,8 +385,9 @@ struct RootView: View {
                 return
             }
 
-            // Home is never stored: a launch restores the last page with content, not the index.
-            if recordsLaunch, let section = selected.section, section.isRestorable {
+            // Every page is the last page, including Home. The only selection that is not a
+            // section is the refresh control, which is not a place.
+            if recordsLaunch, let section = selected.section {
                 lastSection = section
             }
         }

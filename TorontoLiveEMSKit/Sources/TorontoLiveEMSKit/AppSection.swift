@@ -7,8 +7,9 @@ public enum AppSection: String, CaseIterable, Sendable {
 
     /// The app's index: counts, the two feeds' provenance, and the sources.
     ///
-    /// **Never restored.** It is where a fresh install starts and where a reader can go, but a
-    /// launch that reopened it would hide the page they were actually using.
+    /// **The first-launch screen, and restorable like any other.** A fresh install opens here
+    /// because it has no last section; after that, a launch reopens whatever the reader was last
+    /// looking at, including this index.
     case home
 
     /// Active fire incidents.
@@ -19,11 +20,6 @@ public enum AppSection: String, CaseIterable, Sendable {
 
     /// Both feeds on one map.
     case map
-
-    /// Whether a launch may reopen this section.
-    public var isRestorable: Bool {
-        self != .home
-    }
 }
 
 /// What a launch should open on.
@@ -32,26 +28,24 @@ public enum AppSection: String, CaseIterable, Sendable {
 /// version this device last acknowledged — the same key the welcome greeting reads and writes (#33).
 /// Empty means this app has never been launched; anything else means it has.
 ///
-/// **Home is not the launch screen, it is the first-launch screen.** A fresh install has no last
-/// section to restore, so it opens the index. Every launch after opens the last of Fire, Police or
-/// Map the reader used. Home is never restored even when it was the last section on screen: the
-/// stored last section is only ever written for the pages with content, so Home cannot become one.
+/// **Home is the first-launch screen, not a default.** A fresh install has no last section to
+/// restore, so it opens the index. Every launch after opens the last of Home, Fire, Police or Map
+/// the reader used. Restoring Home is not the same as defaulting to it: an acknowledged install
+/// with no stored section still falls back to Fire, so Home cannot become the launch screen merely
+/// because nothing was remembered.
 public enum LaunchBehaviour {
 
     /// The section a launch opens on.
     ///
     /// `lastUsed` is what the preference store holds, or `nil` when it holds nothing. A non-empty
-    /// acknowledged version with no restorable last section falls back to Fire rather than Home,
-    /// because Home is not a place to return to.
+    /// acknowledged version with no stored section falls back to Fire rather than Home, so Home is
+    /// still never the default; it is only restored when it is the fact that was stored.
     public static func section(
         acknowledgedVersion: String,
         lastUsed: AppSection?
     ) -> AppSection {
         guard acknowledgedVersion.isEmpty else {
-            if let lastUsed, lastUsed.isRestorable {
-                return lastUsed
-            }
-            return .fire
+            return lastUsed ?? .fire
         }
         return .home
     }

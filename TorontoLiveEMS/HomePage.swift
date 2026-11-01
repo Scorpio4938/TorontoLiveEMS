@@ -9,9 +9,9 @@ import TorontoLiveEMSKit
 /// here is live content of its own, which is why Home is the only page that can be opened before
 /// either feed has answered.
 ///
-/// **Home is the first-launch screen, not the launch screen.** A fresh install opens here because it
-/// has no last page to restore; every launch after opens the last of Fire, Police or Map. The rule
-/// lives in `LaunchBehaviour`, in the package, where it can be tested.
+/// **Home is the first-launch screen, and restorable like any other.** A fresh install opens here
+/// because it has no last page to restore; every launch after opens the last of Home, Fire, Police
+/// or Map. The rule lives in `LaunchBehaviour`, in the package, where it can be tested.
 ///
 /// **The provenance lines are the same values the two tabs show, not a paraphrase.** They are
 /// `FeedStatusLine` over the two feeds' own `status`, so a refresh on Home has something visible to

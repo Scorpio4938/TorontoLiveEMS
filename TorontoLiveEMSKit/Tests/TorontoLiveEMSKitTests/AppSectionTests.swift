@@ -18,8 +18,9 @@ struct AppSectionTests {
         #expect(LaunchBehaviour.section(acknowledgedVersion: "", lastUsed: .home) == .home)
     }
 
-    @Test("an acknowledged install restores the last page it used")
+    @Test("an acknowledged install restores the last page it used, Home included")
     func restoresTheLastPage() {
+        #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .home) == .home)
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .fire) == .fire)
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .police) == .police)
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .map) == .map)
@@ -29,17 +30,8 @@ struct AppSectionTests {
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.1", lastUsed: .map) == .map)
     }
 
-    @Test("Home is never restored, and no stored page means Fire")
-    func homeIsNeverRestored() {
-        #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .home) == .fire)
+    @Test("no stored page falls back to Fire, not Home")
+    func noStoredPageFallsBackToFire() {
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: nil) == .fire)
-    }
-
-    @Test("only Home is not restorable")
-    func restorableSections() {
-        #expect(!AppSection.home.isRestorable)
-        #expect(AppSection.fire.isRestorable)
-        #expect(AppSection.police.isRestorable)
-        #expect(AppSection.map.isRestorable)
     }
 }
