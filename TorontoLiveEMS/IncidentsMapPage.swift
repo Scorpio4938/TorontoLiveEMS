@@ -38,12 +38,6 @@ struct IncidentsMapPage: View {
     /// been caught by once. The previews and `RootView` pass it in like everything else.
     let policeFeed: PoliceCallFeed
 
-    /// The pages presented above the map, when this page is under the app's chrome.
-    ///
-    /// The map itself never reads it: the callout passes it to the detail it pushes, and the
-    /// capsule above the tab view reads its top. Nil in a preview, where there is no chrome.
-    var mapDetails: MapDetailStack? = nil
-
     @State private var geocoder = IncidentGeocoder()
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
 
@@ -600,18 +594,14 @@ struct IncidentsMapPage: View {
             switch place.contents {
             case .fire(let incidents):
                 ForEach(incidents) { incident in
-                    NavigationLink {
-                        IncidentDetailView(incident: incident, mapDetails: mapDetails)
-                    } label: {
+                    NavigationLink(value: MapRoute.fire(incident)) {
                         row(for: incident)
                     }
                     .buttonStyle(.plain)
                 }
             case .police(let calls):
                 ForEach(calls) { call in
-                    NavigationLink {
-                        PoliceCallDetailView(call: call, mapDetails: mapDetails)
-                    } label: {
+                    NavigationLink(value: MapRoute.police(call)) {
                         policeRow(for: call)
                     }
                     .buttonStyle(.plain)
@@ -874,5 +864,13 @@ struct MapInformationView: View {
             feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
             policeFeed: PreviewCalls.feed()
         )
+        .navigationDestination(for: MapRoute.self) { route in
+            switch route {
+            case .fire(let incident):
+                IncidentDetailView(incident: incident)
+            case .police(let call):
+                PoliceCallDetailView(call: call)
+            }
+        }
     }
 }

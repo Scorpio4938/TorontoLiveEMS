@@ -237,13 +237,18 @@ struct ScreenControls: View {
         .padding(.vertical, 10)
         .glassSurface(cornerRadius: 22)
         // **Only the capsule animates.** The map's controls collapse toward the trailing end and
-        // the glass shrinks to the two controls that remain; nothing behind or below it moves.
-        .animation(reduceMotion ? nil : Animation.snappy(duration: 0.3), value: mapKind != nil)
+        // the glass springs to the two controls that remain; nothing behind or below it moves.
+        .animation(
+            reduceMotion ? nil : Animation.spring(duration: 0.28, bounce: 0.2),
+            value: mapKind != nil
+        )
     }
 
-    /// The map's controls shrink into the trailing edge on their way out, and grow back from it.
+    /// The map's controls shrink into the trailing edge and slide under the remaining controls on
+    /// their way out; they grow back from that edge when the map returns.
     private var capsuleTransition: AnyTransition {
-        .scale(scale: 0.8, anchor: .trailing)
+        .scale(scale: 0.6, anchor: .trailing)
+            .combined(with: .offset(x: 14))
             .combined(with: .opacity)
     }
 }

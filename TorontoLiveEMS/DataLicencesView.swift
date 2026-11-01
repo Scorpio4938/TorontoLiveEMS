@@ -13,35 +13,23 @@ import TorontoLiveEMSKit
 /// attribution and the licence text are on the page for that data.
 struct DataLicencesView: View {
 
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
-
     var body: some View {
         List {
             Section {
                 NavigationLink {
-                    FireDataLicenceView(
-                        mapDetails: mapDetails,
-                        mapDetailSource: mapDetailSource
-                    )
+                    FireDataLicenceView()
                 } label: {
                     LabeledContent("Fire data", value: "City of Toronto")
                 }
 
                 NavigationLink {
-                    PostalAreaLicenceView(
-                        mapDetails: mapDetails,
-                        mapDetailSource: mapDetailSource
-                    )
+                    PostalAreaLicenceView()
                 } label: {
                     LabeledContent("Postal areas", value: "Statistics Canada")
                 }
 
                 NavigationLink {
-                    PoliceDataLicenceView(
-                        mapDetails: mapDetails,
-                        mapDetailSource: mapDetailSource
-                    )
+                    PoliceDataLicenceView()
                 } label: {
                     LabeledContent("Police data", value: CallsForServiceFeed.provider)
                 }
@@ -50,7 +38,6 @@ struct DataLicencesView: View {
             }
         }
         .navigationTitle("Data Licences")
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -63,9 +50,6 @@ struct DataLicencesView: View {
 /// notice, so this page says what the app treats as the licence, reproduces the attribution the
 /// licence asks for, and offers the full text without leaving the app.
 struct FireDataLicenceView: View {
-
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     private let licence = DataLicence.toronto
 
@@ -85,14 +69,9 @@ struct FireDataLicenceView: View {
                 Text("The data")
             }
 
-            LicenceFullTextSection(
-                licence: licence,
-                mapDetails: mapDetails,
-                mapDetailSource: mapDetailSource
-            )
+            LicenceFullTextSection(licence: licence)
         }
         .navigationTitle("Fire Data Licence")
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -110,9 +89,6 @@ struct FireDataLicenceView: View {
 
 /// Statistics Canada's licence for the postal-area shapes.
 struct PostalAreaLicenceView: View {
-
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     private let licence = DataLicence.canada
 
@@ -133,14 +109,9 @@ struct PostalAreaLicenceView: View {
                 Text("The data")
             }
 
-            LicenceFullTextSection(
-                licence: licence,
-                mapDetails: mapDetails,
-                mapDetailSource: mapDetailSource
-            )
+            LicenceFullTextSection(licence: licence)
         }
         .navigationTitle("Postal Areas Licence")
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -160,9 +131,6 @@ struct PostalAreaLicenceView: View {
 /// and the app's answer to each. The licence itself is the authority, so this page states the
 /// attribution, links the data and puts the full text one row below.
 struct PoliceDataLicenceView: View {
-
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     private let licence = DataLicence.ontario
 
@@ -185,14 +153,9 @@ struct PoliceDataLicenceView: View {
                 Text("This app shows what the Service published. What it does not publish is not evidence that nothing happened.")
             }
 
-            LicenceFullTextSection(
-                licence: licence,
-                mapDetails: mapDetails,
-                mapDetailSource: mapDetailSource
-            )
+            LicenceFullTextSection(licence: licence)
         }
         .navigationTitle("Police Data Licence")
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -220,17 +183,11 @@ private struct LicenceMetadataSection: View {
 private struct LicenceFullTextSection: View {
 
     let licence: DataLicence
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     var body: some View {
         Section {
             NavigationLink {
-                LicenceTextView(
-                    licence: licence,
-                    mapDetails: mapDetails,
-                    mapDetailSource: mapDetailSource
-                )
+                LicenceTextView(licence: licence)
             } label: {
                 Text("The licence in full")
             }
@@ -244,8 +201,6 @@ private struct LicenceFullTextSection: View {
 private struct LicenceTextView: View {
 
     let licence: DataLicence
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     var body: some View {
         ScrollView {
@@ -261,7 +216,6 @@ private struct LicenceTextView: View {
             .padding()
         }
         .navigationTitle(licence.title)
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -277,16 +231,11 @@ private struct LicenceTextView: View {
 struct DataLicenceNotice: View {
 
     let sentence: String
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
 
     var body: some View {
         Section {
             NavigationLink {
-                DataLicencesView(
-                    mapDetails: mapDetails,
-                    mapDetailSource: mapDetailSource
-                )
+                DataLicencesView()
             } label: {
                 Text(sentence)
                     .fixedSize(horizontal: false, vertical: true)

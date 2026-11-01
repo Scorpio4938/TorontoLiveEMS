@@ -93,9 +93,6 @@ struct PoliceCallsInformationView: View {
 /// on the call it came from. See `PoliceCallType.documented` for where the list came from.
 struct CallTypeCodeList: View {
 
-    var mapDetails: MapDetailStack? = nil
-    var mapDetailSource: MapDetailSource? = nil
-
     var body: some View {
         List {
             Section {
@@ -109,7 +106,6 @@ struct CallTypeCodeList: View {
             }
         }
         .navigationTitle("Call Type Codes")
-        .mapDetailPresentation(mapDetails, source: mapDetailSource)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif

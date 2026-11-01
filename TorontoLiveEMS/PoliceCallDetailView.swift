@@ -16,9 +16,6 @@ struct PoliceCallDetailView: View {
 
     let call: PoliceCall
 
-    /// The map's presented-detail stack, when this call was reached from the map.
-    var mapDetails: MapDetailStack? = nil
-
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
@@ -34,10 +31,7 @@ struct PoliceCallDetailView: View {
                 // Tappable, so the code is something a reader can follow rather than something they
                 // are told about.
                 NavigationLink {
-                    CallTypeCodeList(
-                        mapDetails: mapDetails,
-                        mapDetailSource: .police
-                    )
+                    CallTypeCodeList()
                 } label: {
                     LabeledContent("Code", value: call.callTypeCode)
                 }
@@ -84,14 +78,9 @@ struct PoliceCallDetailView: View {
 
             // The screen showing the Service's data states who published it and that this app is
             // not the Service. The terms themselves are one row away, on Data Licences.
-            DataLicenceNotice(
-                sentence: Attribution.policeNotice,
-                mapDetails: mapDetails,
-                mapDetailSource: .police
-            )
+            DataLicenceNotice(sentence: Attribution.policeNotice)
         }
         .navigationTitle(call.callType)
-        .mapDetailPresentation(mapDetails, source: .police)
     }
 
     /// Six decimal places — about a tenth of a metre.

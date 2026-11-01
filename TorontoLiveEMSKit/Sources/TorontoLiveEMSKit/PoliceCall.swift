@@ -14,7 +14,7 @@ import Foundation
 ///
 /// See `docs/adr/0006-tps-calls-for-service-as-the-police-source.md` for the source, its licence,
 /// and the two restrictions that shape what may be done with it.
-public struct PoliceCall: Identifiable, Equatable, Sendable {
+public struct PoliceCall: Identifiable, Equatable, Hashable, Sendable {
 
     /// The row's identity in the service, and the only thing stable across two reads.
     public var id: Int { objectID }
