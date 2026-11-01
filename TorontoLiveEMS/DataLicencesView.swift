@@ -222,24 +222,25 @@ private struct LicenceTextView: View {
     }
 }
 
-/// The one sentence and one button a data screen carries.
+/// The one sentence a data screen carries, and the way to the licence pages.
 ///
-/// **A notice, not a licence section.** The screen showing somebody's data states who published it
-/// and that this app is not them; the terms themselves live behind *Data Licences*, which this row
-/// opens. A licence paragraph repeated on four screens is four places to keep true.
+/// **One block, not a sentence beside a separate link.** The screen showing somebody's data states
+/// who published it and that this app is not them; the whole sentence is the row that opens
+/// *Data Licences*. A licence paragraph repeated on four screens is four places to keep true, and a
+/// second row repeating the destination made this notice heavier than it needed to be.
 struct DataLicenceNotice: View {
 
     let sentence: String
 
     var body: some View {
         Section {
-            Text(sentence)
-
             NavigationLink {
                 DataLicencesView()
             } label: {
-                Text("Data Licences")
+                Text(sentence)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .accessibilityHint("Opens Data Licences")
         }
     }
 }

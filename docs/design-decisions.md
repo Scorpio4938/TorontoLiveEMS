@@ -550,14 +550,15 @@ is being described. "Fire division" remains a phrase this project does not use.
 
 ## Attribution and data terms
 
-- **One sentence and one button on a data screen; the terms behind *Data Licences*.** The fire
-  screens say "Not affiliated with the City of Toronto. Fire data licensed under the Open Government
+- **One tappable sentence on a data screen; the terms behind *Data Licences*.** The fire screens
+  say "Not affiliated with the City of Toronto. Fire data licensed under the Open Government
   Licence – Toronto." and the police screens say the same of the Toronto Police Service and the
-  Ontario licence. The sentence names the publisher and the licence; a row to *Data Licences* opens
-  the index, and each provider's page there carries the attribution, the licence link and what the
-  licence requires. "Not affiliated" stays in the
-  sentence deliberately — it is not a licence clause, and the screen showing somebody's data is
-  where a reader may think the app is official.
+  Ontario licence. The sentence names the publisher and the licence, and the sentence itself is the
+  row that opens the *Data Licences* index. A separate row repeating the destination made the
+  notice heavier than the one fact it carries. Each provider's page there carries the attribution,
+  the licence link and the licence text. "Not affiliated" stays in the sentence deliberately — it
+  is not a licence clause, and the screen showing somebody's data is where a reader may think the
+  app is official.
 
   The four sites are the fire incident detail, *About this Data*, the police information screen and
   the police call detail. A licence paragraph on each of them was four copies of terms that belong
