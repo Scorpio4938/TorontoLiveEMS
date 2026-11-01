@@ -22,7 +22,9 @@ struct WikipediaReferenceTests {
         let entry = try #require(reference.station(number: 312))
 
         #expect(entry.title == "List of historic Toronto fire stations")
-        #expect(entry.extract?.contains("Yorkville") == true)
+        #expect(entry.summary?.contains("Yorkville") == true)
+        #expect(entry.summary?.contains("Built:") == false)
+        #expect(entry.summary?.contains("\n") == false)
         #expect(entry.licence == "CC BY-SA 4.0")
         #expect(!entry.url.isEmpty)
         #expect(entry.revision?.isEmpty == false)
@@ -42,7 +44,7 @@ struct WikipediaReferenceTests {
         #expect(image.pageURL.contains("commons.wikimedia.org"))
         #expect(image.author == "PvOberstein")
         #expect(image.licence == "CC0")
-        #expect(entry.extract == nil)
+        #expect(entry.summary == nil)
     }
 
     @Test("a CC BY-SA unit photograph states that licence")
@@ -63,9 +65,9 @@ struct WikipediaReferenceTests {
     @Test("every station entry has text, and every unit entry has a photograph")
     func entriesMatchTheirPurpose() {
         // The file is deliberately incomplete; this pins the shape of what it does contain.
-        #expect(reference.station(number: 312)?.extract?.isEmpty == false)
+        #expect(reference.station(number: 312)?.summary?.isEmpty == false)
         #expect(reference.unit(code: "P332")?.image != nil)
-        #expect(reference.unit(code: "P332")?.extract == nil)
+        #expect(reference.unit(code: "P332")?.summary == nil)
     }
 
     @Test("something that is not the file is refused")

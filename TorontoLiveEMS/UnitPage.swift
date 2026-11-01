@@ -61,10 +61,10 @@ struct UnitPage: View {
                 Text("Unit")
             }
 
-            if let reference, reference.extract != nil || reference.image != nil {
+            if let reference, reference.summary != nil || reference.image != nil {
                 Section {
-                    if let extract = reference.extract {
-                        Text(extract)
+                    if let summary = reference.summary {
+                        Text(summary)
                     }
 
                     if let image = reference.image {
@@ -94,12 +94,12 @@ struct UnitPage: View {
                         }
                     }
                 } header: {
-                    Text(reference.extract == nil ? "Photo" : "About")
+                    Text(reference.summary == nil ? "Photo" : "About")
                 } footer: {
                     if let image = reference.image {
                         Text("\(image.author), \(image.licence), via Wikimedia Commons.")
                     } else {
-                        Text("Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved).")
+                        Text("Adapted from Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved).")
                     }
                 }
             }

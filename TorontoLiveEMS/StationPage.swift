@@ -69,9 +69,9 @@ struct StationPage: View {
                 Text("A station is the numbered fire facility the City publishes. An incident's Area is the run area the City files it under, numbered as a station; it is not necessarily the station that responded.")
             }
 
-            if let reference, let extract = reference.extract {
+            if let reference, let summary = reference.summary {
                 Section {
-                    Text(extract)
+                    Text(summary)
 
                     if let url = URL(string: reference.url) {
                         Link("Read on Wikipedia", destination: url)
@@ -80,7 +80,7 @@ struct StationPage: View {
                 } header: {
                     Text("History")
                 } footer: {
-                    Text("Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved). This is the history of the station's site; the current building may differ.")
+                    Text("Adapted from Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved). This is the history of the station's site; the current building may differ.")
                 }
             }
 

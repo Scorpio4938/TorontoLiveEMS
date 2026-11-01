@@ -619,8 +619,9 @@ division — and it is deliberately the quietest part of the app.
   this one — which is not a roster of what is parked there. That distinction is the
   directory's whole premise: it says what it knows and nothing else.
 - **Wikipedia material is optional, per entity, and cited where it appears.** Only a
-  station with a real entry in *List of historic Toronto fire stations* gets a history
-  section, and only a unit whose code a Commons file names gets a photograph. There is no
+  station with a real entry in *List of historic Toronto fire stations* gets a short,
+  paraphrased history paragraph, and only a unit whose code a Commons file names gets a
+  photograph. There is no
   repeated general TFS/TPS paragraph on the pages with nothing to say, and no division
   content: Wikipedia has no individual division pages. Text is CC BY-SA 4.0; every image
   keeps its own author and licence, shown under the image and linked to the Commons file.

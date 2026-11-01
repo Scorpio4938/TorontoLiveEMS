@@ -9,8 +9,8 @@ public struct WikipediaEntry: Sendable, Equatable, Decodable {
     /// The page or file to open for the full source.
     public let url: String
 
-    /// The excerpt shown on the page, when this is a text entry.
-    public let extract: String?
+    /// The paraphrased summary shown on the page, when this is a text entry.
+    public let summary: String?
 
     /// The licence of the text or image named by this entry.
     public let licence: String
@@ -21,7 +21,7 @@ public struct WikipediaEntry: Sendable, Equatable, Decodable {
     /// The Wikipedia revision the text came from, when the API returned one.
     public let revision: String?
 
-    /// One photograph, when this entry is an image rather than an excerpt.
+    /// One photograph, when this entry is an image rather than a summary.
     public let image: WikipediaImage?
 }
 

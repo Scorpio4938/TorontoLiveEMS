@@ -30,8 +30,8 @@ neither feed says what either one is. `scripts/make_reference_data.py` reads the
 Facility Locations*, *Police Boundaries* and *Police Facility Locations* open datasets, and the
 community-maintained *Firefighting Wiki* apparatus roster, and writes the four JSON files under
 `TorontoLiveEMSKit/Sources/TorontoLiveEMSKit/Resources/`. A fifth file, `TorontoWikipedia.json`,
-is written by `scripts/make_wikipedia_data.py` and holds only the station histories and unit
-photographs that exist. Each file records its source URL, licence and retrieval date. The
+is written by `scripts/make_wikipedia_data.py` and holds only the paraphrased station histories
+and unit photographs that exist. Each file records its source URL, licence and retrieval date. The
 divisions file uses the City's current 16-division datastore geometry, because a division is
 ground rather than a point. The datastore already merges the former 54 area into 55 and the water
 into 52; the older 19-feature download still carries `00` (water and island areas), `54` and `58`

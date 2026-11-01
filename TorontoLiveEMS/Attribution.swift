@@ -127,7 +127,7 @@ enum Attribution {
                 "Wikipedia and Wikimedia Commons",
                 WikipediaReference.bundled.source,
                 WikipediaReference.bundled.licence,
-                citation: "Station histories from Wikipedia and unit photographs from Wikimedia Commons; each page names the entry, author and licence it uses."
+                citation: "Station histories adapted from Wikipedia and unit photographs from Wikimedia Commons; each page names the entry, author and licence it uses."
             ),
         ].compactMap { $0 }
     }
