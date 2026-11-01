@@ -29,6 +29,21 @@ exists to prevent.
 **The commit is the one the tag points at** — `git rev-parse <tag>^{commit}` — not necessarily the
 commit that bumped the number. Where those differ, the tag is what a version means.
 
+## v0.0.21
+
+`6f8b643`
+
+- Home is the reference index: 84 stations, 168 units and 16 current divisions, each opening its catalogue; Sources opens Data Licences · `b4b1937`
+- Station and unit catalogues and pages, including station Units, station-wide and per-unit Dispatched Now, and the unit-to-station link · `06a6f6e`
+- The Divisions catalogue and page draw the City's current 16 areas from the datastore geometry, so the former 54 area and the water are no longer holes · `7313366`
+- Live rows on the station and unit pages use the Fire card arrangement, with incident type and dispatch time · `5d8e741`
+- Units are grouped by apparatus type: C and CMD are separate, R is Rescue, and L is Ladder · `fa6922e`, `e28b0c3`
+- Stations and Divisions remember their own List/Map choice across launches · `46d0d95`
+- Optional Wikipedia station histories and unit photographs, each cited with its page, revision, author and licence · `27d5104`
+- The Home tab can be hidden; a leading Home control can remain, and a launch can restore Home · `00edba4`, `7dd4903`
+- The Data Licences layout from master is retained, with new pages for the reference datasets, the apparatus roster and Wikipedia/Commons · `b4b1937`
+- Not built or run; `swift test` not run.
+
 ## v0.0.20
 
 `496e082`
