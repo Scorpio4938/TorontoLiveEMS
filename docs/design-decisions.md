@@ -567,7 +567,8 @@ division — and it is deliberately the quietest part of the app.
   fire feed is the City's, and the licence the app has stated since ADR-0001 is
   Toronto's. The roster is the one source that names individual units: the City
   publishes no apparatus roster, and the live feed is a dispatch capture rather than a
-  fleet list.
+  fleet list. It is cited as *Firefighting Wiki* (Fandom), *Toronto Fire Services*,
+  CC BY-SA 3.0, and the generated file carries the retrieval date.
 - **Area is a run area, not a nearest station.** The City's run-area data has 84 areas
   numbered like the 84 stations, and the number does not claim which station responded;
   in our own capture it matched a dispatched unit about half the time. The interface
