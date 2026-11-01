@@ -24,6 +24,12 @@ enum SettingsKey {
 
     static let dispatchTimeFormat = "dispatchTimeFormat"
     static let presentation = "incidentPresentation"
+    /// Whether the app is light, dark, or whatever the device is set to.
+    ///
+    /// Read by `RootView`, which applies it once above every tab and sheet, and written here, where
+    /// the three choices are offered. System is the default, so an install that never opens Settings
+    /// looks exactly as it did before this key existed.
+    static let appearance = "appearance"
     /// Which half of a police call's type the table and the card show.
     static let policeCallTypeStyle = "policeCallTypeStyle"
     /// How far back the police page looks. Read there and written in Settings.
@@ -69,12 +75,12 @@ enum SettingsKey {
 /// made once for *About this Data*: reference material is a screen of its own behind a row, not a
 /// section in Settings.
 ///
-/// **Grouped by what a setting affects, not by which feed its name mentions.** Layout and the time
-/// format apply to every page, so they sit together under *Display*; the two police preferences sit
-/// under *Police*; and what a reader opens rather than chooses sits under *About*. The old grouping
-/// put Layout under *Incidents* and gave the time format a section of its own, so three of four
-/// sections named a source and the one cross-cutting setting that was misfiled needed a footer to
-/// say it applied to fire and police alike. The header says it now, once.
+/// **Grouped by what a setting affects, not by which feed its name mentions.** Layout, the time
+/// format and appearance apply to every page, so they sit together under *Display*; the two police
+/// preferences sit under *Police*; and what a reader opens rather than chooses sits under *About*.
+/// The old grouping put Layout under *Incidents* and gave the time format a section of its own, so
+/// three of four sections named a source and the one cross-cutting setting that was misfiled needed
+/// a footer to say it applied to fire and police alike. The header says it now, once.
 struct SettingsView: View {
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
@@ -82,6 +88,9 @@ struct SettingsView: View {
 
     @AppStorage(SettingsKey.presentation)
     private var presentation: IncidentPresentation = .standard
+
+    @AppStorage(SettingsKey.appearance)
+    private var appearance: Appearance = .standard
 
     @AppStorage(SettingsKey.policeCallTypeStyle)
     private var policeCallTypeStyle: PoliceCallTypeStyle = .words
@@ -115,6 +124,14 @@ struct SettingsView: View {
                     Picker("Time Format", selection: $dispatchTimeFormat) {
                         Text("12-Hour").tag(DispatchTimeFormat.twelveHour)
                         Text("24-Hour").tag(DispatchTimeFormat.twentyFourHour)
+                    }
+                    // The names come from the type, like Layout's, so the words a test pins are the
+                    // words a reader sees. System is a value rather than the absence of a choice:
+                    // that is what lets a reader return to following the device after choosing.
+                    Picker("Appearance", selection: $appearance) {
+                        ForEach(Appearance.allCases, id: \.self) { option in
+                            Text(option.label).tag(option)
+                        }
                     }
                 } header: {
                     Text("Display")
