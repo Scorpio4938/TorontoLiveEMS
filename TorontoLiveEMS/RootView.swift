@@ -101,15 +101,28 @@ struct RootView: View {
 
     /// Whether the app draws itself light, dark, or however the device is set.
     ///
-    /// **Read here and applied above everything.** The setting is chosen in Settings, which is a
-    /// sheet, so this value has to be in the app's own body rather than in a page's: choosing Light
-    /// in the sheet must change the app behind it as it is chosen, and every tab, both halves of the
-    /// map and every detail pushed from them must agree. `Appearance.colorScheme` is the app-side
-    /// mapping, where System becomes `nil` — the value that means "ask the window".
-    ///
-    /// The Settings sheet and this view's other sheets read the same preference and apply it again at
-    /// their own roots, because a sheet is its own presentation; see `SettingsView`.
+    /// **Read here and applied to the window.** The setting is chosen in Settings, which is a sheet,
+    /// so this value has to be in the app's own body rather than in a page's: choosing Light in the
+    /// sheet must change the app behind it as it is chosen, and every tab, both halves of the map and
+    /// every detail pushed from them must agree. `Appearance.colorScheme` is the app-side mapping,
+    /// where System becomes `nil` — the value that means "ask the window".
     @AppStorage(SettingsKey.appearance) private var appearance: Appearance = .standard
+
+    /// The device's own scheme, used only to resolve System for a sheet.
+    ///
+    /// **A sheet cannot be sent `nil` once it has been sent a scheme.** Removing a preference is not
+    /// the same as replacing it: a presented sheet given `.light` keeps its light override when the
+    /// preference is later removed, so returning to System left the sheet on the appearance it had
+    /// before, until it was closed and reopened. A sheet therefore always gets a concrete value, and
+    /// for System that value is whatever the window — with no override of ours — is showing. The root
+    /// below still passes `nil` for System, because there "ask the window" is exactly right and is
+    /// what makes the app follow the device when the device changes.
+    @Environment(\.colorScheme) private var deviceColorScheme
+
+    /// The appearance every sheet is given: the reader's choice, or the device's own scheme for System.
+    private var sheetColorScheme: ColorScheme {
+        appearance.colorScheme ?? deviceColorScheme
+    }
 
     /// The version this device last acknowledged.
     ///
@@ -265,6 +278,11 @@ struct RootView: View {
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
+                    // A sheet is its own presentation, so it states the appearance for itself rather
+                    // than relying on the window's choice reaching it — and it states a concrete one,
+                    // because `nil` would not clear an override the sheet already has. The value is
+                    // resolved by this view, which is where the un-overridden window scheme is known.
+                    .preferredColorScheme(sheetColorScheme)
             }
             // The index without a tab. The sheet is the price of hiding the tab, and it is
             // deliberately a sheet rather than a fifth tab that comes back while it is open:
@@ -282,10 +300,10 @@ struct RootView: View {
                         }
                 }
                 .presentationDragIndicator(.visible)
-                // A sheet is its own presentation, so it states the appearance for itself rather than
-                // relying on the window's choice reaching it. See `SettingsView`, where the same line
-                // is what makes the picker change this sheet while it is still open.
-                .preferredColorScheme(appearance.colorScheme)
+                // A sheet is its own presentation, so it states the appearance for itself; the value
+                // is concrete even for System, because a sheet cannot be returned to `nil` once it
+                // has been given a scheme.
+                .preferredColorScheme(sheetColorScheme)
             }
             // Which screen the info button opens is decided here rather than in the toolbar, because
             // there is one button and the answer is the data in front of the reader: the tab's, or
@@ -311,8 +329,9 @@ struct RootView: View {
                         AboutThisDataView()
                     }
                 }
-                // A sheet is its own presentation, so it states the appearance for itself.
-                .preferredColorScheme(appearance.colorScheme)
+                // A sheet is its own presentation, so it states the appearance for itself, with
+                // System resolved to the device's scheme.
+                .preferredColorScheme(sheetColorScheme)
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
@@ -353,8 +372,8 @@ struct RootView: View {
             // as inside it. System passes `nil`, which leaves the window to answer exactly as it did
             // before this preference existed.
             //
-            // A sheet is its own presentation, so this does not reach one already on screen. Each
-            // sheet applies the same value at its own root for that reason.
+            // A sheet is its own presentation, so this does not reach one already on screen; each
+            // sheet is given `sheetColorScheme` above for that reason.
             .preferredColorScheme(appearance.colorScheme)
     }
 

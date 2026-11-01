@@ -203,13 +203,6 @@ struct SettingsView: View {
                 }
             }
         }
-        // **The sheet states the appearance for itself as well.** `preferredColorScheme` applies to the
-        // nearest enclosing presentation, and a sheet is one: the root's choice governs the window
-        // behind it, so the app changes as the picker does, but an already-presented sheet does not
-        // take the new value from there. Reading the same stored preference here is what makes this
-        // sheet — and *About*, pushed inside it — follow the picker as it is chosen rather than after
-        // it is dismissed and reopened. System still passes `nil`, so the sheet asks its own window.
-        .preferredColorScheme(appearance.colorScheme)
     }
 }
 
