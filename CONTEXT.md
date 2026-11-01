@@ -87,9 +87,9 @@ _Avoid_: Firehouse, hall, fire division
 **Division**:
 A Toronto Police Service patrol area, published as 16 current boundary areas and
 written by the feed as `D14`. It is the entity a police call's Division field
-names. The City's downloadable boundary file also carries `00` (water and island areas),
-`54` and `58` (retired); these are not current
-divisions and the import filters them out.
+names. The City's current datastore geometry is used; the older 19-feature download still
+carries `00` (water and island areas), `54` and `58` (retired) separately. These are not current
+divisions, and the datastore geometry already merges their ground into 52 and 55.
 _Avoid_: Fire division, district, zone
 
 **Fire division** is not a term. Toronto Fire publishes no such thing, and the

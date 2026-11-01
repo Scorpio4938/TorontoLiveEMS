@@ -581,13 +581,12 @@ division — and it is deliberately the quietest part of the app.
   in our own capture it matched a dispatched unit about half the time. The interface
   says *the run area the City files the incident under, numbered as its station*, and
   the Area row opens that station's page. The glossary says the same.
-- **The division catalogue is the current 16, not every boundary feature.** The City's
-  downloadable boundary file has 19 features. Three are not current divisions: `00` is a water
-  and island area with no division facility, and `54` and `58` are retired. The City's facility
-  layer names the 16 current divisions, and the import filters the boundary file on those
-  names; the datastore version of the same dataset also carries 16. A call that names an
-  extra gets no division page rather than a made-up one. The geometry is still the
-  City's published area for the 16.
+- **The division catalogue is the current 16, not every boundary feature.** The current layer
+  is the City's datastore geometry: 16 records, already merged so that the former 54 area is
+  part of 55 and the water is part of 52. The older downloadable boundary file has 19 features;
+  `00` is a water and island area, and `54` and `58` are retired. Filtering that download to 16
+  leaves holes, which is why the import uses the datastore geometry instead. A call that names
+  an extra gets no division page rather than a made-up one.
 - **Unit groups are apparatus types, not initials.** The group title is the apparatus
   name for the code's longest matching prefix, so `C23` is Chief and `CMD10` Command
   Vehicle in separate groups, `R346` is Rescue, and `L331` is Ladder. The City's online

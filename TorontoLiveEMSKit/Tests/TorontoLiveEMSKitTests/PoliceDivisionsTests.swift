@@ -23,7 +23,7 @@ struct PoliceDivisionsTests {
     }
 
     @Test("the boundary download's non-current areas are not divisions")
-    func nonCurrentAreasAreFiltered() {
+    func nonCurrentAreasAreNotDivisions() {
         // 00 is a water and island area; 54 and 58 are retired divisions. They are
         // in the downloadable boundary file but not in the City's current division layer.
         for number in ["00", "54", "58"] {
@@ -104,9 +104,9 @@ struct PoliceDivisionsTests {
             #expect(division.number.count == 2, "\(division.number) is not two digits")
             #expect(division.number.allSatisfy(\.isNumber))
         }
-        // The current divisions all happen to be two digits; the filter is about which
-        // divisions exist, not about dropping a leading zero. None of the current 16 leads with
-        // zero, because 00 is a water and island area rather than a division.
+        // The current divisions all happen to be two digits; the answer is about which divisions
+        // exist, not about dropping a leading zero. None of the current 16 leads with zero,
+        // because 00 is a water and island area rather than a division.
     }
 
     @Test("the source, licence and retrieval date are recorded")

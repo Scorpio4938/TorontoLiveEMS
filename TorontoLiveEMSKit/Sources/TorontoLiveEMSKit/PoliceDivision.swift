@@ -142,10 +142,11 @@ public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
 /// the file holds `14`, a lookup accepts `14` or `D14`, and a screen renders `feedCode` so the app
 /// can never show both.
 ///
-/// **16 current divisions.** The City's downloadable boundary file carries 19 features, but three
-/// are not current divisions: `00` is a water and island area with no division facility, and
-/// `54` and `58` are retired. The import takes the 16 divisions the City's facility layer names, so a call that
-/// names one of the three extras gets no division page rather than a made-up one.
+/// **16 current divisions.** The City's current datastore layer has 16 records; its older
+/// downloadable boundary file has 19 features, including `00` (water and islands), `54` and `58`
+/// (retired). The import uses the datastore geometry, which is already merged — former 54 is part
+/// of 55, and the water is part of 52 — so the map has no holes where a retired area used to be.
+/// A call that names one of the three extras gets no division page rather than a made-up one.
 ///
 /// **The area is shipped too.** Unlike the station and facility files, this one keeps the published
 /// MultiPolygon, so the Divisions map can answer *what ground does D14 cover* rather than only

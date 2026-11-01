@@ -22,12 +22,12 @@ Divisions
 
     https://open.toronto.ca/dataset/police-boundaries/
 
-The boundary download carries 19 features, each with the division number in `AREA_LONG_CODE`.
-Three are not current divisions: `00` is a water and island area with no division facility,
-and `54` and `58` are retired. The Police Facility Locations layer names the 16 current
-divisions, and the import filters the boundary file on those names. A current division with no boundary is an error;
-a boundary area with no current division is ignored rather than shipped as a place a call can
-name. The geometry is kept because the Divisions map draws the ground a division covers.
+The current layer is the dataset's datastore resource: 16 records, each with the division number
+in `DIV` and a polygon in `geometry`. The older downloadable GeoJSON still carries 19 features:
+`00` is a water and island area, and `54` and `58` are retired. Those are not separate current
+divisions, and filtering the 19-feature download leaves holes — the datastore's geometry already
+merges the former 54 area into 55 and the water into 52. The datastore geometry is therefore what
+this script ships; the Divisions map draws the ground the City currently assigns.
 
 Facilities
 ----------
@@ -104,10 +104,10 @@ STATIONS_URL = (
     "a6ce5495-8e2b-421a-ab11-964569416f31/resource/"
     "4a9bb96b-da5e-4c67-aaf4-3f8f4f311430/download/fire-station-locations-4326.geojson"
 )
+DIVISIONS_SOURCE = "https://open.toronto.ca/dataset/police-boundaries/"
 DIVISIONS_URL = (
-    "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/"
-    "6ff875e3-7c26-4abe-8fb2-afe7b2519ba2/resource/"
-    "52fac153-c14b-437f-8121-75fbfa162532/download/police-boundaries-data-4326.geojson"
+    "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/datastore_search"
+    "?resource_id=4e6173b1-209d-4982-b06b-2385723d49e3&limit=100"
 )
 FACILITIES_URL = (
     "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/"
@@ -287,51 +287,32 @@ def division_number_from_facility(name):
     return f"{int(match.group(1)):02d}" if match else None
 
 
-def current_division_numbers(facilities):
-    """The divisions the City's facility layer currently names.
+def divisions_from(published, retrieved):
+    """The 16 current divisions and their published areas, from the datastore."""
+    records = published.get("result", {}).get("records")
+    if not records:
+        raise SystemExit("the published division datastore has no records")
 
-    This is the filter for the boundary download. The download carries three extra areas — 00
-    (water and islands), 54 and 58 (retired) — that are not current divisions; a facility row is
-    the City saying a division exists at an address, and the 16 such rows are the current 16
-    divisions.
-    """
-    numbers = {
-        number
-        for feature in facilities.get("features", [])
-        if (number := division_number_from_facility(
-            text(feature.get("properties", {}).get("FACILITY"))
-        ))
-    }
-    if not numbers:
-        raise SystemExit("the published facility file names no current divisions")
-    return numbers
-
-
-def divisions_from(published, current_numbers, retrieved):
-    """The current divisions and their published areas."""
     by_number = {}
-    ignored = set()
-    for feature in published.get("features", []):
-        number = text(feature.get("properties", {}).get("AREA_LONG_CODE"))
-        if not number:
+    for record in records:
+        published_number = text(record.get("DIV"))
+        if not published_number:
             continue
-        if number not in current_numbers:
-            ignored.add(number)
-            continue
-        if number not in by_number:
-            by_number[number] = _division_areas(feature["geometry"])
+        number = published_number[1:] if published_number.startswith("D") else published_number
+        if not re.fullmatch(r"\d{2}", number):
+            raise SystemExit(f"the datastore has division number {published_number!r}")
+        if number in by_number:
+            raise SystemExit(f"the datastore has two rows for division {number}")
+        geometry = record.get("geometry")
+        if isinstance(geometry, str):
+            geometry = json.loads(geometry)
+        by_number[number] = _division_areas(geometry)
 
-    missing = current_numbers - set(by_number)
-    if missing:
-        raise SystemExit(
-            "the published division file has no area for current divisions "
-            + ", ".join(sorted(missing))
-        )
-    if ignored:
-        print(f"  ignored non-current boundary areas: {', '.join(sorted(ignored))}")
+    if not by_number:
+        raise SystemExit("the published division datastore has no division numbers")
 
     return {
-        "source": DIVISIONS_URL,
+        "source": DIVISIONS_SOURCE,
         "licence": LICENCE,
         "retrieved": retrieved,
         "divisions": [
@@ -565,7 +546,7 @@ def write(path, document):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--stations", help="a saved copy of the station GeoJSON")
-    parser.add_argument("--divisions", help="a saved copy of the division GeoJSON")
+    parser.add_argument("--divisions", help="a saved copy of the division datastore JSON")
     parser.add_argument("--facilities", help="a saved copy of the facility GeoJSON")
     parser.add_argument("--capture", help="a saved copy of the live feed XML, instead of the wiki roster")
     parser.add_argument("--units-wiki", help="a saved copy of the wiki API JSON")
@@ -585,12 +566,11 @@ def main():
         document(arguments.stations or STATIONS_URL), arguments.retrieved
     )
     facility_document = document(arguments.facilities or FACILITIES_URL)
-    division_numbers = current_division_numbers(facility_document)
     divisions = divisions_from(
         document(arguments.divisions or DIVISIONS_URL),
-        division_numbers,
         arguments.retrieved,
     )
+    division_numbers = {division["number"] for division in divisions["divisions"]}
     facilities = police_facilities_from(
         facility_document,
         division_numbers,
