@@ -415,9 +415,18 @@ struct RootView: View {
     @ToolbarContentBuilder
     private var homeToolbarItem: some ToolbarContent {
         if !homeTabIsShown {
+            // The platform gives a toolbar item its own shared glass, which is a circle around a
+            // single icon. Hide that and draw the same capsule the trailing controls use.
+            #if os(iOS)
             ToolbarItem(placement: .topBarLeading) {
-                HomeControl(action: { isShowingHome = true })
+                HomeCapsule(action: { isShowingHome = true })
             }
+            .sharedBackgroundVisibility(.hidden)
+            #else
+            ToolbarItem(placement: .topBarLeading) {
+                HomeCapsule(action: { isShowingHome = true })
+            }
+            #endif
         }
     }
 
@@ -429,9 +438,7 @@ struct RootView: View {
     @ViewBuilder
     private var homeMapControl: some View {
         if !homeTabIsShown {
-            HomeControl(action: { isShowingHome = true })
-                .frame(width: 44, height: 44)
-                .glassSurface(cornerRadius: 22)
+            HomeCapsule(action: { isShowingHome = true })
                 .padding(.top, 12)
                 .padding(.leading, 12)
         }

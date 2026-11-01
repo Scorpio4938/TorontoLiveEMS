@@ -41,7 +41,12 @@ struct InfoControl: View {
 /// which the setting exists to keep narrow. It opens the same `HomePage` in a sheet, so a
 /// station, unit or division page is never unreachable just because the reader preferred a
 /// shorter tab bar.
-struct HomeControl: View {
+///
+/// **The same capsule as the top-right controls.** The material, height and corner radius are
+/// `ScreenControls`' own constants, so the two ends of the bar cannot drift apart. A single
+/// 44-point square with that radius would read as a circle; the 56-point width gives the same
+/// flat top and bottom edges as the Info/Settings capsule while leaving the centred title room.
+struct HomeCapsule: View {
 
     let action: () -> Void
 
@@ -49,7 +54,12 @@ struct HomeControl: View {
         Button(action: action) {
             Image(systemName: "house")
                 .foregroundStyle(Color.primary)
+                .frame(width: 56, height: ScreenControls.bandHeight)
         }
+        // Plain: this capsule is the surface. The toolbar's shared glass is hidden by the
+        // caller, so a second platform-drawn background cannot appear behind it.
+        .buttonStyle(.plain)
+        .glassSurface(cornerRadius: ScreenControls.cornerRadius)
         .accessibilityLabel("Home")
     }
 }
@@ -211,6 +221,10 @@ struct ScreenControls: View {
     /// It is the placement, and the only height in it.
     static let bandHeight: CGFloat = 44
 
+    /// The radius every control capsule in the app uses. Shared with `HomeCapsule`, so the
+    /// leading and trailing ends cannot be different shapes.
+    static let cornerRadius: CGFloat = 22
+
     let onInfo: () -> Void
     let onSettings: () -> Void
 
@@ -251,6 +265,6 @@ struct ScreenControls: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .glassSurface(cornerRadius: 22)
+        .glassSurface(cornerRadius: Self.cornerRadius)
     }
 }

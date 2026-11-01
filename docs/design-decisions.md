@@ -713,7 +713,10 @@ say which of them mattered.
   open. The house is leading rather than in the trailing capsule: a fifth capsule icon would
   take back the top width the setting just gave away, and would push the capsule into the
   centred title on Fire and Police. The map has no bar, so it draws the same control floating
-  at the top-leading edge.
+  at the top-leading edge. That control is the same glass capsule as the trailing one — same
+  height, radius and material, with the platform's own shared toolbar glass hidden — rather
+  than a round toolbar button; its 56-point width gives it the capsule's flat edges without
+  crowding the title.
   Hiding the selected tab moves to Fire, the launch fallback; a first launch with the tab
   already hidden also opens Fire, because a `TabView` cannot select a tab it does not contain.
   The setting is absent on the platforms with no bottom tab bar, where Home stays a tab.
