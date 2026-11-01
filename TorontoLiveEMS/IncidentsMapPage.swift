@@ -38,6 +38,13 @@ struct IncidentsMapPage: View {
     /// been caught by once. The previews and `RootView` pass it in like everything else.
     let policeFeed: PoliceCallFeed
 
+    /// The signal the tab bar raises when Map is tapped while it is already selected.
+    ///
+    /// Optional so a preview, or any map shown without a tab bar, does not have to invent one.
+    /// `RootView` always passes the real signal; the map observes its counter and returns to the
+    /// region it opens at.
+    let resetSignal: MapTabReselectionSignal?
+
     @State private var geocoder = IncidentGeocoder()
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
 
@@ -234,6 +241,14 @@ struct IncidentsMapPage: View {
             .task {
                 if policeFeed.calls == nil {
                     await policeFeed.load()
+                }
+            }
+            // **A second tap on the Map tab sends the camera home.** The interop raises the
+            // signal; this page is the only thing that knows what "home" means.
+            .onChange(of: resetSignal?.count ?? 0) { _, _ in
+                guard resetSignal != nil else { return }
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    position = .region(IncidentMapScale.city)
                 }
             }
         }
@@ -854,7 +869,8 @@ struct MapInformationView: View {
 #Preview("Map — bare") {
     IncidentsMapPage(
         feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
-        policeFeed: PreviewCalls.feed()
+        policeFeed: PreviewCalls.feed(),
+        resetSignal: nil
     )
 }
 
@@ -866,7 +882,8 @@ struct MapInformationView: View {
     NavigationStack {
         IncidentsMapPage(
             feed: IncidentFeed(fetch: { PreviewIncidents.snapshot }),
-            policeFeed: PreviewCalls.feed()
+            policeFeed: PreviewCalls.feed(),
+            resetSignal: nil
         )
     }
 }

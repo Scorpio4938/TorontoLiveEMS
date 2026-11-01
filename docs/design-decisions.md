@@ -754,6 +754,14 @@ say which of them mattered.
   been seen on a device.** If it does not, delete the compass and record the cost to north-reset
   beside the remaining controls. A hand-rolled compass is not the platform's control, and a rotation
   gesture is a poor north-reset.
+- **The Map tab's second tap is a UIKit delegate, not a SwiftUI event.** `TabView` and `Tab` expose
+  no re-selection callback, and tapping the selected tab does not change `selection`, so nothing in
+  SwiftUI fires. `UITabBarControllerDelegate.tabBarController(_:shouldSelect:)` is the only callback
+  that sees every tap, including one on the selected tab. A small interop wraps the bar's delegate
+  without replacing it: the proxy is retained by the coordinator, the original delegate is weak,
+  every unhandled method is forwarded, and a refusal is honoured. The interop raises a counter on a
+  `@Observable` signal; the map observes that and returns its camera to the region it opens at. If
+  no tab bar controller is in the hierarchy, one debug log says so and the app behaves as before.
 - **The map's legend is prose, not a manual.** Three blocks, each at most 60 words: what the
   map draws, what a symbol means, what a colour means. The symbols footer used to say *the nine*
   above ten rendered rows — the tenth being the question mark the next sentence describes — and a

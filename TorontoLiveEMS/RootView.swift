@@ -87,6 +87,12 @@ struct RootView: View {
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
 
+    /// Raised when the Map tab is tapped while it is already selected.
+    ///
+    /// **A signal rather than a binding.** The tab bar's re-tap is a UIKit event; the map must not
+    /// know that. The interop raises this counter, and the map watches it and resets its camera.
+    @State private var mapTabReselection = MapTabReselectionSignal()
+
     /// The sentence the alert shows.
     ///
     /// Stored rather than worked out when the alert appears, because **which feed produced it is
@@ -202,7 +208,22 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage(feed: feed, policeFeed: policeFeed)
+                    IncidentsMapPage(
+                        feed: feed,
+                        policeFeed: policeFeed,
+                        resetSignal: mapTabReselection
+                    )
+                        // **The tab bar's re-tap is borrowed through a delegate proxy.** SwiftUI
+                        // has no event for a tap on the tab already selected; this invisible
+                        // interop watches the bar and raises the signal the map reads.
+                        .background {
+                            #if os(iOS)
+                            MapTabReselectionInterop(signal: mapTabReselection)
+                                .frame(width: 1, height: 1)
+                                .allowsHitTesting(false)
+                                .accessibilityHidden(true)
+                            #endif
+                        }
                         // **The map tab has no navigation bar.** The band under it was the bar's
                         // own glass — the build that hid the bar proved it — so the bar stays
                         // hidden and the page is named by floating text instead.
