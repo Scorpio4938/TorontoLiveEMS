@@ -75,6 +75,7 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
         private weak var installedOn: UITabBarController?
         private weak var originalDelegate: UITabBarControllerDelegate?
         private var didLogMissingTabBar = false
+        private var didLogNoWindow = false
 
         init(signal: MapTabReselectionSignal) {
             proxy.onReselect = { [signal] in signal.send() }
@@ -82,9 +83,17 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
 
         /// Finds the bar from this view, wraps its delegate if needed, and remembers the map tab.
         func connect(from viewController: UIViewController) {
-            // Before the view is in a window there is nothing to walk. `update` and the deferred
-            // call from `make` try again once it is.
-            guard viewController.view.window != nil else { return }
+            // Before the view is in a window there is nothing to walk. The window and appearance
+            // callbacks try again once it is.
+            guard viewController.view.window != nil else {
+                #if DEBUG
+                if !didLogNoWindow {
+                    didLogNoWindow = true
+                    print("MapTabReselectionInterop: no window yet")
+                }
+                #endif
+                return
+            }
 
             guard let tabBarController = Self.tabBarController(from: viewController) else {
                 logMissingTabBar()
@@ -95,6 +104,9 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
                 for: viewController,
                 in: tabBarController
             ) else {
+                #if DEBUG
+                print("MapTabReselectionInterop: found a tab bar but no tab root")
+                #endif
                 return
             }
 
@@ -210,9 +222,26 @@ private final class InteropViewController: UIViewController {
         self.view = view
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        coordinator?.connect(from: self)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        coordinator?.connect(from: self)
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         coordinator?.connect(from: self)
+
+        // SwiftUI can install its own tab-bar delegate during the appearance pass. One turn later
+        // is the first moment this can be sure it is wrapping the delegate that is actually there.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.coordinator?.connect(from: self)
+        }
     }
 }
 

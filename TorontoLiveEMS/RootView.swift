@@ -216,7 +216,7 @@ struct RootView: View {
                         // **The tab bar's re-tap is borrowed through a delegate proxy.** SwiftUI
                         // has no event for a tap on the tab already selected; this invisible
                         // interop watches the bar and raises the signal the map reads.
-                        .background {
+                        .overlay(alignment: .topLeading) {
                             #if os(iOS)
                             MapTabReselectionInterop(signal: mapTabReselection)
                                 .frame(width: 1, height: 1)
