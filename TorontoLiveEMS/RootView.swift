@@ -99,6 +99,15 @@ struct RootView: View {
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
     @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
+    /// Whether the app draws itself light, dark, or however the device is set.
+    ///
+    /// **Read here and applied once, above everything.** The setting is chosen in Settings, which is
+    /// a sheet, so this value has to be in the app's own body rather than in a page's: choosing Light
+    /// in the sheet must change the app behind it as it is chosen, and every tab, both halves of the
+    /// map and every detail pushed from them must agree. `Appearance.colorScheme` is the app-side
+    /// mapping, where System becomes `nil` — the value that means "ask the window".
+    @AppStorage(SettingsKey.appearance) private var appearance: Appearance = .standard
+
     /// The version this device last acknowledged.
     ///
     /// **Empty means this app has never been launched**, and that is the same emptiness the welcome
@@ -326,6 +335,13 @@ struct RootView: View {
                     await feed.load()
                 }
             }
+            // **One appearance for the whole app.** It is set here rather than on each screen because
+            // it is not a page's choice: the tabs, a detail pushed from the map, the sheets above them
+            // and both halves of the map all read the same colour scheme, and the Settings sheet can
+            // only change the app behind it while it is still up if the value it writes is read above
+            // the sheet as well as inside it. System passes `nil`, which leaves the window to answer
+            // exactly as it did before this preference existed.
+            .preferredColorScheme(appearance.colorScheme)
     }
 
     private var tabs: some View {
