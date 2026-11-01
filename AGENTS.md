@@ -17,3 +17,7 @@ table, run `python3 scripts/version_check.py`, then tag. See `docs/releasing.md`
 ### Domain docs
 
 Single-context. See `docs/agents/domain.md`.
+
+### Git
+
+Always push after committing.

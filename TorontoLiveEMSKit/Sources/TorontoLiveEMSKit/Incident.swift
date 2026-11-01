@@ -5,7 +5,7 @@
 ///
 /// Five of the eight fields are always populated. Three are observed blank or absent
 /// and are therefore optional; all three mean the same thing, "not published".
-public struct Incident: Identifiable, Equatable, Sendable {
+public struct Incident: Identifiable, Equatable, Hashable, Sendable {
 
     /// CAD's identifier for the incident, stable across refreshes.
     ///

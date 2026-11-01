@@ -222,6 +222,9 @@ struct MapFilterControl: View {
 /// means two things: facts about the app, and a setting about a map.
 struct ScreenControls: View {
 
+    /// The capsule's expansion and contraction is motion, so it follows the system preference.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// The band the capsule is centred in at the top of the screen.
     ///
     /// It is placement, not the capsule's own height: the capsule is sized by its content and
@@ -267,9 +270,11 @@ struct ScreenControls: View {
         HStack(spacing: 16) {
             if let mapKind {
                 MapKindControl(mapKind: mapKind)
+                    .transition(capsuleTransition)
             }
             if let mapFilter, let mapPoliceWindow {
                 MapFilterControl(mapFilter: mapFilter, mapPoliceWindow: mapPoliceWindow)
+                    .transition(capsuleTransition)
             }
             InfoControl(action: onInfo)
             SettingsControl(action: onSettings)
@@ -277,5 +282,19 @@ struct ScreenControls: View {
         .padding(.horizontal, 12)
         .padding(.vertical, Self.verticalPadding)
         .glassSurface(cornerRadius: Self.cornerRadius)
+        // **Only the capsule animates.** The map's controls collapse toward the trailing end and
+        // the glass springs to the two controls that remain; nothing behind or below it moves.
+        .animation(
+            reduceMotion ? nil : Animation.spring(duration: 0.28, bounce: 0.2),
+            value: mapKind != nil
+        )
+    }
+
+    /// The map's controls shrink into the trailing edge and slide under the remaining controls on
+    /// their way out; they grow back from that edge when the map returns.
+    private var capsuleTransition: AnyTransition {
+        .scale(scale: 0.6, anchor: .trailing)
+            .combined(with: .offset(x: 14))
+            .combined(with: .opacity)
     }
 }

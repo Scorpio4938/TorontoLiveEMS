@@ -62,11 +62,15 @@ struct HomePage: View {
             }
 
             Section {
-                sources
+                NavigationLink {
+                    DataLicencesView()
+                } label: {
+                    Text("Data Licences")
+                }
             } header: {
                 Text("Sources")
             } footer: {
-                Text("Each source is named with the licence it is published under where the data is explained.")
+                Text("The publishers, reference datasets and image sources are listed with the licence each is under.")
             }
         }
         .navigationTitle("Home")
@@ -82,19 +86,6 @@ struct HomePage: View {
         }
     }
 
-    /// The publishers' pages, and the open data the reference section is built from.
-    ///
-    /// **Links rather than a second information screen.** These are the same destinations the info
-    /// button reaches through its sheets, with one tap instead of three. The open data links are the
-    /// dataset pages rather than the CKAN resource URLs the generated files record: a reader wants
-    /// the page that describes the data, not the download that happens to be behind it.
-    @ViewBuilder
-    private var sources: some View {
-        ForEach(Attribution.sources) { source in
-            Link(source.name, destination: source.url)
-                .tint(.blue)
-        }
-    }
 }
 
 #Preview("Home") {

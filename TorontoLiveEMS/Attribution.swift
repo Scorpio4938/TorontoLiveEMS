@@ -1,35 +1,36 @@
 import Foundation
-import SwiftUI
 import TorontoLiveEMSKit
 
-/// The app's attribution and licence lines.
+/// The app's attribution and licence sentences.
 ///
-/// In one place because several screens show them: an incident's detail view, the two information
-/// screens, and the Sources section those screens share. A licence that names the wrong provider is
-/// worse than one that is missing, because it reads as compliance — so the provider and the licence
-/// are always stated together, and the reference datasets' licence strings come from the files
-/// themselves.
+/// **One place now.** The licence pages behind *Data Licences* state each provider's attribution and
+/// reproduce its licence; a data screen carries one sentence naming the publisher and the licence,
+/// and a row to those pages. The three open-government licences have their own pages; the
+/// community roster and the Wikipedia/Commons material have theirs, and no screen has to spell a
+/// provider differently from another.
+///
+/// The titles and addresses come from `DataLicence`, beside the text they name, so a licence that
+/// changes its title or moves cannot leave these sentences behind.
 enum Attribution {
 
-    /// The sentence, with both of its links written as markdown.
+    /// The fire feed's attribution, for *Fire Data Licence*.
     ///
-    /// Composed rather than written out, because the page's name and address are the feed's and
-    /// live beside it. A page the City renames should be renamed in one place, and a link the
-    /// app shows should be an address the app has actually checked.
-    private static var source: String {
-        """
-        Not affiliated with the City of Toronto. Data shown from their public \
-        [\(LiveCADFeed.pageName)](\(LiveCADFeed.pageURLString)) page. Contains information \
-        licensed under the [Open Government Licence – Toronto](\(licenceURL)).
-        """
+    /// The City publishes the incidents and licenses them under Toronto's open licence. The sentence
+    /// names both and links the licence text, so a reader who wants the terms is one tap away.
+    static var fire: AttributedString {
+        .fromMarkdown(
+            "Fire incidents: City of Toronto. Contains information licensed under the "
+                + "[\(DataLicence.toronto.title)](\(DataLicence.toronto.urlString))."
+        )
     }
 
-    /// The City's Open Data licence, which the feed's page links to.
+    /// The one sentence a fire data screen carries.
     ///
-    /// Here rather than in the package: nothing in the package is about licensing, and this
-    /// sentence is the only thing that cites it.
-    private static let licenceURL =
-        "https://www.toronto.ca/city-government/data-research-maps/open-data/open-data-licence/"
+    /// **Non-affiliation is not a licence clause, and stays in the sentence deliberately.** The
+    /// screen showing somebody's data is where a reader may think the app is official, so that is
+    /// where the disclaimer belongs.
+    static let fireNotice =
+        "Not affiliated with the City of Toronto. Fire data licensed under the \(DataLicence.toronto.title)."
 
     /// The shapes' licence, which is a different licence from the feed's and has to be shown too.
     ///
@@ -44,135 +45,26 @@ enum Attribution {
     static var postalAreas: AttributedString {
         .fromMarkdown(
             "\(PostalAreas.bundled.attribution) The licence: "
-                + "[Open Government Licence – Canada](\(canadaLicenceURL))"
+                + "[\(DataLicence.canada.title)](\(DataLicence.canada.urlString))"
         )
     }
 
-    /// The police calls' licence, which is a third one and has to be shown on the police screens.
+    /// The police calls' attribution, for *Police Data Licence*.
     ///
-    /// **Three licences, three providers, three places.** The fire feed is the City of Toronto's,
-    /// the postal-area shapes are Statistics Canada's under the Canadian licence, and the police
-    /// calls are the Toronto Police Service's under Ontario's. Each is stated where its data is
-    /// explained, and none is stated generically — a licence that names the wrong provider is
-    /// worse than one that is missing, because it reads as compliance.
-    ///
-    /// The attribution string is the provider's own: *Toronto Police Service*, which is what the
-    /// item's `accessInformation` says.
+    /// The attribution names the Service whose calls these are, and the licence is Ontario's rather
+    /// than Toronto's or Canada's. Both names come from their sources, so a renamed provider or
+    /// licence changes here and on the screen that shows the calls.
     static var policeCalls: AttributedString {
         .fromMarkdown(
-            "Calls for service: Toronto Police Service. Contains information licensed under the "
-                + "[Open Government Licence – Ontario](\(ontarioLicenceURL))"
+            "Calls for service: \(CallsForServiceFeed.provider). Contains information licensed under "
+                + "the Government of Ontario's [\(DataLicence.ontario.title)](\(DataLicence.ontario.urlString))"
         )
     }
 
-
-    /// One of the sources the reference section is built from, and the licence it is under.
-    struct SourceCredit: Identifiable, Sendable {
-        let name: String
-        let url: URL
-        let licence: String
-
-        /// The human citation, when the source needs more than a link and a licence line.
-        let citation: String?
-
-        var id: String { name }
-    }
-
-    /// The sources, each with its own licence.
+    /// The one sentence a police data screen carries.
     ///
-    /// **Not one licence for all of them.** The fire incidents are the City of Toronto's, under
-    /// Toronto's open licence; the police calls are the Toronto Police Service's, under Ontario's;
-    /// the station, division and facility datasets are the City's, under Toronto's; the apparatus
-    /// roster is a community wiki under CC BY-SA 3.0; Wikipedia text is CC BY-SA 4.0 and each
-    /// Commons photograph keeps its own licence. Naming them together would read as compliance
-    /// while being wrong about several of them.
-    ///
-    /// The reference licences are read from the generated files rather than typed here, so a credit
-    /// follows the file it describes. The live feeds' licences are the publishers' own: Toronto's
-    /// open licence for the City's fire data, Ontario's for the Service's calls.
-    static var sources: [SourceCredit] {
-        [
-            credit(
-                LiveCADFeed.pageName,
-                LiveCADFeed.pageURLString,
-                torontoLicenceName
-            ),
-            credit(
-                CallsForServiceFeed.pageName,
-                CallsForServiceFeed.pageURLString,
-                CallsForServiceFeed.licenceName
-            ),
-            credit(
-                "Fire Station Locations",
-                fireStationsDatasetURL,
-                FireStations.bundled.licence
-            ),
-            credit(
-                "Police Boundaries",
-                policeBoundariesDatasetURL,
-                PoliceDivisions.bundled.licence
-            ),
-            credit(
-                "Police Facility Locations",
-                policeFacilitiesDatasetURL,
-                PoliceFacilities.bundled.licence
-            ),
-            credit(
-                "Toronto Fire Services apparatus roster",
-                apparatusRosterURL,
-                FireUnits.bundled.licence,
-                citation: "Firefighting Wiki (Fandom), “Toronto Fire Services”, retrieved \(FireUnits.bundled.retrieved)."
-            ),
-            credit(
-                "Wikipedia and Wikimedia Commons",
-                WikipediaReference.bundled.source,
-                WikipediaReference.bundled.licence,
-                citation: "Station histories adapted from Wikipedia and unit photographs from Wikimedia Commons; each page names the entry, author and licence it uses."
-            ),
-        ].compactMap { $0 }
-    }
-
-    private static func credit(
-        _ name: String,
-        _ urlString: String,
-        _ licence: String,
-        citation: String? = nil
-    ) -> SourceCredit? {
-        guard let url = URL(string: urlString) else { return nil }
-        return SourceCredit(name: name, url: url, licence: licence, citation: citation)
-    }
-
-    /// Toronto's open-data licence, which the City's fire feed and its three reference datasets
-    /// are published under. The feed's own page carries no licence notice; the City's open-data
-    /// licence is the one its other published data uses.
-    private static let torontoLicenceName = "Open Government Licence – Toronto"
-
-    private static let fireStationsDatasetURL =
-        "https://open.toronto.ca/dataset/fire-station-locations/"
-    private static let policeBoundariesDatasetURL =
-        "https://open.toronto.ca/dataset/police-boundaries/"
-    private static let policeFacilitiesDatasetURL =
-        "https://open.toronto.ca/dataset/police-facility-locations/"
-    private static let apparatusRosterURL =
-        "https://fire.fandom.com/wiki/Toronto_Fire_Services"
-
-    /// The Government of Canada's open licence, which Statistics Canada's boundary file is under.
-    /// Statistics Canada's own metadata names it in exactly these terms.
-    private static let canadaLicenceURL =
-        "https://open.canada.ca/en/open-government-licence-canada"
-
-    /// The Government of Ontario's open licence, which the police calls are published under.
-    /// Checked rather than assumed: it answers 200 to a plain request.
-    private static let ontarioLicenceURL =
-        "https://www.ontario.ca/page/open-government-licence-ontario"
-
-    /// The sentence with its link parsed.
-    ///
-    /// `Text` parses markdown from a string literal, but renders the syntax verbatim when
-    /// handed a `String` variable — so `[name](url)` would appear as typed. Parsing it here
-    /// once is what lets the sentence live in a single place. Drawn through `LinkedText`, which
-    /// has the other half of the problem: what colour the link comes out.
-    static var attributed: AttributedString {
-        .fromMarkdown(source)
-    }
+    /// The same judgement as `fireNotice`: non-affiliation is stated where a reader might mistake
+    /// the app for the publisher.
+    static let policeNotice =
+        "Not affiliated with the \(CallsForServiceFeed.provider). Police data licensed under the \(DataLicence.ontario.title)."
 }
