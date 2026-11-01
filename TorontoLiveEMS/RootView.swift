@@ -136,6 +136,14 @@ struct RootView: View {
     /// up at the same time.
     @State private var showsWelcomeAfterSettings = false
 
+    /// Whether the earlier, medium text-only greeting is up.
+    ///
+    /// Kept as an Easter egg for comparison and reuse; it never writes the launch acknowledgement.
+    @State private var isShowingClassicWelcome = false
+
+    /// Set by Settings when the reader asks for the classic greeting.
+    @State private var showsClassicWelcomeAfterSettings = false
+
     /// Whether each tab's root page is the page on screen.
     ///
     /// The leading Home control lives in the shared top layer, like the trailing controls, so it
@@ -284,9 +292,18 @@ struct RootView: View {
                 WelcomeView()
             }
             .sheet(isPresented: $isShowingSettings, onDismiss: presentWelcomeIfRequested) {
-                SettingsView(onShowWelcome: {
-                    showsWelcomeAfterSettings = true
-                })
+                SettingsView(
+                    onShowWelcome: {
+                        showsWelcomeAfterSettings = true
+                    },
+                    onShowClassicWelcome: {
+                        showsClassicWelcomeAfterSettings = true
+                    }
+                )
+            }
+            // The earlier greeting, kept behind a Settings row rather than thrown away.
+            .sheet(isPresented: $isShowingClassicWelcome) {
+                ClassicWelcomeView()
             }
             // The index without a tab. The sheet is the price of hiding the tab, and it is
             // deliberately a sheet rather than a fifth tab that comes back while it is open:
@@ -536,12 +553,17 @@ struct RootView: View {
         acknowledgedVersion = AppIdentity.marketingVersion
     }
 
-    /// The Settings row asks for the greeting while Settings is still up. Present it only after
-    /// that sheet has finished dismissing.
+    /// The Settings rows ask for a greeting while Settings is still up. Present it only after that
+    /// sheet has finished dismissing.
     private func presentWelcomeIfRequested() {
-        guard showsWelcomeAfterSettings else { return }
-        showsWelcomeAfterSettings = false
-        isShowingWelcome = true
+        if showsWelcomeAfterSettings {
+            showsWelcomeAfterSettings = false
+            isShowingWelcome = true
+        }
+        if showsClassicWelcomeAfterSettings {
+            showsClassicWelcomeAfterSettings = false
+            isShowingClassicWelcome = true
+        }
     }
 
     /// Refreshes the feed of the tab the reader is on, and says so when there is provably nothing

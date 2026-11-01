@@ -107,6 +107,12 @@ struct SettingsView: View {
     /// manual way to see the same greeting without a second copy of its content.
     var onShowWelcome: (() -> Void)? = nil
 
+    /// Ask RootView to show the earlier, medium text-only greeting.
+    ///
+    /// That design is kept as an Easter egg rather than replaced: it can be compared with the
+    /// current welcome, played with, and reused later. It does not write the launch fact.
+    var onShowClassicWelcome: (() -> Void)? = nil
+
     var body: some View {
         NavigationStack {
             Form {
@@ -184,6 +190,13 @@ struct SettingsView: View {
                         dismiss()
                     } label: {
                         Label("Show Welcome", systemImage: "hand.wave")
+                    }
+
+                    Button {
+                        onShowClassicWelcome?()
+                        dismiss()
+                    } label: {
+                        Label("Classic Welcome", systemImage: "sparkles")
                     }
                 } header: {
                     Text("About")
