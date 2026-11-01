@@ -603,9 +603,12 @@ division — and it is deliberately the quietest part of the app.
   tables. The unit row omits the incident number, which does not help identify the
   incident; the division row omits the division, because the whole page is one
   division. A live list without a time makes the reader open every row to find out when
-  it happened. The fire station page has no live-call section of its own: an incident's
-  Area is a run area, not proof that this station responded, so only a unit's page can
-  say what that unit is dispatched to.
+  it happened. The fire station page has the same *Dispatched Now* card, but its
+  question is the catalogue's: which incidents name any unit this station's codes place
+  there. It is not the Area row, and it is not a claim that the station responded — an
+  incident's Area is a run area, not a station. The unit pages keep their own
+  *Dispatched Now* sections, so a reader can go from the station to one truck or to the
+  station-wide list.
 
 ## Attribution and data terms
 

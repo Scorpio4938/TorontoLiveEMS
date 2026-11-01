@@ -16,6 +16,11 @@ import TorontoLiveEMSKit
 /// The units section is the catalogue's own cross-reference: the captured unit codes whose digits are
 /// this station's number, each opening its unit page. It is absent when the app knows of none, in the
 /// same way an unpublished office is.
+///
+/// **The live section asks about those units, not about the Area.** It shows incidents naming any
+/// unit the catalogue places at this station, from the feed already in memory. It makes no request of
+/// its own, and it does not claim the station responded: an incident's Area is a run area, which is a
+/// different fact. The card is the Fire page's, and the clock is the reader's setting.
 struct StationPage: View {
 
     let station: FireStation
@@ -23,8 +28,23 @@ struct StationPage: View {
     /// The shared fire feed, handed on to a unit page so its live section reads the same snapshot.
     let feed: IncidentFeed
 
+    /// The reader's chosen clock, the same setting the Fire table reads.
+    @AppStorage(SettingsKey.dispatchTimeFormat)
+    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
+
     private var units: [FireUnit] {
         FireUnits.bundled.units(at: station.number)
+    }
+
+    /// The incidents naming any unit the catalogue places here, or `nil` while there is no snapshot.
+    ///
+    /// The station is a location; the incident is linked to it through the units, not through the
+    /// Area row. A station with no catalogued units has nothing to ask about.
+    private var dispatchedIncidents: [Incident]? {
+        guard !units.isEmpty else { return nil }
+        return feed.incidents?.filter { incident in
+            units.contains { $0.isDispatched(to: incident) }
+        }
     }
 
     var body: some View {
@@ -74,9 +94,50 @@ struct StationPage: View {
                     Text("Units")
                 }
             }
+
+            if !units.isEmpty {
+                Section {
+                    live
+                } header: {
+                    Text("Dispatched Now")
+                } footer: {
+                    Text("Incidents currently naming one of the units the catalogue places at this station. This is not a claim that the station responded: an incident's Area is a run area, not a station.")
+                }
+            }
         }
         .navigationTitle("Station \(station.number)")
         .softScrollEdge()
+    }
+
+    @ViewBuilder
+    private var live: some View {
+        if let incidents = dispatchedIncidents {
+            if incidents.isEmpty {
+                Text("None of this station's units are currently dispatched.")
+                    .foregroundStyle(Color.secondary)
+            } else {
+                ForEach(incidents) { incident in
+                    NavigationLink {
+                        IncidentDetailView(incident: incident, feed: feed)
+                    } label: {
+                        CompactCardRow(
+                            row: incident,
+                            columns: [.primeStreet, .incidentType, .dispatchTime],
+                            timeFormat: dispatchTimeFormat
+                        )
+                    }
+                }
+            }
+        } else if let failure = feed.failureMessage {
+            Text(failure)
+                .foregroundStyle(Color.secondary)
+        } else {
+            HStack(spacing: 6) {
+                ProgressView()
+                Text("Checking the live feed…")
+                    .foregroundStyle(Color.secondary)
+            }
+        }
     }
 }
 
