@@ -48,8 +48,10 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
         let controller = InteropViewController()
-        controller.view.backgroundColor = .clear
         controller.coordinator = context.coordinator
+        #if DEBUG
+        print("MapTabReselectionInterop: created")
+        #endif
         return controller
     }
 
@@ -108,6 +110,9 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
                 originalDelegate = current
                 proxy.original = current
                 tabBarController.delegate = proxy
+                #if DEBUG
+                print("MapTabReselectionInterop: installed on \(type(of: tabBarController))")
+                #endif
             }
         }
 
@@ -177,22 +182,48 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
                 }
                 current = controller.parent
             }
-            return nil
+
+            // The parent chain is the normal route. If SwiftUI has hosted this view in a way that
+            // does not expose it, the interop is in the selected tab by the time it is on screen,
+            // and that tab is the one the bar reports.
+            return tabBarController.selectedViewController
         }
     }
 }
 
-/// Tells the coordinator when the interop is actually on screen.
+/// Tells the coordinator when the interop is actually in a window.
 ///
 /// The representable may be created while its tab is not selected, so `makeUIViewController` cannot
-/// assume a window. `viewDidAppear` is the reliable moment when the map tab becomes visible.
+/// assume a window. `didMoveToWindow` and `viewDidAppear` are the two reliable moments when the
+/// map tab becomes visible.
 private final class InteropViewController: UIViewController {
 
     weak var coordinator: MapTabReselectionInterop.Coordinator?
 
+    override func loadView() {
+        let view = InteropView()
+        view.backgroundColor = .clear
+        view.onWindowChange = { [weak self] in
+            guard let self else { return }
+            self.coordinator?.connect(from: self)
+        }
+        self.view = view
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         coordinator?.connect(from: self)
+    }
+}
+
+/// The view half of the window hook: `didMoveToWindow` belongs to `UIView`, not `UIViewController`.
+private final class InteropView: UIView {
+
+    var onWindowChange: (() -> Void)?
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        onWindowChange?()
     }
 }
 
@@ -235,6 +266,9 @@ private final class DelegateProxy: NSObject, UITabBarControllerDelegate {
             let now = ProcessInfo.processInfo.systemUptime
             if now - lastReset >= 0.5 {
                 lastReset = now
+                #if DEBUG
+                print("MapTabReselectionInterop: Map tab re-tapped; sending reset")
+                #endif
                 onReselect?()
             }
         }

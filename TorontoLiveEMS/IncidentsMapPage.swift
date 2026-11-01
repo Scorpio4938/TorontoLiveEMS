@@ -247,6 +247,9 @@ struct IncidentsMapPage: View {
             // signal; this page is the only thing that knows what "home" means.
             .onChange(of: resetSignal?.count ?? 0) { _, _ in
                 guard resetSignal != nil else { return }
+                #if DEBUG
+                print("IncidentsMapPage: Map tab re-tap received; returning to the city")
+                #endif
                 withAnimation(.easeInOut(duration: 0.35)) {
                     position = .region(IncidentMapScale.city)
                 }
