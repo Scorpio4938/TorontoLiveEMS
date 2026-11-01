@@ -78,17 +78,18 @@ enum Attribution {
         var id: String { name }
     }
 
-    /// The six sources, each with its own licence.
+    /// The sources, each with its own licence.
     ///
     /// **Not one licence for all of them.** The fire incidents are the City of Toronto's, under
     /// Toronto's open licence; the police calls are the Toronto Police Service's, under Ontario's;
     /// the station, division and facility datasets are the City's, under Toronto's; the apparatus
-    /// roster is a community wiki under CC BY-SA 3.0. Naming them together would read as compliance
-    /// while being wrong about two of them.
+    /// roster is a community wiki under CC BY-SA 3.0; Wikipedia text is CC BY-SA 4.0 and each
+    /// Commons photograph keeps its own licence. Naming them together would read as compliance
+    /// while being wrong about several of them.
     ///
-    /// The three reference licences are read from the generated files rather than typed here, so a
-    /// credit follows the file it describes. The live feeds' licences are the publishers' own:
-    /// Toronto's open licence for the City's fire data, Ontario's for the Service's calls.
+    /// The reference licences are read from the generated files rather than typed here, so a credit
+    /// follows the file it describes. The live feeds' licences are the publishers' own: Toronto's
+    /// open licence for the City's fire data, Ontario's for the Service's calls.
     static var sources: [SourceCredit] {
         [
             credit(
@@ -121,6 +122,12 @@ enum Attribution {
                 apparatusRosterURL,
                 FireUnits.bundled.licence,
                 citation: "Firefighting Wiki (Fandom), “Toronto Fire Services”, retrieved \(FireUnits.bundled.retrieved)."
+            ),
+            credit(
+                "Wikipedia and Wikimedia Commons",
+                WikipediaReference.bundled.source,
+                WikipediaReference.bundled.licence,
+                citation: "Station histories from Wikipedia and unit photographs from Wikimedia Commons; each page names the entry, author and licence it uses."
             ),
         ].compactMap { $0 }
     }

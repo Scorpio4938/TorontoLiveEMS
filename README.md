@@ -29,16 +29,18 @@ than fetched. The live feed names a station by number and a police call names a 
 neither feed says what either one is. `scripts/make_reference_data.py` reads the City's *Fire
 Facility Locations*, *Police Boundaries* and *Police Facility Locations* open datasets, and the
 community-maintained *Firefighting Wiki* apparatus roster, and writes the four JSON files under
-`TorontoLiveEMSKit/Sources/TorontoLiveEMSKit/Resources/`. Each file records its source URL,
-licence and retrieval date. The divisions file uses the City's current 16-division datastore
-geometry, because a division is ground rather than a point. The datastore already merges the
-former 54 area into 55 and the water into 52; the older 19-feature download still carries `00`
-(water and island areas), `54` and `58` (retired) separately, and filtering it left holes. The three City datasets are Open
-Government Licence – Toronto; the apparatus roster is CC BY-SA 3.0, because the City publishes no
-roster and the live feed only publishes what was dispatched. Re-running the script is the only way
-those files change. The app reads them from the bundle: the Stations, Units and Divisions
-catalogues are the reference section, and a station, unit or division page is built from the file
-rather than from a second copy of the facts.
+`TorontoLiveEMSKit/Sources/TorontoLiveEMSKit/Resources/`. A fifth file, `TorontoWikipedia.json`,
+is written by `scripts/make_wikipedia_data.py` and holds only the station histories and unit
+photographs that exist. Each file records its source URL, licence and retrieval date. The
+divisions file uses the City's current 16-division datastore geometry, because a division is
+ground rather than a point. The datastore already merges the former 54 area into 55 and the water
+into 52; the older 19-feature download still carries `00` (water and island areas), `54` and `58`
+(retired) separately, and filtering it left holes. The three City datasets are Open Government
+Licence – Toronto; the apparatus roster is CC BY-SA 3.0; Wikipedia text is CC BY-SA 4.0, and each
+Commons photograph keeps its own licence. Re-running the scripts is the only way those files
+change. The app reads them from the bundle: the Stations, Units and Divisions catalogues are the
+reference section, and a station, unit or division page is built from the file rather than from a
+second copy of the facts.
 
 ## Layout
 

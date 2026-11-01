@@ -1,3 +1,4 @@
+import Foundation
 import MapKit
 import SwiftUI
 import TorontoLiveEMSKit
@@ -11,7 +12,9 @@ import TorontoLiveEMSKit
 ///
 /// **The map is a locator, not a live map.** The City publishes one point for the station, so this is
 /// one pin around that point and nothing else. There is no roster of what is parked there, and no
-/// photograph: the file knows neither, and the catalogue's premise is that it says only what it knows.
+/// photograph: the file knows neither, and the catalogue's premise is that it says only what it
+/// knows. A Wikipedia history appears only when that station has an entry; the other stations get
+/// no generic paragraph.
 ///
 /// The units section is the catalogue's own cross-reference: the captured unit codes whose digits are
 /// this station's number, each opening its unit page. It is absent when the app knows of none, in the
@@ -34,6 +37,11 @@ struct StationPage: View {
 
     private var units: [FireUnit] {
         FireUnits.bundled.units(at: station.number)
+    }
+
+    /// The optional Wikipedia history for this station, when one exists.
+    private var reference: WikipediaEntry? {
+        WikipediaReference.bundled.station(number: station.number)
     }
 
     /// The incidents naming any unit the catalogue places here, or `nil` while there is no snapshot.
@@ -59,6 +67,21 @@ struct StationPage: View {
                 Text("Station")
             } footer: {
                 Text("A station is the numbered fire facility the City publishes. An incident's Area is the run area the City files it under, numbered as a station; it is not necessarily the station that responded.")
+            }
+
+            if let reference, let extract = reference.extract {
+                Section {
+                    Text(extract)
+
+                    if let url = URL(string: reference.url) {
+                        Link("Read on Wikipedia", destination: url)
+                            .tint(.blue)
+                    }
+                } header: {
+                    Text("History")
+                } footer: {
+                    Text("Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved). This is the history of the station's site; the current building may differ.")
+                }
             }
 
             if !station.offices.isEmpty {

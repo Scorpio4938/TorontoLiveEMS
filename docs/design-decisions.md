@@ -568,10 +568,11 @@ division — and it is deliberately the quietest part of the app.
   different age and read as if they described the directory. Home loads the police feed
   for the division pages' live sections, but draws no status line of its own.
 - **Sources are a section, not a footer.** They are destinations; a reader should be
-  able to tap them. The six sources are named with their own licences — the City's
+  able to tap them. The sources are named with their own licences — the City's
   fire data and its three reference datasets under Toronto's open licence, the
-  Service's calls under Ontario's, and the community apparatus roster under CC BY-SA
-  3.0 — rather than lumped under one licence that would be wrong for several of them.
+  Service's calls under Ontario's, the community apparatus roster under CC BY-SA
+  3.0, and the Wikipedia text and Commons photographs under their own licences —
+  rather than lumped under one licence that would be wrong for several of them.
   The ticket that asked for the credit parenthesised both live feeds as Ontario's; the
   fire feed is the City's, and the licence the app has stated since ADR-0001 is
   Toronto's. The roster is the one source that names individual units: the City
@@ -617,6 +618,13 @@ division — and it is deliberately the quietest part of the app.
   one-pin locator, and the catalogue's cross-reference of unit codes whose station is
   this one — which is not a roster of what is parked there. That distinction is the
   directory's whole premise: it says what it knows and nothing else.
+- **Wikipedia material is optional, per entity, and cited where it appears.** Only a
+  station with a real entry in *List of historic Toronto fire stations* gets a history
+  section, and only a unit whose code a Commons file names gets a photograph. There is no
+  repeated general TFS/TPS paragraph on the pages with nothing to say, and no division
+  content: Wikipedia has no individual division pages. Text is CC BY-SA 4.0; every image
+  keeps its own author and licence, shown under the image and linked to the Commons file.
+  The citation names the page, licence and retrieval date.
 - **The live lists are the main pages' cards, with the fields they have.** A
   division's *Calls Now* row and a unit's *Dispatched Now* row use `CompactCardRow`:
   the location is the main line, the incident or call type sits opposite it, and the

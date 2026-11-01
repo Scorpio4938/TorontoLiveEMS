@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import TorontoLiveEMSKit
 
@@ -6,8 +7,9 @@ import TorontoLiveEMSKit
 /// **Apparatus and station, or nothing.** The code is the City's; the apparatus name is the longest
 /// matching entry in the legend (with L read as Ladder); the station is the published station number the code's digits
 /// happen to be. A code with no station shows no station rather than a labelled blank. There is no
-/// photograph, no roster of what is parked where, and no apology for the catalogue being one capture
-/// rather than a census.
+/// roster of what is parked where, and no apology for the catalogue being a roster rather than a
+/// census. A Commons photograph appears only when a file names this code; a unit with no such file
+/// gets no photo, not a generic one.
 ///
 /// **The live section reads the feed already in memory.** It makes no request of its own and adds no
 /// refresh rule: the same `IncidentFeed` the Fire page and the map use is asked which incidents name
@@ -31,6 +33,11 @@ struct UnitPage: View {
         return FireStations.bundled.station(number: number)
     }
 
+    /// The optional Wikipedia text or photograph for this unit, when one exists.
+    private var reference: WikipediaEntry? {
+        WikipediaReference.bundled.unit(code: unit.code)
+    }
+
     /// The incidents currently naming this unit, or `nil` while there is no snapshot to ask.
     private var dispatchedIncidents: [Incident]? {
         feed.incidents?.filter { unit.isDispatched(to: $0) }
@@ -52,6 +59,49 @@ struct UnitPage: View {
                 }
             } header: {
                 Text("Unit")
+            }
+
+            if let reference, reference.extract != nil || reference.image != nil {
+                Section {
+                    if let extract = reference.extract {
+                        Text(extract)
+                    }
+
+                    if let image = reference.image {
+                        AsyncImage(url: URL(string: image.url)) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            case .success(let loaded):
+                                loaded
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 260)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            case .failure:
+                                Label("Photo unavailable", systemImage: "photo")
+                                    .foregroundStyle(Color.secondary)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .accessibilityLabel("Photo of \(unit.code)")
+
+                        if let page = URL(string: image.pageURL) {
+                            Link("View on Wikimedia Commons", destination: page)
+                                .tint(.blue)
+                        }
+                    }
+                } header: {
+                    Text(reference.extract == nil ? "Photo" : "About")
+                } footer: {
+                    if let image = reference.image {
+                        Text("\(image.author), \(image.licence), via Wikimedia Commons.")
+                    } else {
+                        Text("Wikipedia, “\(reference.title)”, \(reference.licence), retrieved \(reference.retrieved).")
+                    }
+                }
             }
 
             Section {

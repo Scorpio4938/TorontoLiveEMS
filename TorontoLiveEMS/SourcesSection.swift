@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// The six sources and the licence each is under, as a list section.
+/// The sources and the licence each is under, as a list section.
 ///
 /// **One view because both information screens show it.** The fire screen and the police screen
-/// explain different data, but the credit is the same set of six sources, and two copies would be
-/// two places to forget one. The two live feeds, the three City reference datasets and the
-/// community apparatus roster are different publishers under three different licences; each row
-/// names its own rather than repeating a single licence that would be wrong for several of them.
+/// explain different data, but the credit is the same set of sources, and two copies would be two
+/// places to forget one. The live feeds, the City reference datasets, the community apparatus
+/// roster and Wikipedia/Wikimedia Commons are different publishers under different licences; each
+/// row names its own rather than repeating a single licence that would be wrong for several of
+/// them.
 struct SourcesSection: View {
 
     var body: some View {
@@ -28,7 +29,7 @@ struct SourcesSection: View {
         } header: {
             Text("Sources")
         } footer: {
-            Text("Not affiliated with the City of Toronto. Each source is named with the licence it is published under; the two live feeds, the three City reference datasets and the community apparatus roster are different publishers under three different licences.")
+            Text("Not affiliated with the City of Toronto. Each source is named with the licence it is published under; the live feeds, the City reference datasets, the community apparatus roster and Wikipedia/Wikimedia Commons are different publishers under different licences.")
         }
     }
 }
