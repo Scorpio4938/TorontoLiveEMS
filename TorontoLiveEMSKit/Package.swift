@@ -22,6 +22,11 @@ let package = Package(
         ),
     ],
     targets: [
+        // **Why this package is a sibling of the app folder and not inside it.** `TorontoLiveEMS/`
+        // is a `PBXFileSystemSynchronizedRootGroup`: every `.swift` file under it joins the app
+        // target automatically, with no `pbxproj` edit. Nesting this package there would compile
+        // its sources into the app target *and* into the module, which does not work. The app links
+        // it by a local package reference instead.
         .target(
             name: "TorontoLiveEMSKit",
             resources: [
