@@ -140,18 +140,16 @@ struct SettingsView: View {
                 #if os(iOS)
                 Section {
                     Toggle("Show Home Tab", isOn: $showsHomeTab)
+
+                    if !showsHomeTab {
+                        Toggle("Show Home Button", isOn: $showsHomeButton)
+                    }
                 } header: {
-                    Text("Tab Bar")
+                    Text("Home")
                 } footer: {
                     Text("Home is the directory of stations, units and divisions. Turning its tab off gives Fire, Police and Map more room.")
-                }
 
-                if !showsHomeTab {
-                    Section {
-                        Toggle("Show Home Button", isOn: $showsHomeButton)
-                    } header: {
-                        Text("Home Button")
-                    } footer: {
+                    if !showsHomeTab {
                         Text("The house control at the top opens Home while its tab is hidden. Turn it off too if you want no Home control at all.")
                     }
                 }
