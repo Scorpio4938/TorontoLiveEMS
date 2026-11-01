@@ -33,26 +33,26 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 `4980cf0`
 
-- Settings grouped by what a setting affects: Display, Police, About · `b5b2f2a` · #36
+- Settings grouped by what a setting affects: Display, Police, About · `b5b2f2a` · [#36](https://github.com/Scorpio4938/TorontoLiveEMS/issues/36)
 - About rebuilt for both sources: the version in a row, the two source pages, the repository, an App
-  Licence placeholder · `ce0519b` · #38
-- Data Licences: an index, with a page each for Fire data, Postal areas and Police data · `dae620f` · #39
-- Each licence page links its actual source and carries the publisher's full licence text · `c16aeac` · #39
-- A data screen's one-sentence notice opens that index · `f6daf23` · #39
-- The map's legend prose shortened, and it no longer counts the symbols · `871f5e0` · #37
-- Package tests pinning the three licence texts and the postal boundary file's source · `c16aeac` · #39
+  Licence placeholder · `ce0519b` · [#38](https://github.com/Scorpio4938/TorontoLiveEMS/issues/38)
+- Data Licences: an index, with a page each for Fire data, Postal areas and Police data · `dae620f` · [#39](https://github.com/Scorpio4938/TorontoLiveEMS/issues/39)
+- Each licence page links its actual source and carries the publisher's full licence text · `c16aeac` · [#39](https://github.com/Scorpio4938/TorontoLiveEMS/issues/39)
+- A data screen's one-sentence notice opens that index · `f6daf23` · [#39](https://github.com/Scorpio4938/TorontoLiveEMS/issues/39)
+- The map's legend prose shortened, and it no longer counts the symbols · `871f5e0` · [#37](https://github.com/Scorpio4938/TorontoLiveEMS/issues/37)
+- Package tests pinning the three licence texts and the postal boundary file's source · `c16aeac` · [#39](https://github.com/Scorpio4938/TorontoLiveEMS/issues/39)
 
 ## v0.0.18
 
 `35921d2`
 
-- Both pages list their own feed newest first · `141c305` · #20
+- Both pages list their own feed newest first · `141c305` · [#20](https://github.com/Scorpio4938/TorontoLiveEMS/issues/20)
 - The police refresh skips only on an unchanged as-of stamp — a write landing after a read is
-  fetched rather than refused · `f9d9766` · #21
-- A duplicated apparatus token is shown once · `aeba124` · #22
-- The police page's clock control removed; Settings is the only route to the window · `3075a76` · #24
-- Map taps converted in the window, so the padded compass clearance no longer offsets them · `140fcbd` · #23
-- Known: the pin callout still flips above and below its pin — #34
+  fetched rather than refused · `f9d9766` · [#21](https://github.com/Scorpio4938/TorontoLiveEMS/issues/21)
+- A duplicated apparatus token is shown once · `aeba124` · [#22](https://github.com/Scorpio4938/TorontoLiveEMS/issues/22)
+- The police page's clock control removed; Settings is the only route to the window · `3075a76` · [#24](https://github.com/Scorpio4938/TorontoLiveEMS/issues/24)
+- Map taps converted in the window, so the padded compass clearance no longer offsets them · `140fcbd` · [#23](https://github.com/Scorpio4938/TorontoLiveEMS/issues/23)
+- Known: the pin callout still flips above and below its pin — [#34](https://github.com/Scorpio4938/TorontoLiveEMS/issues/34)
 
 ## v0.0.17
 
@@ -148,14 +148,14 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 `f648162`
 
-- The map page · `8e087d0` · #19
+- The map page · `8e087d0` · [#19](https://github.com/Scorpio4938/TorontoLiveEMS/issues/19)
 - The chrome above both pages as one layer · `77c2e24`
 
 ## v0.0.4-two-tabs
 
 `660f4a4`
 
-- The bottom tab bar, with refresh as the prominent trailing tab · `5d6f70a` · #16, #17
+- The bottom tab bar, with refresh as the prominent trailing tab · `5d6f70a` · [#16](https://github.com/Scorpio4938/TorontoLiveEMS/issues/16), [#17](https://github.com/Scorpio4938/TorontoLiveEMS/issues/17)
 
 ## v0.0.3-bar-and-cards
 
@@ -163,8 +163,8 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 - The bottom bar · `e632002`
 - The switcher · `0003773`
-- The cards arrangement · `f5b37bf` · #13
-- The general map page · `8e087d0` · #19
+- The cards arrangement · `f5b37bf` · [#13](https://github.com/Scorpio4938/TorontoLiveEMS/issues/13)
+- The general map page · `8e087d0` · [#19](https://github.com/Scorpio4938/TorontoLiveEMS/issues/19)
 
 Kept on `archive/everything-since-v0.0.2` rather than on `master`.
 
