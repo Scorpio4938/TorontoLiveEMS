@@ -38,10 +38,17 @@ enum SettingsKey {
 
     /// Whether Home appears as a tab on iPhone and iPad.
     ///
-    /// Hiding it leaves the tab bar's width to Fire, Police and Map. Home is still reachable
-    /// from the house control in the top bar, so the station, unit and division pages are
-    /// never lost.
+    /// Hiding it leaves the tab bar's width to Fire, Police and Map. The leading house control
+    /// is the way back while the tab is hidden; `showsHomeButton` decides whether that control
+    /// is drawn as well.
     static let showsHomeTab = "showsHomeTab"
+
+    /// Whether the leading house control is drawn while the Home tab is hidden.
+    ///
+    /// It has no effect while Home is a tab, because the tab is the way there and the leading
+    /// control is not drawn. With both this and `showsHomeTab` off, Home has no control in the
+    /// app; that is a deliberate choice the reader can make.
+    static let showsHomeButton = "showsHomeButton"
 }
 
 /// The app's preferences, and one row to everything that is not one.
@@ -75,6 +82,9 @@ struct SettingsView: View {
     #if os(iOS)
     @AppStorage(SettingsKey.showsHomeTab)
     private var showsHomeTab = true
+
+    @AppStorage(SettingsKey.showsHomeButton)
+    private var showsHomeButton = true
     #endif
 
     @Environment(\.dismiss) private var dismiss
@@ -133,7 +143,17 @@ struct SettingsView: View {
                 } header: {
                     Text("Tab Bar")
                 } footer: {
-                    Text("Home is the directory of stations, units and divisions. Turning its tab off gives Fire, Police and Map more room; the house button at the top still opens Home.")
+                    Text("Home is the directory of stations, units and divisions. Turning its tab off gives Fire, Police and Map more room.")
+                }
+
+                if !showsHomeTab {
+                    Section {
+                        Toggle("Show Home Button", isOn: $showsHomeButton)
+                    } header: {
+                        Text("Home Button")
+                    } footer: {
+                        Text("The house control at the top opens Home while its tab is hidden. Turn it off too if you want no Home control at all.")
+                    }
                 }
                 #endif
 

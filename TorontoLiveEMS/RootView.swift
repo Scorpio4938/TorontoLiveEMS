@@ -116,6 +116,9 @@ struct RootView: View {
     /// tab bar, and their Home tab stays put.
     @AppStorage(SettingsKey.showsHomeTab) private var showsHomeTab = true
 
+    /// Whether the leading house control is drawn while the tab is hidden.
+    @AppStorage(SettingsKey.showsHomeButton) private var showsHomeButton = true
+
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
@@ -427,7 +430,7 @@ struct RootView: View {
     /// current tab is showing a pushed detail rather than its root. It is one question answered
     /// in one place, so Fire, Police and Map cannot style or place it differently.
     private var homeControlIsVisible: Bool {
-        guard !homeTabIsShown else { return false }
+        guard !homeTabIsShown, showsHomeButton else { return false }
         switch screen {
         case .home, .refresh:
             return false

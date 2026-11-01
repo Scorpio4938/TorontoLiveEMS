@@ -719,6 +719,11 @@ say which of them mattered.
   round toolbar button; its 56-point width gives it the capsule's flat edges without crowding
   the title. Its height comes from the same vertical padding as the trailing controls, not from
   the 44-point band the capsule is centred in, so the two ends are the same height.
+  Once the tab is hidden, a second setting can hide the leading button too. That leaves Home
+  with no control at all, which is a deliberate choice: the point of the preference is to let
+  the reader decide how much Home chrome they want, including none, rather than to protect them
+  from it. The second setting only appears while the tab is hidden, because that is the only
+  time the leading button is drawn.
   Hiding the selected tab moves to Fire, the launch fallback; a first launch with the tab
   already hidden also opens Fire, because a `TabView` cannot select a tab it does not contain.
   The setting is absent on the platforms with no bottom tab bar, where Home stays a tab.

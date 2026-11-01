@@ -33,7 +33,7 @@ struct InfoControl: View {
     }
 }
 
-/// The Home control, shown only when Home is not a tab.
+/// The Home control, shown only when Home is not a tab and the reader has left the button on.
 ///
 /// **The tab's trade, made visible.** Hiding Home gives its width to the other tabs; this is
 /// the way back to the index. It sits at the leading edge of the same shared top layer as Info,
