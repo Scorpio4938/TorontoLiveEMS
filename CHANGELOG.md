@@ -7,6 +7,12 @@ entry here — the only question a reader has is what happened most recently.
 and each line names the commit that finished it. Where a change spans several commits, the hash is
 the last of them: the one that left the thing working.
 
+**A line may also name the issue it came from**, where one existed. The two recent batches were
+filed as issues before they were built — the five fixes in `v0.0.18` and the information pass in
+`v0.0.19` — and three earlier campaigns had tickets too. Most lines have none, because for the
+first dozen versions the work happened before there was a tracker to file it in, and inventing a
+number afterwards would be worse than the gap.
+
 **A line with no commit is not a change.** Three are states or gaps rather than work — that v0.0.1
 builds, that v0.0.13 had no filter yet, and that v0.0.18's pin callout still flips — and a gap has
 nothing to point at. They are kept because what a version was *missing* is part of what it was.
@@ -27,25 +33,25 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 `4980cf0`
 
-- Settings grouped by what a setting affects: Display, Police, About · `b5b2f2a`
+- Settings grouped by what a setting affects: Display, Police, About · `b5b2f2a` · #36
 - About rebuilt for both sources: the version in a row, the two source pages, the repository, an App
-  Licence placeholder · `ce0519b`
-- Data Licences: an index, with a page each for Fire data, Postal areas and Police data · `dae620f`
-- Each licence page links its actual source and carries the publisher's full licence text · `c16aeac`
-- A data screen's one-sentence notice opens that index · `f6daf23`
-- The map's legend prose shortened, and it no longer counts the symbols · `871f5e0`
-- Package tests pinning the three licence texts and the postal boundary file's source · `c16aeac`
+  Licence placeholder · `ce0519b` · #38
+- Data Licences: an index, with a page each for Fire data, Postal areas and Police data · `dae620f` · #39
+- Each licence page links its actual source and carries the publisher's full licence text · `c16aeac` · #39
+- A data screen's one-sentence notice opens that index · `f6daf23` · #39
+- The map's legend prose shortened, and it no longer counts the symbols · `871f5e0` · #37
+- Package tests pinning the three licence texts and the postal boundary file's source · `c16aeac` · #39
 
 ## v0.0.18
 
 `35921d2`
 
-- Both pages list their own feed newest first · `141c305`
+- Both pages list their own feed newest first · `141c305` · #20
 - The police refresh skips only on an unchanged as-of stamp — a write landing after a read is
-  fetched rather than refused · `f9d9766`
-- A duplicated apparatus token is shown once · `aeba124`
-- The police page's clock control removed; Settings is the only route to the window · `3075a76`
-- Map taps converted in the window, so the padded compass clearance no longer offsets them · `140fcbd`
+  fetched rather than refused · `f9d9766` · #21
+- A duplicated apparatus token is shown once · `aeba124` · #22
+- The police page's clock control removed; Settings is the only route to the window · `3075a76` · #24
+- Map taps converted in the window, so the padded compass clearance no longer offsets them · `140fcbd` · #23
 - Known: the pin callout still flips above and below its pin — #34
 
 ## v0.0.17
@@ -142,14 +148,14 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 `f648162`
 
-- The map page · `8e087d0`
+- The map page · `8e087d0` · #19
 - The chrome above both pages as one layer · `77c2e24`
 
 ## v0.0.4-two-tabs
 
 `660f4a4`
 
-- The bottom tab bar, with refresh as the prominent trailing tab · `5d6f70a`
+- The bottom tab bar, with refresh as the prominent trailing tab · `5d6f70a` · #16, #17
 
 ## v0.0.3-bar-and-cards
 
@@ -157,8 +163,8 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 
 - The bottom bar · `e632002`
 - The switcher · `0003773`
-- The cards arrangement · `f5b37bf`
-- The general map page · `8e087d0`
+- The cards arrangement · `f5b37bf` · #13
+- The general map page · `8e087d0` · #19
 
 Kept on `archive/everything-since-v0.0.2` rather than on `master`.
 
