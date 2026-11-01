@@ -439,7 +439,9 @@ struct RootView: View {
     private var homeMapControl: some View {
         if !homeTabIsShown {
             HomeCapsule(action: { isShowingHome = true })
-                .padding(.top, 12)
+                // The same band and leading inset as the trailing capsule, so the two are
+                // centred on the same line rather than one sitting lower than the other.
+                .frame(height: ScreenControls.bandHeight, alignment: .center)
                 .padding(.leading, 12)
         }
     }

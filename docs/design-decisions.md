@@ -716,7 +716,8 @@ say which of them mattered.
   at the top-leading edge. That control is the same glass capsule as the trailing one — same
   height, radius and material, with the platform's own shared toolbar glass hidden — rather
   than a round toolbar button; its 56-point width gives it the capsule's flat edges without
-  crowding the title.
+  crowding the title. Its height comes from the same vertical padding as the trailing controls,
+  not from the 44-point band the capsule is centred in, so the two ends are the same height.
   Hiding the selected tab moves to Fire, the launch fallback; a first launch with the tab
   already hidden also opens Fire, because a `TabView` cannot select a tab it does not contain.
   The setting is absent on the platforms with no bottom tab bar, where Home stays a tab.

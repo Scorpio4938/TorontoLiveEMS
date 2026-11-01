@@ -42,10 +42,12 @@ struct InfoControl: View {
 /// station, unit or division page is never unreachable just because the reader preferred a
 /// shorter tab bar.
 ///
-/// **The same capsule as the top-right controls.** The material, height and corner radius are
-/// `ScreenControls`' own constants, so the two ends of the bar cannot drift apart. A single
-/// 44-point square with that radius would read as a circle; the 56-point width gives the same
-/// flat top and bottom edges as the Info/Settings capsule while leaving the centred title room.
+/// **The same capsule as the top-right controls.** The material, vertical padding and corner
+/// radius are `ScreenControls`' own constants, so the two ends of the bar cannot drift apart.
+/// A single 44-point square with that radius would read as a circle; the 56-point width gives the
+/// same flat top and bottom edges as the Info/Settings capsule while leaving the centred title
+/// room. The height comes from the padding, not from `bandHeight`: the band is placement, and
+/// using it as the capsule's height is what made this control taller than the trailing one.
 struct HomeCapsule: View {
 
     let action: () -> Void
@@ -53,8 +55,12 @@ struct HomeCapsule: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "house")
+                // The same body-sized symbol the Info/Settings capsule is built from; the
+                // toolbar's own font must not make this one taller.
+                .font(.body)
                 .foregroundStyle(Color.primary)
-                .frame(width: 56, height: ScreenControls.bandHeight)
+                .frame(width: 56)
+                .padding(.vertical, ScreenControls.verticalPadding)
         }
         // Plain: this capsule is the surface. The toolbar's shared glass is hidden by the
         // caller, so a second platform-drawn background cannot appear behind it.
@@ -218,8 +224,13 @@ struct ScreenControls: View {
 
     /// The band the capsule is centred in at the top of the screen.
     ///
-    /// It is the placement, and the only height in it.
+    /// It is placement, not the capsule's own height: the capsule is sized by its content and
+    /// padding and then centred in this band.
     static let bandHeight: CGFloat = 44
+
+    /// The interior padding every control capsule uses. Shared with `HomeCapsule`, so the
+    /// leading and trailing controls have the same height.
+    static let verticalPadding: CGFloat = 10
 
     /// The radius every control capsule in the app uses. Shared with `HomeCapsule`, so the
     /// leading and trailing ends cannot be different shapes.
@@ -264,7 +275,7 @@ struct ScreenControls: View {
             SettingsControl(action: onSettings)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, Self.verticalPadding)
         .glassSurface(cornerRadius: Self.cornerRadius)
     }
 }
