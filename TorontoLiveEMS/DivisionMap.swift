@@ -88,7 +88,8 @@ struct DivisionAreaMap: View {
 
 /// The Divisions catalogue as areas, with the live map's tap rule and card.
 ///
-/// **No pins.** Every one of the 19 divisions has a published boundary, so the map draws the shape
+/// **No pins.** Every one of the 16 current divisions has a published boundary, so the map draws
+/// the shape
 /// the City drew. A tap inside a shape selects that division; a tap on empty ground puts the card
 /// away. The card hangs from the northern edge of the selected area, never from its middle, and the
 /// card opens the division page.

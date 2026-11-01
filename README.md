@@ -30,8 +30,10 @@ neither feed says what either one is. `scripts/make_reference_data.py` reads the
 Facility Locations*, *Police Boundaries* and *Police Facility Locations* open datasets, and the
 community-maintained *Firefighting Wiki* apparatus roster, and writes the four JSON files under
 `TorontoLiveEMSKit/Sources/TorontoLiveEMSKit/Resources/`. Each file records its source URL,
-licence and retrieval date. The divisions file also carries the 19 published MultiPolygon
-boundaries, because a division is ground rather than a point. The three City datasets are Open
+licence and retrieval date. The divisions file also carries the 16 current divisions'
+MultiPolygon boundaries, because a division is ground rather than a point; the City's boundary
+download also contains `00` (water and island areas), `54` and `58` (retired),
+which the import filters out. The three City datasets are Open
 Government Licence – Toronto; the apparatus roster is CC BY-SA 3.0, because the City publishes no
 roster and the live feed only publishes what was dispatched. Re-running the script is the only way
 those files change. The app reads them from the bundle: the Stations, Units and Divisions

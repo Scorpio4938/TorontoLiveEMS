@@ -85,9 +85,11 @@ and the station number a unit's code places it at.
 _Avoid_: Firehouse, hall, fire division
 
 **Division**:
-A Toronto Police Service patrol area, published as 19 boundary features and
+A Toronto Police Service patrol area, published as 16 current boundary areas and
 written by the feed as `D14`. It is the entity a police call's Division field
-names.
+names. The City's downloadable boundary file also carries `00` (water and island areas),
+`54` and `58` (retired); these are not current
+divisions and the import filters them out.
 _Avoid_: Fire division, district, zone
 
 **Fire division** is not a term. Toronto Fire publishes no such thing, and the

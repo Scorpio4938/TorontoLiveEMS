@@ -8,9 +8,9 @@ import TorontoLiveEMSKit
 /// screen write `D14`. Showing one form everywhere is the point, and the feed's is the one a reader
 /// sees on a call.
 ///
-/// The list's second line is the published facility address when there is one. Three divisions have
-/// no facility row, but all 19 have a published area, so the map draws the City's boundaries rather
-/// than a pin per building.
+/// The list's second line is the published facility address when there is one. Every current
+/// division has a published area, so the map draws the City's boundaries rather than a pin per
+/// building.
 struct DivisionCatalogueView: View {
 
     let policeFeed: PoliceCallFeed

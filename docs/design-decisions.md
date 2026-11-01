@@ -581,6 +581,13 @@ division — and it is deliberately the quietest part of the app.
   in our own capture it matched a dispatched unit about half the time. The interface
   says *the run area the City files the incident under, numbered as its station*, and
   the Area row opens that station's page. The glossary says the same.
+- **The division catalogue is the current 16, not every boundary feature.** The City's
+  downloadable boundary file has 19 features. Three are not current divisions: `00` is a water
+  and island area with no division facility, and `54` and `58` are retired. The City's facility
+  layer names the 16 current divisions, and the import filters the boundary file on those
+  names; the datastore version of the same dataset also carries 16. A call that names an
+  extra gets no division page rather than a made-up one. The geometry is still the
+  City's published area for the 16.
 - **A catalogue can be a list or a map, and the mark follows the entity.** The
   Stations catalogue offers list or ring-dot pins because a station is a point; the
   Divisions catalogue offers list or area because a division is ground. Division

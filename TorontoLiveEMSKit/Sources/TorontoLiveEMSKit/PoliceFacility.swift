@@ -4,9 +4,9 @@ import Foundation
 ///
 /// A division's page carries the facility address and postal code the City publishes for it. The
 /// published facility file also holds headquarters, collision reporting centres, the college, and
-/// marine and mounted units; those are not divisions and are not in this file. A division with no
-/// facility row is a real case — the boundary file has 19 divisions and only 16 have one — and the
-/// page shows no address rather than a blank labelled row.
+/// marine and mounted units; those are not divisions and are not in this file. Every current
+/// division has one in the current City file; a missing row is still a real case the page handles
+/// by showing no address rather than a blank labelled row.
 public struct PoliceFacility: Sendable, Equatable, Identifiable, Decodable {
 
     public var id: String { division }

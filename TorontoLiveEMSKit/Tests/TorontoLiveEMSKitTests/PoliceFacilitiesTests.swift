@@ -3,7 +3,7 @@ import Testing
 
 import TorontoLiveEMSKit
 
-/// The generated facility file: the 16 divisions with a published address, and the three without.
+/// The generated facility file: the 16 current divisions, each with a published address.
 @Suite("Police facilities")
 struct PoliceFacilitiesTests {
 
@@ -19,10 +19,20 @@ struct PoliceFacilitiesTests {
         #expect(!facilities.retrieved.isEmpty)
     }
 
-    @Test("every facility belongs to a published division")
+    @Test("every facility belongs to a current division")
     func facilitiesBelongToDivisions() {
         for facility in facilities.facilities {
             #expect(divisions.division(forPublished: facility.division)?.number == facility.division)
+        }
+    }
+
+    @Test("every current division has a facility")
+    func everyDivisionHasAFacility() {
+        for division in divisions.divisions {
+            #expect(
+                facilities.facility(forPublished: division.number) != nil,
+                "\(division.feedCode) has no facility"
+            )
         }
     }
 
@@ -38,9 +48,10 @@ struct PoliceFacilitiesTests {
         #expect(abs(fromFeed.coordinate.longitude - -79.425981) < 0.00001)
     }
 
-    @Test("a division with no facility record has no facility, not a blank one")
+    @Test("a division the file does not know has no facility, not a blank one")
     func absentFacilityIsNil() {
-        // 00, 54 and 58 are published divisions with no facility row.
+        // 00, 54 and 58 are in the boundary download but are not current divisions; D99 does not
+        // exist at all. None of them gets a made-up facility.
         #expect(facilities.facility(forPublished: "00") == nil)
         #expect(facilities.facility(forPublished: "54") == nil)
         #expect(facilities.facility(forPublished: "58") == nil)

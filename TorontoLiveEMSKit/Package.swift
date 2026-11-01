@@ -32,8 +32,8 @@ let package = Package(
                 // they are data; in the package rather than the app because the app target
                 // cannot be tested at all, and these are worth testing — that they load,
                 // that their coordinates land in Toronto, that there are 84 stations and
-                // 19 divisions, and that a unit's station is a station number rather than
-                // merely its digits.
+                // 16 current divisions, and that a unit's station is a station number rather
+                // than merely its digits.
                 .process("Resources"),
             ]
         ),

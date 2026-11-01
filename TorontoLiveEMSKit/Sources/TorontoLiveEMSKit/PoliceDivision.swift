@@ -2,10 +2,10 @@ import Foundation
 
 /// One police division, as the City of Toronto publishes it.
 ///
-/// **A number and its published area.** The boundary file carries 19 features, each with a division
-/// number and a MultiPolygon. Both are kept: the number is what a call names, and the area is what a
-/// division page and the Divisions map draw. Unlike a station, a division is a coverage area rather
-/// than a point, so a pin would say less than the City did.
+/// **A number and its published area.** The City's current division layer carries 16 divisions, each
+/// with a division number and a MultiPolygon. Both are kept: the number is what a call names, and
+/// the area is what a division page and the Divisions map draw. Unlike a station, a division is a
+/// coverage area rather than a point, so a pin would say less than the City did.
 public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
 
     public var id: String { number }
@@ -136,15 +136,16 @@ public struct PoliceDivision: Sendable, Equatable, Identifiable, Decodable {
 
 /// The police divisions the City publishes boundaries for, and where the file came from.
 ///
-/// **Why this exists.** A police call arrives with a division string — `D14` — and the City also
-/// publishes which divisions exist as 19 boundary features. The boundary file spells the same
-/// division `14`. One of the two has to be normalised, and this type makes the City's spelling the
-/// stored one: the file holds `14`, a lookup accepts `14` or `D14`, and a screen renders `feedCode`
-/// so the app can never show both.
+/// **Why this exists.** A police call arrives with a division string — `D14` — and the City
+/// publishes which divisions currently exist. The boundary file spells the same division `14`.
+/// One of the two has to be normalised, and this type makes the City's spelling the stored one:
+/// the file holds `14`, a lookup accepts `14` or `D14`, and a screen renders `feedCode` so the app
+/// can never show both.
 ///
-/// **19 divisions, including `00`.** The published file carries all 19 rows, so the file the app
-/// ships does too. Nothing here decides which divisions are interesting: a division the City
-/// publishes is a division the app can name.
+/// **16 current divisions.** The City's downloadable boundary file carries 19 features, but three
+/// are not current divisions: `00` is a water and island area with no division facility, and
+/// `54` and `58` are retired. The import takes the 16 divisions the City's facility layer names, so a call that
+/// names one of the three extras gets no division page rather than a made-up one.
 ///
 /// **The area is shipped too.** Unlike the station and facility files, this one keeps the published
 /// MultiPolygon, so the Divisions map can answer *what ground does D14 cover* rather than only

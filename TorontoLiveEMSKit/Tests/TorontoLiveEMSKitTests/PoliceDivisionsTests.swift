@@ -9,14 +9,27 @@ struct PoliceDivisionsTests {
 
     private var divisions: PoliceDivisions { PoliceDivisions.bundled }
 
-    @Test("the bundled file loads with the 19 published divisions")
+    @Test("the bundled file loads with the 16 current divisions")
     func theFileLoads() {
-        #expect(divisions.count == 19, "the published boundary file has 19 features")
-        #expect(divisions.divisions.count == 19)
-        #expect(divisions.divisions.map(\.number) == divisions.divisions.map(\.number).sorted())
+        #expect(divisions.count == 16, "the City's current division layer has 16 divisions")
+        #expect(divisions.divisions.count == 16)
+        #expect(divisions.divisions.map(\.number) == [
+            "11", "12", "13", "14", "22", "23", "31", "32", "33",
+            "41", "42", "43", "51", "52", "53", "55",
+        ])
         #expect(!divisions.source.isEmpty)
         #expect(!divisions.licence.isEmpty)
         #expect(!divisions.retrieved.isEmpty)
+    }
+
+    @Test("the boundary download's non-current areas are not divisions")
+    func nonCurrentAreasAreFiltered() {
+        // 00 is a water and island area; 54 and 58 are retired divisions. They are
+        // in the downloadable boundary file but not in the City's current division layer.
+        for number in ["00", "54", "58"] {
+            #expect(divisions.division(forPublished: number) == nil, "\(number) is not current")
+            #expect(divisions.division(forPublished: "D" + number) == nil, "D\(number) is not current")
+        }
     }
 
     @Test("the feed's D14 and the City's 14 are one division")
@@ -91,9 +104,9 @@ struct PoliceDivisionsTests {
             #expect(division.number.count == 2, "\(division.number) is not two digits")
             #expect(division.number.allSatisfy(\.isNumber))
         }
-        // The published file includes the division whose number leads with zero, and so does the
-        // app. Dropping it would be tidying somebody else's data.
-        #expect(divisions.divisions.contains { $0.number == "00" })
+        // The current divisions all happen to be two digits; the filter is about which
+        // divisions exist, not about dropping a leading zero. None of the current 16 leads with
+        // zero, because 00 is a water and island area rather than a division.
     }
 
     @Test("the source, licence and retrieval date are recorded")

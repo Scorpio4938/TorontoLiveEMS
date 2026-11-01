@@ -6,10 +6,11 @@ import TorontoLiveEMSKit
 /// **The division as the feed writes it.** The boundary file stores `14`; the feed and every screen
 /// write `D14`, so that is the title and the fact row.
 ///
-/// **The facility is a separate published record.** Three of the 19 divisions have no facility row,
-/// so their pages show no address and no postal code rather than labelled blanks. The map is the
-/// division's published area — the ground the City drew — and the address is text above it; a pin
-/// would narrow a division to its building, which is not what the division is.
+/// **The facility is a separate published record.** Every current division has a facility row in
+/// the City's current file; a missing row still shows no address and no postal code rather than
+/// labelled blanks. The map is the division's published area — the ground the City drew — and the
+/// address is text above it; a pin would narrow a division to its building, which is not what the
+/// division is.
 ///
 /// **The live section reads the calls already in memory.** It makes no request of its own and adds no
 /// refresh rule. A cold start says it is checking; a loaded feed with no matching calls says none are
@@ -118,14 +119,6 @@ struct DivisionPage: View {
 #Preview("Division — with a facility") {
     NavigationStack {
         if let division = PoliceDivisions.bundled.division(forPublished: "D14") {
-            DivisionPage(division: division, policeFeed: PreviewCalls.feed())
-        }
-    }
-}
-
-#Preview("Division — no facility") {
-    NavigationStack {
-        if let division = PoliceDivisions.bundled.division(forPublished: "D00") {
             DivisionPage(division: division, policeFeed: PreviewCalls.feed())
         }
     }

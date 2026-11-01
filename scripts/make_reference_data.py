@@ -22,9 +22,12 @@ Divisions
 
     https://open.toronto.ca/dataset/police-boundaries/
 
-Nineteen features, each with the division number in `AREA_LONG_CODE`. The geometry is not
-shipped: no screen draws a division boundary, and a polygon nothing reads is a second copy of a
-published shape waiting to drift. What the app needs is the number, so that is what the file has.
+The boundary download carries 19 features, each with the division number in `AREA_LONG_CODE`.
+Three are not current divisions: `00` is a water and island area with no division facility,
+and `54` and `58` are retired. The Police Facility Locations layer names the 16 current
+divisions, and the import filters the boundary file on those names. A current division with no boundary is an error;
+a boundary area with no current division is ignored rather than shipped as a place a call can
+name. The geometry is kept because the Divisions map draws the ground a division covers.
 
 Facilities
 ----------
@@ -276,15 +279,57 @@ def _division_areas(geometry):
     return areas
 
 
-def divisions_from(published, retrieved):
-    """The 19 division numbers and their published areas."""
+def division_number_from_facility(name):
+    """The two-digit division a facility name names, or `None` for any other facility."""
+    if not name:
+        return None
+    match = re.fullmatch(r"(\d{1,2})\s+Division", name, re.IGNORECASE)
+    return f"{int(match.group(1)):02d}" if match else None
+
+
+def current_division_numbers(facilities):
+    """The divisions the City's facility layer currently names.
+
+    This is the filter for the boundary download. The download carries three extra areas — 00
+    (water and islands), 54 and 58 (retired) — that are not current divisions; a facility row is
+    the City saying a division exists at an address, and the 16 such rows are the current 16
+    divisions.
+    """
+    numbers = {
+        number
+        for feature in facilities.get("features", [])
+        if (number := division_number_from_facility(
+            text(feature.get("properties", {}).get("FACILITY"))
+        ))
+    }
+    if not numbers:
+        raise SystemExit("the published facility file names no current divisions")
+    return numbers
+
+
+def divisions_from(published, current_numbers, retrieved):
+    """The current divisions and their published areas."""
     by_number = {}
+    ignored = set()
     for feature in published.get("features", []):
         number = text(feature.get("properties", {}).get("AREA_LONG_CODE"))
-        if number and number not in by_number:
+        if not number:
+            continue
+        if number not in current_numbers:
+            ignored.add(number)
+            continue
+        if number not in by_number:
             by_number[number] = _division_areas(feature["geometry"])
-    if not by_number:
-        raise SystemExit("the published division file has no division numbers")
+
+    missing = current_numbers - set(by_number)
+    if missing:
+        raise SystemExit(
+            "the published division file has no area for current divisions "
+            + ", ".join(sorted(missing))
+        )
+    if ignored:
+        print(f"  ignored non-current boundary areas: {', '.join(sorted(ignored))}")
+
     return {
         "source": DIVISIONS_URL,
         "licence": LICENCE,
@@ -309,12 +354,9 @@ def police_facilities_from(published, division_numbers, retrieved):
     for feature in published.get("features", []):
         properties = feature.get("properties", {})
         name = text(properties.get("FACILITY"))
-        if not name:
+        division = division_number_from_facility(name)
+        if not division:
             continue
-        match = re.fullmatch(r"(\d{1,2})\s+Division", name, re.IGNORECASE)
-        if not match:
-            continue
-        division = f"{int(match.group(1)):02d}"
         if division not in division_numbers:
             raise SystemExit(f"a facility names division {division}, which is not published")
         if division in facilities:
@@ -542,12 +584,15 @@ def main():
     stations = stations_from(
         document(arguments.stations or STATIONS_URL), arguments.retrieved
     )
+    facility_document = document(arguments.facilities or FACILITIES_URL)
+    division_numbers = current_division_numbers(facility_document)
     divisions = divisions_from(
-        document(arguments.divisions or DIVISIONS_URL), arguments.retrieved
+        document(arguments.divisions or DIVISIONS_URL),
+        division_numbers,
+        arguments.retrieved,
     )
-    division_numbers = {division["number"] for division in divisions["divisions"]}
     facilities = police_facilities_from(
-        document(arguments.facilities or FACILITIES_URL),
+        facility_document,
         division_numbers,
         arguments.retrieved,
     )
