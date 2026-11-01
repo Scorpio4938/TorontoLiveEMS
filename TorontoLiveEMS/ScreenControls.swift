@@ -36,9 +36,9 @@ struct InfoControl: View {
 /// The Home control, shown only when Home is not a tab.
 ///
 /// **The tab's trade, made visible.** Hiding Home gives its width to the other tabs; this is
-/// the way back to the index. It sits in the leading navigation bar on the pages that have one,
-/// and floats at the map's leading edge because the map has no bar — not in the trailing capsule,
-/// which the setting exists to keep narrow. It opens the same `HomePage` in a sheet, so a
+/// the way back to the index. It sits at the leading edge of the same shared top layer as Info,
+/// Settings and the map controls — not in the trailing capsule, which the setting exists to keep
+/// narrow, and not attached to one page at a time. It opens the same `HomePage` in a sheet, so a
 /// station, unit or division page is never unreachable just because the reader preferred a
 /// shorter tab bar.
 ///
@@ -55,15 +55,15 @@ struct HomeCapsule: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "house")
-                // The same body-sized symbol the Info/Settings capsule is built from; the
-                // toolbar's own font must not make this one taller.
+                // The same body-sized symbol the Info/Settings capsule is built from, so the
+                // symbol cannot change the capsule's height.
                 .font(.body)
                 .foregroundStyle(Color.primary)
                 .frame(width: 56)
                 .padding(.vertical, ScreenControls.verticalPadding)
         }
-        // Plain: this capsule is the surface. The toolbar's shared glass is hidden by the
-        // caller, so a second platform-drawn background cannot appear behind it.
+        // Plain: this capsule is the surface, so no second platform-drawn background appears
+        // behind it.
         .buttonStyle(.plain)
         .glassSurface(cornerRadius: ScreenControls.cornerRadius)
         .accessibilityLabel("Home")

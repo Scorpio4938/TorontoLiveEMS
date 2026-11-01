@@ -708,16 +708,17 @@ say which of them mattered.
   not a preference about the reference pages: Home is a directory, and its tab competes with
   Fire, Police and Map for the bar's width. Hiding it removes the tab and gives that width to
   the three content pages. The index is still one tap away from a house control in the leading
-  navigation bar, which opens the same `HomePage` in a sheet; the sheet is deliberate, so the
-  tab bar keeps the width the reader chose instead of growing a fifth item whenever Home is
-  open. The house is leading rather than in the trailing capsule: a fifth capsule icon would
-  take back the top width the setting just gave away, and would push the capsule into the
-  centred title on Fire and Police. The map has no bar, so it draws the same control floating
-  at the top-leading edge. That control is the same glass capsule as the trailing one — same
-  height, radius and material, with the platform's own shared toolbar glass hidden — rather
-  than a round toolbar button; its 56-point width gives it the capsule's flat edges without
-  crowding the title. Its height comes from the same vertical padding as the trailing controls,
-  not from the 44-point band the capsule is centred in, so the two ends are the same height.
+  edge of the shared top layer, which opens the same `HomePage` in a sheet; the sheet is
+  deliberate, so the tab bar keeps the width the reader chose instead of growing a fifth item
+  whenever Home is open. The house is leading rather than in the trailing capsule: a fifth
+  capsule icon would take back the top width the setting just gave away, and would push the
+  capsule into the centred title on Fire and Police. It is one control in the same layer as
+  Info, Settings and the map controls, not a toolbar item on one page and a floating item on
+  another; it is hidden on a pushed detail so the back button keeps the leading slot. It is the
+  same glass capsule as the trailing one — same height, radius and material — rather than a
+  round toolbar button; its 56-point width gives it the capsule's flat edges without crowding
+  the title. Its height comes from the same vertical padding as the trailing controls, not from
+  the 44-point band the capsule is centred in, so the two ends are the same height.
   Hiding the selected tab moves to Fire, the launch fallback; a first launch with the tab
   already hidden also opens Fire, because a `TabView` cannot select a tab it does not contain.
   The setting is absent on the platforms with no bottom tab bar, where Home stays a tab.

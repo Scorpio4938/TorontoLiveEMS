@@ -121,6 +121,16 @@ struct RootView: View {
     @State private var isShowingNothingToUpdate = false
     @State private var isShowingHome = false
 
+    /// Whether each tab's root page is the page on screen.
+    ///
+    /// The leading Home control lives in the shared top layer, like the trailing controls, so it
+    /// cannot be attached to one page at a time. It must disappear when a detail is pushed and the
+    /// navigation bar's back button takes the leading slot; a root's `onAppear`/`onDisappear` is
+    /// how the shared layer knows.
+    @State private var fireRootIsVisible = true
+    @State private var policeRootIsVisible = true
+    @State private var mapRootIsVisible = true
+
     /// The sentence the alert shows.
     ///
     /// Stored rather than worked out when the alert appears, because **which feed produced it is
@@ -210,6 +220,9 @@ struct RootView: View {
             // match, because a bar draws its items itself and pads what it is given. The bar
             // keeps the title, which was never the part in question.
             .screenControlsLayer(
+                // The leading control is part of the same layer as Info and Settings. It is
+                // present only on a root page, so a pushed detail keeps the back button.
+                onHome: homeControlIsVisible ? { isShowingHome = true } : nil,
                 onInfo: { isShowingAboutData = true },
                 onSettings: { isShowingSettings = true },
                 // **The belief under test.** The map's own control is *added* to the one shared
@@ -311,7 +324,8 @@ struct RootView: View {
                         .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
-                        .toolbar { homeToolbarItem }
+                        .onAppear { fireRootIsVisible = true }
+                        .onDisappear { fireRootIsVisible = false }
                 }
             }
 
@@ -321,7 +335,8 @@ struct RootView: View {
                         .navigationTitle("Recent Police Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
-                        .toolbar { homeToolbarItem }
+                        .onAppear { policeRootIsVisible = true }
+                        .onDisappear { policeRootIsVisible = false }
                 }
             }
 
@@ -346,7 +361,8 @@ struct RootView: View {
                         .toolbar(.hidden, for: .navigationBar)
                         .barControls { toolbar }
                         .overlay(alignment: .top) { mapTitle }
-                        .overlay(alignment: .topLeading) { homeMapControl }
+                        .onAppear { mapRootIsVisible = true }
+                        .onDisappear { mapRootIsVisible = false }
                 }
             }
 
@@ -405,44 +421,22 @@ struct RootView: View {
         #endif
     }
 
-    /// The way to the index when Home is not a tab.
+    /// Whether the leading Home control belongs in the shared top layer.
     ///
-    /// **Leading, not another button in the trailing capsule.** The setting exists to give the
-    /// tab bar's width back to the content pages; a fifth icon in the capsule would take that
-    /// width back at the top of the screen, and on Fire and Police it would push the capsule
-    /// into the centred title. The leading bar item is the platform's own place for a
-    /// navigation control, and it leaves Info and Settings exactly where they were.
-    @ToolbarContentBuilder
-    private var homeToolbarItem: some ToolbarContent {
-        if !homeTabIsShown {
-            // The platform gives a toolbar item its own shared glass, which is a circle around a
-            // single icon. Hide that and draw the same capsule the trailing controls use.
-            #if os(iOS)
-            ToolbarItem(placement: .topBarLeading) {
-                HomeCapsule(action: { isShowingHome = true })
-            }
-            .sharedBackgroundVisibility(.hidden)
-            #else
-            ToolbarItem(placement: .topBarLeading) {
-                HomeCapsule(action: { isShowingHome = true })
-            }
-            #endif
-        }
-    }
-
-    /// The same control where the map has no bar to hold it.
-    ///
-    /// The map hides its navigation bar, so the leading item above has nowhere to draw. This is
-    /// the one floating version, at the leading edge opposite the controls capsule, on the one
-    /// page whose title is already floating.
-    @ViewBuilder
-    private var homeMapControl: some View {
-        if !homeTabIsShown {
-            HomeCapsule(action: { isShowingHome = true })
-                // The same band and leading inset as the trailing capsule, so the two are
-                // centred on the same line rather than one sitting lower than the other.
-                .frame(height: ScreenControls.bandHeight, alignment: .center)
-                .padding(.leading, 12)
+    /// It is absent when Home is still a tab, when the tab has no Home at all, and when the
+    /// current tab is showing a pushed detail rather than its root. It is one question answered
+    /// in one place, so Fire, Police and Map cannot style or place it differently.
+    private var homeControlIsVisible: Bool {
+        guard !homeTabIsShown else { return false }
+        switch screen {
+        case .home, .refresh:
+            return false
+        case .fire:
+            return fireRootIsVisible
+        case .police:
+            return policeRootIsVisible
+        case .map:
+            return mapRootIsVisible
         }
     }
 
@@ -544,6 +538,7 @@ private extension View {
     /// chrome.
     @ViewBuilder
     func screenControlsLayer(
+        onHome: (() -> Void)? = nil,
         onInfo: @escaping () -> Void,
         onSettings: @escaping () -> Void,
         mapKind: Binding<MapKind>? = nil,
@@ -564,6 +559,15 @@ private extension View {
                 // are the placement, and the only numbers in it.
                 .frame(height: ScreenControls.bandHeight, alignment: .center)
                 .padding(.trailing, 12)
+        }
+        .overlay(alignment: .topLeading) {
+            if let onHome {
+                HomeCapsule(action: onHome)
+                    // The same band and leading inset as the trailing capsule, so the two are
+                    // centred on the same line and cannot be placed differently per page.
+                    .frame(height: ScreenControls.bandHeight, alignment: .center)
+                    .padding(.leading, 12)
+            }
         }
         #else
         self
