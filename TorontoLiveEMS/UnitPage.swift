@@ -77,24 +77,15 @@ struct UnitPage: View {
                     NavigationLink {
                         IncidentDetailView(incident: incident, feed: feed)
                     } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(incident.incidentNumber)
-                                Text(incident.primeStreet ?? incident.crossStreets ?? NotProvided.mark)
-                                    .font(.caption)
-                                    .foregroundStyle(Color.secondary)
-                            }
-
-                            Spacer(minLength: 8)
-
-                            // The same clock the Fire table reads, from the same setting. The live
-                            // section is a list of incidents, and a list without a time makes the
-                            // reader open each one to find out when it started.
-                            Text(DispatchTimestamp.clockTime(incident.dispatchTime, format: dispatchTimeFormat))
-                                .font(.caption)
-                                .monospacedDigit()
-                                .foregroundStyle(Color.secondary)
-                        }
+                        // The Fire page's card, with the fields this page has. The location is the
+                        // main line; the incident type sits opposite it; the time is the line below.
+                        // No incident number: it does not help a reader decide which incident this
+                        // is, and the two fields that do are already on the card.
+                        CompactCardRow(
+                            row: incident,
+                            columns: [.primeStreet, .incidentType, .dispatchTime],
+                            timeFormat: dispatchTimeFormat
+                        )
                     }
                 }
             }

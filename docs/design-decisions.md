@@ -596,12 +596,16 @@ division — and it is deliberately the quietest part of the app.
   one-pin locator, and the catalogue's cross-reference of unit codes whose station is
   this one — which is not a roster of what is parked there. That distinction is the
   directory's whole premise: it says what it knows and nothing else.
-- **The live lists carry the tables' clock.** A division's *Calls Now* row and a unit's
-  *Dispatched Now* row show the same time of day, from the same `dispatchTimeFormat`
-  setting, as the Police and Fire tables. A live list without a time makes the reader
-  open every row to find out when it happened. The fire station page has no live-call
-  section of its own: an incident's Area is a run area, not proof that this station
-  responded, so only a unit's page can say what that unit is dispatched to.
+- **The live lists are the main pages' cards, with the fields they have.** A
+  division's *Calls Now* row and a unit's *Dispatched Now* row use `CompactCardRow`:
+  the location is the main line, the incident or call type sits opposite it, and the
+  time is the line below, on the same `dispatchTimeFormat` clock as the Police and Fire
+  tables. The unit row omits the incident number, which does not help identify the
+  incident; the division row omits the division, because the whole page is one
+  division. A live list without a time makes the reader open every row to find out when
+  it happened. The fire station page has no live-call section of its own: an incident's
+  Area is a run area, not proof that this station responded, so only a unit's page can
+  say what that unit is dispatched to.
 
 ## Attribution and data terms
 

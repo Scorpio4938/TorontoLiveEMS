@@ -13,8 +13,9 @@ import TorontoLiveEMSKit
 ///
 /// **The live section reads the calls already in memory.** It makes no request of its own and adds no
 /// refresh rule. A cold start says it is checking; a loaded feed with no matching calls says none are
-/// filed there at the moment. Each live row carries the call's occurrence time on the same clock, and
-/// from the same setting, as the Police table.
+/// filed there at the moment. Each live row is the Police page's card with the fields this page has:
+/// intersection, call type and occurrence time, in that card's arrangement and on the same clock.
+/// Division is omitted because this whole page is one division.
 struct DivisionPage: View {
 
     let division: PoliceDivision
@@ -25,6 +26,11 @@ struct DivisionPage: View {
     /// The reader's chosen clock, the same setting the Police table reads.
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
+
+    /// Whether a call type is shown as words or as the Service's code, the same setting the Police
+    /// page reads.
+    @AppStorage(SettingsKey.policeCallTypeStyle)
+    private var policeCallTypeStyle: PoliceCallTypeStyle = .words
 
     private var facility: PoliceFacility? {
         PoliceFacilities.bundled.facility(forPublished: division.number)
@@ -81,24 +87,18 @@ struct DivisionPage: View {
                     NavigationLink {
                         PoliceCallDetailView(call: call, policeFeed: policeFeed)
                     } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(call.callType)
-                                Text(call.crossStreets ?? NotProvided.mark)
-                                    .font(.caption)
-                                    .foregroundStyle(Color.secondary)
-                            }
-
-                            Spacer(minLength: 8)
-
-                            // The same clock the Police table reads, from the same setting. The live
-                            // section is a list of calls, and a list without a time makes the
-                            // reader open each one to find out when it happened.
-                            Text(DispatchTimestamp.clockTime(call.occurrenceTime, format: dispatchTimeFormat))
-                                .font(.caption)
-                                .monospacedDigit()
-                                .foregroundStyle(Color.secondary)
-                        }
+                        // The Police page's card, with the fields this page has. The intersection
+                        // is the main line; the call type sits opposite it; the time is the line
+                        // below. Division is omitted because this whole page is one division.
+                        CompactCardRow(
+                            row: call,
+                            columns: [
+                                .crossStreets,
+                                .callType(style: policeCallTypeStyle),
+                                .occurrenceTime,
+                            ],
+                            timeFormat: dispatchTimeFormat
+                        )
                     }
                 }
             }
