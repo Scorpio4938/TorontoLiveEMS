@@ -13,6 +13,9 @@ import TorontoLiveEMSKit
 /// nothing about what ground a station covers, so the map answers *where is Station 143* and never
 /// *what is its area*. The camera and the open card live in this view rather than in the map, so a
 /// flip to the list and back returns to the same place.
+///
+/// **The last shape is remembered.** The List/Map choice is a stored preference, so reopening the
+/// catalogue returns to the map if that is where the reader left it; Divisions has its own choice.
 struct StationCatalogueView: View {
 
     /// The shared fire feed, handed on to each station page so its unit rows can open unit pages.
@@ -20,7 +23,8 @@ struct StationCatalogueView: View {
 
     private var stations: [FireStation] { FireStations.bundled.stations }
 
-    @State private var mode: CatalogueMode = .list
+    /// The last shape this catalogue was left in, from Settings' own store.
+    @AppStorage(SettingsKey.stationsCatalogueMode) private var mode: CatalogueMode = .list
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
     @State private var selected: Int?
 

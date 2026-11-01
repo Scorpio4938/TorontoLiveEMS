@@ -11,13 +11,17 @@ import TorontoLiveEMSKit
 /// The list's second line is the published facility address when there is one. Every current
 /// division has a published area, so the map draws the City's boundaries rather than a pin per
 /// building.
+///
+/// **The last shape is remembered.** The List/Map choice is a stored preference, separate from
+/// the Stations catalogue's, so each returns to the shape it was left in.
 struct DivisionCatalogueView: View {
 
     let policeFeed: PoliceCallFeed
 
     private var divisions: [PoliceDivision] { PoliceDivisions.bundled.divisions }
 
-    @State private var mode: CatalogueMode = .list
+    /// The last shape this catalogue was left in, from Settings' own store.
+    @AppStorage(SettingsKey.divisionsCatalogueMode) private var mode: CatalogueMode = .list
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
     @State private var selected: String?
 

@@ -3,6 +3,9 @@ import SwiftUI
 import TorontoLiveEMSKit
 
 /// Which way a catalogue is shown.
+///
+/// The raw string is the stored preference value, so a catalogue reopens in the shape it was left
+/// in. Stations and Divisions store their choices separately.
 enum CatalogueMode: String, CaseIterable, Identifiable {
 
     case list

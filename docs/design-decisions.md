@@ -596,6 +596,11 @@ division — and it is deliberately the quietest part of the app.
   legend omits `L`; it is the one local supplement, and *About this Data* says so rather
   than presenting it as a City name. A code the legend does not name falls back to its
   first letter.
+- **The List/Map choice is remembered per catalogue.** Stations and Divisions each
+  store their own last shape, so a reader who left the station map open gets the map
+  again, and a reader who left divisions as a list gets the list. One shared preference
+  would make a change in one catalogue silently change the other, which their different
+  lists and maps do not justify.
 - **A catalogue can be a list or a map, and the mark follows the entity.** The
   Stations catalogue offers list or ring-dot pins because a station is a point; the
   Divisions catalogue offers list or area because a division is ground. Division

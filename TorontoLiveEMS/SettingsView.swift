@@ -36,6 +36,15 @@ enum SettingsKey {
     /// Which feeds the map draws, on the same terms: written by the chrome, read by the page.
     static let mapFilter = "mapFilter"
 
+    /// Whether the Stations catalogue was last left as a list or a map.
+    ///
+    /// The two catalogues keep their own choice: changing Stations to a map must not change
+    /// Divisions, which has a different list and a different map.
+    static let stationsCatalogueMode = "stationsCatalogueMode"
+
+    /// Whether the Divisions catalogue was last left as a list or a map.
+    static let divisionsCatalogueMode = "divisionsCatalogueMode"
+
     /// Whether Home appears as a tab on iPhone and iPad.
     ///
     /// Hiding it leaves the tab bar's width to Fire, Police and Map. The leading house control
