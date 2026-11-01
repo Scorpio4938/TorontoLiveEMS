@@ -16,6 +16,9 @@ struct IncidentDetailView: View {
 
     let incident: Incident
 
+    /// The map's presented-detail stack, when this detail was reached from the map.
+    var mapDetails: MapDetailStack? = nil
+
     /// The map's geocoder, owned by this screen.
     ///
     /// **One per detail view rather than one shared.** This screen looks up exactly one location,
@@ -94,9 +97,14 @@ struct IncidentDetailView: View {
 
             // The screen showing the City's data states who published it and that this app is not
             // the City. The terms themselves are one row away, on Data Licences.
-            DataLicenceNotice(sentence: Attribution.fireNotice)
+            DataLicenceNotice(
+                sentence: Attribution.fireNotice,
+                mapDetails: mapDetails,
+                mapDetailSource: .fire
+            )
         }
         .navigationTitle(incident.incidentNumber)
         .softScrollEdge()
+        .mapDetailPresentation(mapDetails, source: .fire)
     }
 }

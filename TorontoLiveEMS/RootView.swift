@@ -87,6 +87,12 @@ struct RootView: View {
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
 
+    /// The pages presented above the map, in order.
+    ///
+    /// **A stack, not a flag.** Pushing a page from a detail makes the detail disappear; the stack
+    /// keeps the child, and the parent returns when the child pops. The capsule reads its top.
+    @State private var mapDetails = MapDetailStack()
+
     /// The sentence the alert shows.
     ///
     /// Stored rather than worked out when the alert appears, because **which feed produced it is
@@ -113,6 +119,14 @@ struct RootView: View {
         _policeFeed = State(initialValue: policeFeed)
     }
 
+    /// Whether the capsule should show the map's own controls.
+    ///
+    /// The map tab alone is not enough: a detail pushed from the map is still on the map tab, and
+    /// four map controls over a detail is what this exists to stop. Empty means the map is showing.
+    private var showsMapControls: Bool {
+        screen == .map && mapDetails.top == nil
+    }
+
     var body: some View {
         tabs
             // **The app's controls, drawn once, above both pages.**
@@ -134,28 +148,36 @@ struct RootView: View {
             .screenControlsLayer(
                 onInfo: { isShowingAboutData = true },
                 onSettings: { isShowingSettings = true },
-                // **The belief under test.** The map's own control is *added* to the one shared
-                // layer, on the one tab that has a map, rather than being a second piece of chrome.
-                // `screen` is the tab view's own selection, so the condition needs no new state —
-                // and the control goes at the capsule's leading end, so Info and Settings do not
-                // move when it appears.
-                mapKind: screen == .map ? $mapKind : nil,
-                mapFilter: screen == .map ? $mapFilter : nil,
-                mapPoliceWindow: screen == .map ? $mapPoliceWindow : nil
+                // **The map's controls belong only while the map is on top.** They are added to the
+                // one shared layer, at its leading end, so Info and Settings do not move when they
+                // appear. A detail pushed from the map is still on the map tab, which is why the
+                // condition is the presented-detail stack rather than the tab alone.
+                mapKind: showsMapControls ? $mapKind : nil,
+                mapFilter: showsMapControls ? $mapFilter : nil,
+                mapPoliceWindow: showsMapControls ? $mapPoliceWindow : nil
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
             // Which screen the info button opens is decided here rather than in the toolbar, because
-            // there is one button and two answers: the reader is looking at a tab, and the
-            // information they want is that tab's. A sheet covers the tab bar, so `screen` cannot
-            // move while this is up.
+            // there is one button and the answer is the data in front of the reader: the tab's, or
+            // the source of the detail presented above the map. A sheet covers the tab bar, so
+            // neither `screen` nor the stack can move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
                 switch screen {
                 case .police:
                     PoliceCallsInformationView()
                 case .map:
-                    MapInformationView()
+                    if let source = mapDetails.top {
+                        switch source {
+                        case .fire:
+                            AboutThisDataView()
+                        case .police:
+                            PoliceCallsInformationView()
+                        }
+                    } else {
+                        MapInformationView()
+                    }
                 default:
                     AboutThisDataView()
                 }
@@ -202,7 +224,11 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack {
-                    IncidentsMapPage(feed: feed, policeFeed: policeFeed)
+                    IncidentsMapPage(
+                        feed: feed,
+                        policeFeed: policeFeed,
+                        mapDetails: mapDetails
+                    )
                         // **The map tab has no navigation bar.** The band under it was the bar's
                         // own glass — the build that hid the bar proved it — so the bar stays
                         // hidden and the page is named by floating text instead.

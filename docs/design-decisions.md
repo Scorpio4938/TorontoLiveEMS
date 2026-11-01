@@ -734,6 +734,16 @@ say which of them mattered.
   either page, the container draws it, and that is why it cannot differ between them. Apple
   provides no top-side equivalent — `tabViewBottomAccessory` is the only accessory API and it is
   the bottom — so an overlay on the container is how that arrangement is reached.
+- **The capsule's map controls belong to the map, not the tab.** A detail pushed from the map is
+  still on the map tab, so the tab selection alone kept four map controls over a detail. The pages
+  presented above the map are a `MapDetailStack` keyed by identity: each detail, and each page
+  pushed from one, adds itself on appear and removes itself on disappear, and the capsule reads the
+  top. Empty means the map is showing, and only then do map kind, filter and window appear. Info
+  reads the same top: About this Data for fire, About Police Calls for police. The stack is passed
+  explicitly, never through the environment. An interactive back-swipe reports its disappearance
+  when the pop completes, so the capsule can briefly still show two controls over a map it believes
+  is covered; that lag is accepted, because giving the map tab's stack a navigation path was the
+  larger change.
 - **The police page's window has no control of its own.** The capsule carried a clock menu for it,
   which covered the page's header; the window is settable in Settings, so that second route was
   removed and Settings is now the only writer. The old rationale — that two routes to one preference
