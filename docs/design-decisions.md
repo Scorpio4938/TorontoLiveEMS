@@ -740,10 +740,12 @@ say which of them mattered.
   pushed from one, adds itself on appear and removes itself on disappear, and the capsule reads the
   top. Empty means the map is showing, and only then do map kind, filter and window appear. Info
   reads the same top: About this Data for fire, About Police Calls for police. The stack is passed
-  explicitly, never through the environment. An interactive back-swipe reports its disappearance
-  when the pop completes, so the capsule can briefly still show two controls over a map it believes
-  is covered; that lag is accepted, because giving the map tab's stack a navigation path was the
-  larger change.
+  explicitly, never through the environment. The capsule expands and shrinks with a
+  trailing-anchored scale and opacity when the top changes; only the capsule animates, and it
+  respects Reduce Motion. An interactive back-swipe reports its disappearance when the pop
+  completes, so the capsule can briefly still show two controls over a map it believes is covered;
+  that lag is accepted, because giving the map tab's stack a navigation path was the larger
+  change.
 - **The police page's window has no control of its own.** The capsule carried a clock menu for it,
   which covered the page's header; the window is settable in Settings, so that second route was
   removed and Settings is now the only writer. The old rationale — that two routes to one preference
