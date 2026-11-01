@@ -573,18 +573,20 @@ division — and it is deliberately the quietest part of the app.
   in our own capture it matched a dispatched unit about half the time. The interface
   says *the run area the City files the incident under, numbered as its station*, and
   the Area row opens that station's page. The glossary says the same.
-- **A catalogue can be a list or points, never a coverage map.** The Stations and
-  Divisions catalogues offer a List/Map toggle; the map draws one pin per published
-  point and no boundary or polygon, because the reference data is points only. The
-  camera and the open card survive the toggle, so a reader does not lose their place.
-  The choice is a menu on the catalogue's own title, not a control in the shared trailing
-  chrome: the Info/Settings capsule already occupies that corner on every page. Units have
-  no map: a unit has no location of its own, and its station's coordinate is not the
-  unit's.
-- **Pins behave like the live map's, not like a second map.** Nothing is tagged and the
-  map's own selection is not used. A tap becomes a point, the nearest pin within the
-  same 22-point radius wins, the card is drawn inside the map on the same glass
-  surface, and a tap on nothing dismisses it. The card opens the entity's page.
+- **A catalogue can be a list or a map, and the mark follows the entity.** The
+  Stations catalogue offers list or ring-dot pins because a station is a point; the
+  Divisions catalogue offers list or area because a division is ground. Division
+  boundaries are the City's published MultiPolygons, not an invented shape, and no
+  run-area boundary is drawn. The camera and the open card survive the toggle, so a
+  reader does not lose their place. The choice is a menu on the catalogue's own title,
+  not a control in the shared trailing chrome: the Info/Settings capsule already
+  occupies that corner on every page. Units have no map: a unit has no location of its
+  own, and its station's coordinate is not the unit's.
+- **The marks are the live map's.** A station is a thirteen-point ring dot — the same
+  neutral dot the live map uses, not a teardrop pin. A division is the area itself, and
+  a tap inside it selects it. Nothing is tagged and the map's own selection is not used;
+  the card is drawn inside the map on the same glass surface, and a tap on nothing
+  dismisses it. The card opens the entity's page.
 - **A station page carries no roster and no photographs.** The City's station file
   publishes the number, address, municipality, year built, ward, offices and a point;
   it publishes nothing about what apparatus is parked there and no imagery. A roster

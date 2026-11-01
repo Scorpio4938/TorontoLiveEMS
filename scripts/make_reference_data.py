@@ -237,21 +237,62 @@ def stations_from(published, retrieved):
     }
 
 
+def _open_ring(points):
+    """A GeoJSON ring, without the closing repeat and rounded to five decimals.
+
+    The model stores `[latitude, longitude]` pairs, the order Swift reads; GeoJSON writes
+    `[longitude, latitude]`, and this is the one place that swaps them.
+    """
+    ring = [
+        [round(latitude, 5), round(longitude, 5)]
+        for longitude, latitude in points
+    ]
+    if len(ring) > 1 and ring[0] == ring[-1]:
+        ring.pop()
+    return ring
+
+
+def _division_areas(geometry):
+    """The published MultiPolygon as the areas and holes a map draws."""
+    kind = geometry.get("type")
+    coordinates = geometry.get("coordinates")
+    if kind == "Polygon":
+        polygons = [coordinates]
+    elif kind == "MultiPolygon":
+        polygons = coordinates
+    else:
+        raise SystemExit(f"a division has {kind} geometry, not a polygon")
+
+    areas = []
+    for rings in polygons:
+        if not rings:
+            continue
+        areas.append(
+            {
+                "outer": _open_ring(rings[0]),
+                "holes": [_open_ring(hole) for hole in rings[1:]],
+            }
+        )
+    return areas
+
+
 def divisions_from(published, retrieved):
-    """The 19 division numbers, and nothing about their shapes."""
-    numbers = []
+    """The 19 division numbers and their published areas."""
+    by_number = {}
     for feature in published.get("features", []):
         number = text(feature.get("properties", {}).get("AREA_LONG_CODE"))
-        if number and number not in numbers:
-            numbers.append(number)
-    if not numbers:
+        if number and number not in by_number:
+            by_number[number] = _division_areas(feature["geometry"])
+    if not by_number:
         raise SystemExit("the published division file has no division numbers")
-    numbers.sort()
     return {
         "source": DIVISIONS_URL,
         "licence": LICENCE,
         "retrieved": retrieved,
-        "divisions": [{"number": number} for number in numbers],
+        "divisions": [
+            {"number": number, "areas": by_number[number]}
+            for number in sorted(by_number)
+        ],
     }
 
 

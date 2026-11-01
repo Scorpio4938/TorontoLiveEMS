@@ -3,9 +3,9 @@ import SwiftUI
 
 /// One published point, on a small locator map.
 ///
-/// The station page and the division page both need the same map: one pin, framed around the
-/// published coordinate, with no geocoder and no boundary. One view because two pages showing the
-/// same fact should not be able to frame it two different ways.
+/// The station page uses it: one ring dot, framed around the published coordinate, with no geocoder
+/// and no boundary. The mark is the live map's dot rather than a teardrop pin, so the app has one
+/// pin vocabulary. The division page uses an area map instead, because a division is ground.
 struct ReferenceLocationMap: View {
 
     let title: String
@@ -18,7 +18,10 @@ struct ReferenceLocationMap: View {
             ),
             interactionModes: [.pan, .zoom]
         ) {
-            Marker(title, coordinate: coordinate)
+            Annotation(title, coordinate: coordinate) {
+                CataloguePin()
+            }
+            .annotationTitles(.hidden)
         }
         .frame(height: 220)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))

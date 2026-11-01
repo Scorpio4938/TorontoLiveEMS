@@ -2,7 +2,7 @@ import MapKit
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// Every fire station the City publishes, as a list or as pins.
+/// Every fire station the City publishes, as a list or as ring dots.
 ///
 /// **The catalogue, not a search.** 84 rows is short enough to scan, and the station number is what a
 /// reader arrives with — `Area 143` on an incident — so the list is in station-number order and each

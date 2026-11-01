@@ -55,6 +55,36 @@ struct PoliceDivisionsTests {
         #expect(divisions.division(forPublished: "14")?.number == "14")
     }
 
+    @Test("every division has a published area, and every point is in Toronto")
+    func everyDivisionHasAnArea() {
+        let toronto = (latitudes: 43.5 ... 43.9, longitudes: -79.7 ... -79.1)
+        for division in divisions.divisions {
+            #expect(!division.areas.isEmpty, "\(division.feedCode) has no area")
+            for area in division.areas {
+                #expect(area.outer.count >= 3)
+                for point in area.outer + area.holes.flatMap({ $0 }) {
+                    #expect(toronto.latitudes.contains(point.latitude))
+                    #expect(toronto.longitudes.contains(point.longitude))
+                }
+            }
+        }
+    }
+
+    @Test("D14's area contains its facility and not D13's")
+    func divisionAreaContainsItsFacility() throws {
+        let d14 = try #require(divisions.division(forPublished: "D14"))
+        let facility = PoliceDivision.Point(latitude: 43.651305, longitude: -79.425981)
+        #expect(d14.areas.contains { PoliceDivision.contains(facility, in: $0) })
+
+        let d13Facility = PoliceDivision.Point(latitude: 43.698327, longitude: -79.436683)
+        #expect(!d14.areas.contains { PoliceDivision.contains(d13Facility, in: $0) })
+
+        let bounds = try #require(d14.bounds)
+        #expect(bounds.south < facility.latitude && facility.latitude < bounds.north)
+        #expect(bounds.west < facility.longitude && facility.longitude < bounds.east)
+        #expect(bounds.northCentre.latitude == bounds.north)
+    }
+
     @Test("every published division number is two digits")
     func numbersAreTwoDigits() {
         for division in divisions.divisions {
@@ -87,7 +117,7 @@ struct PoliceDivisionsTests {
     func refusesDuplicateDivision() {
         let document = """
             {"source":"s","licence":"l","retrieved":"2026-10-29","divisions":[
-              {"number":"14"},{"number":"D14"}
+              {"number":"14","areas":[]},{"number":"D14","areas":[]}
             ]}
             """
 

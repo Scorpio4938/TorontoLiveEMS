@@ -1,4 +1,3 @@
-import MapKit
 import SwiftUI
 import TorontoLiveEMSKit
 
@@ -8,9 +7,9 @@ import TorontoLiveEMSKit
 /// write `D14`, so that is the title and the fact row.
 ///
 /// **The facility is a separate published record.** Three of the 19 divisions have no facility row,
-/// so their pages show no address, no postal code and no map rather than labelled blanks. The
-/// facility's point is published, so the locator map is a pin and never a boundary: this page says
-/// *where the division's building is*, not what ground the division covers.
+/// so their pages show no address and no postal code rather than labelled blanks. The map is the
+/// division's published area — the ground the City drew — and the address is text above it; a pin
+/// would narrow a division to its building, which is not what the division is.
 ///
 /// **The live section reads the calls already in memory.** It makes no request of its own and adds no
 /// refresh rule. A cold start says it is checking; a loaded feed with no matching calls says none are
@@ -48,16 +47,12 @@ struct DivisionPage: View {
                 } header: {
                     Text("Facility")
                 }
+            }
 
-                Section {
-                    ReferenceLocationMap(
-                        title: division.feedCode,
-                        coordinate: CLLocationCoordinate2D(
-                            latitude: facility.coordinate.latitude,
-                            longitude: facility.coordinate.longitude
-                        )
-                    )
-                }
+            Section {
+                // A division is ground. The area is drawn whether or not the City publishes a
+                // facility address for it, because the area is the thing the division is.
+                DivisionAreaMap(division: division)
             }
 
             Section {

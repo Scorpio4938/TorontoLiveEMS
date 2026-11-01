@@ -72,6 +72,9 @@ enum Attribution {
         let url: URL
         let licence: String
 
+        /// The human citation, when the source needs more than a link and a licence line.
+        let citation: String?
+
         var id: String { name }
     }
 
@@ -116,7 +119,8 @@ enum Attribution {
             credit(
                 "Toronto Fire Services apparatus roster",
                 apparatusRosterURL,
-                FireUnits.bundled.licence
+                FireUnits.bundled.licence,
+                citation: "Firefighting Wiki (Fandom), “Toronto Fire Services”, retrieved \(FireUnits.bundled.retrieved)."
             ),
         ].compactMap { $0 }
     }
@@ -124,10 +128,11 @@ enum Attribution {
     private static func credit(
         _ name: String,
         _ urlString: String,
-        _ licence: String
+        _ licence: String,
+        citation: String? = nil
     ) -> SourceCredit? {
         guard let url = URL(string: urlString) else { return nil }
-        return SourceCredit(name: name, url: url, licence: licence)
+        return SourceCredit(name: name, url: url, licence: licence, citation: citation)
     }
 
     /// Toronto's open-data licence, which the City's fire feed and its three reference datasets

@@ -18,6 +18,11 @@ struct SourcesSection: View {
                     Text(source.licence)
                         .font(.caption)
                         .foregroundStyle(Color.secondary)
+                    if let citation = source.citation {
+                        Text(citation)
+                            .font(.caption2)
+                            .foregroundStyle(Color.secondary)
+                    }
                 }
             }
         } header: {

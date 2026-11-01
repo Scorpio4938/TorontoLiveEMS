@@ -69,9 +69,9 @@ struct CatalogueModeMenu: View {
 /// tap that lands on nothing puts the card away. The card is drawn inside the map, so it pans and
 /// zooms with the thing it belongs to, and it is a `NavigationLink` to the entity's page.
 ///
-/// **Pins, not discs.** The live map draws a thirteen-point dot because a place there can hold
-/// several incidents and the mark is about urgency. A catalogue's rows are places with names and
-/// addresses, so this draws a pin glyph — 84 of them should read as pins.
+/// **Ring dots, like the live map.** A catalogue's rows are places, not incidents, so the mark is
+/// neutral rather than urgent; the shape is the same thirteen-point dot with a white ring that the
+/// live map uses, so a reader meets one kind of mark across the app.
 ///
 /// **No shape is drawn.** The catalogue knows points; it does not know what ground a station or a
 /// division covers, and a boundary drawn from nothing would be an invention.
@@ -123,10 +123,7 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
                     // the tap is decided by `item(at:in:)`. The glyph is a pin rather than the live
                     // map's dot, because a catalogue row is a place with a name, not an incident.
                     Annotation(title(item), coordinate: coordinate(item)) {
-                        Image(systemName: "mappin")
-                            .font(.title3)
-                            .foregroundStyle(Color.primary)
-                            .shadow(radius: 1)
+                        CataloguePin()
                             .accessibilityLabel(title(item))
                     }
                     .annotationTitles(.hidden)
@@ -167,6 +164,18 @@ struct CatalogueMap<Item: Identifiable, Destination: View>: View {
             }
         }
         return nil
+    }
+}
+
+/// The mark a catalogue's places wear: a dark dot with a white ring, like the live map's pins.
+struct CataloguePin: View {
+
+    var body: some View {
+        Circle()
+            .fill(Color.primary)
+            .frame(width: 13, height: 13)
+            .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+            .shadow(radius: 1)
     }
 }
 
