@@ -5,17 +5,16 @@ import TorontoLiveEMSKit
 ///
 /// **A list, because the platform's list is the right shape for an index.** Two sections grouped by
 /// service, each row carrying the size of the catalogue behind it, then the sources the data comes
-/// from, and at the bottom the two provenance lines the Fire and Police pages lead with. Nothing
-/// here is live content of its own, which is why Home is the only page that can be opened before
-/// either feed has answered.
+/// from. Nothing here is live content of its own, which is why Home is the only page that can be
+/// opened before either feed has answered.
 ///
 /// **Home is the first-launch screen, and restorable like any other.** A fresh install opens here
 /// because it has no last page to restore; every launch after opens the last of Home, Fire, Police
 /// or Map. The rule lives in `LaunchBehaviour`, in the package, where it can be tested.
 ///
-/// **The provenance lines are the same values the two tabs show, not a paraphrase.** They are
-/// `FeedStatusLine` over the two feeds' own `status`, so a refresh on Home has something visible to
-/// change and cannot say something different from the page it belongs to.
+/// **The feeds' as-of lines are not here.** They are the Fire and Police pages' status, and a
+/// refresh on those pages changes them. On the index they would sit beside reference data of a
+/// different age and read as if they described the directory; Home has no live status of its own.
 ///
 /// The design is recorded in `docs/design-decisions.md`, *The reference section*: a directory
 /// rather than a dashboard, no masthead or mark, counts as trailing values, and Sources as a
@@ -24,11 +23,10 @@ struct HomePage: View {
 
     let feed: IncidentFeed
 
-    /// The police feed, read here for its provenance line and loaded when Home is opened.
+    /// The police feed, handed on to the Division catalogue and its live sections.
     ///
-    /// The police page and the map load it on arrival for the same reason: nothing else used to read
-    /// these calls, so asking before somebody looked was a request made for nobody. Home now shows
-    /// their as-of, so Home is a screen that reads them.
+    /// Home loads it once when the index is opened so a division page does not have to wait for a
+    /// second request; it no longer puts the feed's as-of line on Home.
     let policeFeed: PoliceCallFeed
 
     private var stations: FireStations { FireStations.bundled }
@@ -70,17 +68,14 @@ struct HomePage: View {
             } footer: {
                 Text("Each source is named with the licence it is published under where the data is explained.")
             }
-
-            Section {
-                FeedStatusLine(status: feed.status)
-                FeedStatusLine(status: policeFeed.status)
-            }
         }
         .navigationTitle("Home")
         .softScrollEdge()
         .task {
             // Only the police feed. RootView loads the fire feed at launch because the map needs it
-            // either way; asking again here would be a second request for the same document.
+            // either way; asking again here would be a second request for the same document. The
+            // division pages read these calls; loading them here means their live sections have a
+            // snapshot without a second request, and none of it is drawn as a status line on Home.
             if policeFeed.calls == nil {
                 await policeFeed.load()
             }

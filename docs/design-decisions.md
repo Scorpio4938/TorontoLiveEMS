@@ -558,15 +558,17 @@ division — and it is deliberately the quietest part of the app.
   be selected and Fire opens instead; the house control still reaches the index.
 - **Home is a directory, not a dashboard.** Its job is to get a reader to a
   catalogue. It is a platform `List` with two service sections, a count trailing each
-  row, a Sources section, and the same two provenance lines the Fire and Police tabs
-  lead with, at the bottom. There is **no masthead and no mark**: About already carries
+  row, and a Sources section. There is **no masthead and no mark**: About already carries
   the icon and the app's name, and a second identity block on a screen whose only job
   is navigation would be an element that exists to fill space. The navigation title is
   enough. The counts are trailing values, not badges or charts: they say how large a
   catalogue is, not how it is doing.
+- **The feeds' as-of lines are not on Home.** They belong to the Fire and Police pages,
+  where a refresh changes them. On the index they would sit beside reference data of a
+  different age and read as if they described the directory. Home loads the police feed
+  for the division pages' live sections, but draws no status line of its own.
 - **Sources are a section, not a footer.** They are destinations; a reader should be
-  able to tap them. Provenance is the last section because it is context for the rows
-  above, not a link. The six sources are named with their own licences — the City's
+  able to tap them. The six sources are named with their own licences — the City's
   fire data and its three reference datasets under Toronto's open licence, the
   Service's calls under Ontario's, and the community apparatus roster under CC BY-SA
   3.0 — rather than lumped under one licence that would be wrong for several of them.
