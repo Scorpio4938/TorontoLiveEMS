@@ -38,9 +38,21 @@ merged as it is, and the number waits. What it must never do is move by itself.
 
 1. Bump `MARKETING_VERSION` in `TorontoLiveEMS.xcodeproj/project.pbxproj` — **both build
    configurations** — to the new number.
-2. Update the tag table in `README.md`, including whether this one has been built.
+2. Add the entry to `CHANGELOG.md` — at the top, newest first — with what changed and the three
+   facts: whether it built, whether it ran, and whether `swift test` was run. Nothing else is the
+   record of this; there is no table in the README any more.
 3. Run `python3 scripts/version_check.py`. It must pass.
 4. Tag the commit: `git tag -a v0.0.9 -m "…"`, with the effort named in the message.
+
+**A checkpoint is not finished until its entry exists**, and the same for a release: the entry is
+written in the same commit as the bump, so the two cannot describe different versions. The commit in
+the entry is the one the tag will point at — `git rev-parse <tag>^{commit}` — which is not always the
+commit that bumped the number. Where they differ, the tag is what the version means.
+
+**The three facts are there for a reason.** Seven consecutive commits once could not build while
+Xcode kept running the last binary it had, and reports described an app that no longer existed.
+"Built" and "ran" are the two things no commit message, tag or build records, and the third — whether
+the tests were ever run — has been "never" for every entry so far.
 
 **The build number waits.** `CURRENT_PROJECT_VERSION` is not touched until there is something to
 distribute. TestFlight and the App Store want a new build number for *every* upload, even at the
