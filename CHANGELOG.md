@@ -29,6 +29,18 @@ exists to prevent.
 **The commit is the one the tag points at** — `git rev-parse <tag>^{commit}` — not necessarily the
 commit that bumped the number. Where those differ, the tag is what a version means.
 
+## v0.0.20
+
+`496e082`
+
+- A detail reached from the map shows Info + Settings; Info opens the incident's own information · `c4fd378` · [#47](https://github.com/Scorpio4938/TorontoLiveEMS/issues/47)
+- The map tab's navigation path drives the capsule: it shrinks at push and expands at pop · `bc5d5fd` · [#47](https://github.com/Scorpio4938/TorontoLiveEMS/issues/47)
+- The capsule expands and shrinks with a spring, scaling and sliding toward its trailing edge · `bc5d5fd` · [#47](https://github.com/Scorpio4938/TorontoLiveEMS/issues/47)
+- Changelog entries name the commit that finished each change, and the issue where one exists · `ec88c27`
+- Known: an interactive back-swipe expands the capsule when the pop completes — [#47](https://github.com/Scorpio4938/TorontoLiveEMS/issues/47)
+
+Not built, not run, tests not run: this checkpoint was tagged from a machine with no Xcode or Swift toolchain.
+
 ## v0.0.19
 
 `4980cf0`
