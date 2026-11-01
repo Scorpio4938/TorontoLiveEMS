@@ -588,6 +588,12 @@ division — and it is deliberately the quietest part of the app.
   names; the datastore version of the same dataset also carries 16. A call that names an
   extra gets no division page rather than a made-up one. The geometry is still the
   City's published area for the 16.
+- **Unit groups are apparatus types, not initials.** The group title is the City's
+  legend name for the code's longest matching prefix, so `C23` is Chief and `CMD10`
+  Command Vehicle in separate groups, and `R346` is Rescue. A code the legend does not
+  name falls back to its first letter; `L` remains `L` because the City's legend does
+  not name it, and inventing "Ladder" would be a guess the rest of the catalogue does
+  not make.
 - **A catalogue can be a list or a map, and the mark follows the entity.** The
   Stations catalogue offers list or ring-dot pins because a station is a point; the
   Divisions catalogue offers list or area because a division is ground. Division

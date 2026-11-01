@@ -4,9 +4,9 @@ import TorontoLiveEMSKit
 /// The catalogue rules: how rows are grouped, how names are decided, and what "dispatched now"
 /// means.
 ///
-/// The bundled roster contains `C23` and `CMD10`, so the letter-collision pair is real in the data.
-/// The grouping test still builds the pair through the same `FireUnit` initialiser the import uses,
-/// so it tests the rule rather than depending on the roster.
+/// The bundled roster contains `C23` and `CMD10`, so the `C`/`CMD` pair is real in the data. The
+/// grouping test builds the pair through the same `FireUnit` initialiser the import uses, so it
+/// tests the rule rather than depending on the roster.
 @Suite("Fire unit catalogue")
 struct FireUnitCatalogueTests {
 
@@ -25,11 +25,12 @@ struct FireUnitCatalogueTests {
         )
     }
 
-    @Test("units are grouped by the leading letter of the code")
-    func groupsByLeadingLetter() {
+    @Test("units are grouped by apparatus type, not the first letter")
+    func groupsByApparatusType() {
         let units = [
             FireUnit(code: "P244", stations: stations),
             FireUnit(code: "A231", stations: stations),
+            FireUnit(code: "R346", stations: stations),
             FireUnit(code: "C23", stations: stations),
             FireUnit(code: "CMD1", stations: stations),
             FireUnit(code: "HR332", stations: stations),
@@ -38,22 +39,39 @@ struct FireUnitCatalogueTests {
 
         let groups = FireUnits.groups(of: units)
 
-        #expect(groups.map(\.letter) == ["A", "C", "H", "P"])
-        #expect(groups.first { $0.letter == "H" }?.units.map(\.code) == ["HR332", "HZ323"])
-        #expect(groups.first { $0.letter == "P" }?.units.map(\.code) == ["P244"])
+        #expect(groups.map(\.title) == [
+            "Aerial", "Chief", "Command Vehicle", "HazMat", "Highrise", "Pumper", "Rescue",
+        ])
+        #expect(groups.first { $0.title == "HazMat" }?.units.map(\.code) == ["HZ323"])
+        #expect(groups.first { $0.title == "Highrise" }?.units.map(\.code) == ["HR332"])
+        #expect(groups.first { $0.title == "Pumper" }?.units.map(\.code) == ["P244"])
+        #expect(groups.first { $0.title == "Rescue" }?.units.map(\.code) == ["R346"])
     }
 
-    @Test("C23 and CMD… share the C group and are named differently")
-    func letterCollisionDoesNotDecideTheName() throws {
+    @Test("C23 and CMD… are different apparatus types")
+    func chiefAndCommandAreDifferentTypes() throws {
         let c23 = FireUnit(code: "C23", stations: stations)
         let command = FireUnit(code: "CMD1", stations: stations)
-        let group = try #require(
-            FireUnits.groups(of: [command, c23]).first { $0.letter == "C" }
-        )
+        let groups = FireUnits.groups(of: [command, c23])
 
-        #expect(group.units.map(\.code) == ["C23", "CMD1"])
-        #expect(group.units.first?.name == "Chief")
-        #expect(group.units.last?.name == "Command Vehicle")
+        #expect(groups.map(\.title) == ["Chief", "Command Vehicle"])
+
+        let chief = try #require(groups.first { $0.title == "Chief" })
+        #expect(chief.units.map(\.code) == ["C23"])
+        #expect(chief.units.first?.name == "Chief")
+
+        let commandGroup = try #require(groups.first { $0.title == "Command Vehicle" })
+        #expect(commandGroup.units.map(\.code) == ["CMD1"])
+        #expect(commandGroup.units.first?.name == "Command Vehicle")
+    }
+
+    @Test("a type the legend does not name falls back to the code prefix")
+    func unnamedTypeFallsBackToPrefix() throws {
+        let ladder = FireUnit(code: "L331", stations: stations)
+        let group = try #require(FireUnits.groups(of: [ladder]).first)
+
+        #expect(ladder.name == nil)
+        #expect(group.title == "L")
     }
 
     @Test("a unit with no station is still catalogued, and shows no station")
@@ -64,20 +82,20 @@ struct FireUnitCatalogueTests {
         #expect(FireUnits.groups(of: [chief]).first?.units.first?.station == nil)
     }
 
-    @Test("the bundled catalogue is grouped by letter, in order")
+    @Test("the bundled catalogue is grouped by apparatus type, in title order")
     func bundledGroups() {
         let groups = FireUnits.bundled.groups
 
         #expect(!groups.isEmpty)
-        #expect(groups.map(\.letter) == groups.map(\.letter).sorted())
+        #expect(groups.map(\.title) == groups.map(\.title).sorted())
         #expect(groups.flatMap { $0.units }.count == FireUnits.bundled.count)
 
-        // The group letter is the code's first character, never a reading of the name; within a
-        // group the rows are in code order.
+        // The group is the legend name, falling back to the first character only for a code the
+        // legend does not name. Within a group the rows are in code order.
         for group in groups {
             #expect(group.units.map(\.code) == group.units.map(\.code).sorted())
             for unit in group.units {
-                #expect(String(unit.code.prefix(1)).uppercased() == group.letter)
+                #expect(group.title == (unit.name ?? String(unit.code.prefix(1)).uppercased()))
             }
         }
     }

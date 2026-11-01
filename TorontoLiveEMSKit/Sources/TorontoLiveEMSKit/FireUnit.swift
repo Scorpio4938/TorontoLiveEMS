@@ -64,17 +64,18 @@ extension FireUnit {
     }
 }
 
-/// One letter's worth of the units catalogue.
+/// One apparatus type's worth of the units catalogue.
 ///
-/// **The letter groups rows; it does not name them.** A `C` section holds Chief cars and Command
-/// Vehicles together, and each row still says which it is. Grouping by the first letter is a way to
-/// find a code quickly, not a reading of the legend.
+/// **Grouped by what the code means, not by its first letter.** `C23` is a Chief and `CMD10` a
+/// Command Vehicle, so they are separate groups; `R346` is in Rescue, not R. The title is the
+/// City's legend name when the legend names the code, and the code's leading letter only as the
+/// fallback for a code the legend does not name.
 public struct FireUnitGroup: Sendable, Equatable, Identifiable {
 
-    public var id: String { letter }
+    public var id: String { title }
 
-    /// The leading letter of every code in this group, e.g. `C`.
-    public let letter: String
+    /// The apparatus type, e.g. `Rescue`, or the code prefix when the legend does not name it.
+    public let title: String
 
     /// The units in this group, in code order.
     public let units: [FireUnit]
@@ -133,27 +134,29 @@ public struct FireUnits: Sendable {
         units.filter { $0.station == station }
     }
 
-    /// The catalogue grouped by the leading letter of each code, in letter order.
+    /// The catalogue grouped by apparatus type, in title order.
     ///
-    /// The group is found from `code` and nothing else — never from `name`. A `C` section therefore
-    /// mixes Chief cars and Command Vehicles, and each row still says what it is.
+    /// The group is the City's legend name for the code's longest matching prefix; the first
+    /// letter is only the fallback for a code the legend does not name. `C23` is Chief,
+    /// `CMD10` is Command Vehicle, and `R346` is Rescue, so none of those share a group by
+    /// accident of spelling.
     public var groups: [FireUnitGroup] {
         Self.groups(of: units)
     }
 
-    /// Groups any list of units by the leading letter of each code, in letter order.
+    /// Groups any list of units by apparatus type, in title order.
     ///
-    /// Exposed rather than kept private so a test can group the letter-collision pair the bundled
-    /// capture does not happen to contain (`C23` and `CMD…`) without inventing a second rule.
+    /// Exposed rather than kept private so a test can group the `C`/`CMD` pair and an unnamed
+    /// code without inventing a second rule.
     public static func groups(of units: [FireUnit]) -> [FireUnitGroup] {
-        let byLetter = Dictionary(grouping: units) { unit in
-            String(unit.code.prefix(1)).uppercased()
+        let byTitle = Dictionary(grouping: units) { unit in
+            unit.name ?? String(unit.code.prefix(1)).uppercased()
         }
 
-        return byLetter.keys.sorted().compactMap { letter in
-            guard let group = byLetter[letter] else { return nil }
+        return byTitle.keys.sorted().compactMap { title in
+            guard let group = byTitle[title] else { return nil }
             return FireUnitGroup(
-                letter: letter,
+                title: title,
                 units: group.sorted { $0.code < $1.code }
             )
         }

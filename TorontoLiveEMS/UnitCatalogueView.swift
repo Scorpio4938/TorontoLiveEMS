@@ -1,15 +1,15 @@
 import SwiftUI
 import TorontoLiveEMSKit
 
-/// Every unit code the catalogue knows, grouped by the leading letter of the code.
+/// Every unit code the catalogue knows, grouped by apparatus type.
 ///
-/// **The letter is a way to find a row, not a reading of the name.** A `C` section holds Chief cars
-/// and Command Vehicles together, and each row still says which it is — the naming rule is the
-/// longest matching legend entry, and `C23` and `CMD…` prove that a shared first letter decides
-/// nothing about the word beside the code.
+/// **The group heading is the City's name for the code, not its first letter.** `C23` is a Chief
+/// and `CMD10` a Command Vehicle, so they are separate sections; `R346` is Rescue, not R. The same
+/// longest matching legend entry that names the row decides the group. A code the legend does not
+/// name falls back to its first letter.
 ///
-/// The catalogue is the captured list, not a census of the fleet. A unit that was not dispatched in
-/// that capture is absent, and that absence is not a claim that it does not exist.
+/// The catalogue is the roster, not a census of the fleet. A unit absent from the roster is absent,
+/// and that absence is not a claim that it does not exist.
 struct UnitCatalogueView: View {
 
     let feed: IncidentFeed
@@ -28,7 +28,7 @@ struct UnitCatalogueView: View {
                         }
                     }
                 } header: {
-                    Text(group.letter)
+                    Text(group.title)
                 }
             }
         }
