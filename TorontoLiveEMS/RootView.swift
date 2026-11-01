@@ -127,8 +127,14 @@ struct RootView: View {
     /// Whether the first-launch greeting is up.
     ///
     /// Decided once, at launch, from the stored version. It is false in a preview that supplies its
-    /// own launch section.
+    /// own launch section. The Settings row can raise it again.
     @State private var isShowingWelcome: Bool
+
+    /// Set by Settings when the reader asks to see the greeting again.
+    ///
+    /// The greeting is presented from `onDismiss`, once Settings has gone, so two sheets are never
+    /// up at the same time.
+    @State private var showsWelcomeAfterSettings = false
 
     /// Whether each tab's root page is the page on screen.
     ///
@@ -277,8 +283,10 @@ struct RootView: View {
             .sheet(isPresented: $isShowingWelcome, onDismiss: acknowledgeWelcome) {
                 WelcomeView()
             }
-            .sheet(isPresented: $isShowingSettings) {
-                SettingsView()
+            .sheet(isPresented: $isShowingSettings, onDismiss: presentWelcomeIfRequested) {
+                SettingsView(onShowWelcome: {
+                    showsWelcomeAfterSettings = true
+                })
             }
             // The index without a tab. The sheet is the price of hiding the tab, and it is
             // deliberately a sheet rather than a fifth tab that comes back while it is open:
@@ -526,6 +534,14 @@ struct RootView: View {
     private func acknowledgeWelcome() {
         guard recordsLaunch else { return }
         acknowledgedVersion = AppIdentity.marketingVersion
+    }
+
+    /// The Settings row asks for the greeting while Settings is still up. Present it only after
+    /// that sheet has finished dismissing.
+    private func presentWelcomeIfRequested() {
+        guard showsWelcomeAfterSettings else { return }
+        showsWelcomeAfterSettings = false
+        isShowingWelcome = true
     }
 
     /// Refreshes the feed of the tab the reader is on, and says so when there is provably nothing

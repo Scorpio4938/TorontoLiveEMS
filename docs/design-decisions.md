@@ -565,9 +565,11 @@ division — and it is deliberately the quietest part of the app.
   `acknowledgedVersion` emptiness that makes Home the first-launch screen shows one welcome sheet:
   the app's name through `AppIdentity` (the source About reads), one sentence on what the app shows,
   and three points for Fire, Police and Map. Dismissing it — Continue or a swipe — writes the
-  current marketing version, so there is no second first-launch key. There is no What's New screen
-  and no settings row; the declared version is a constant copied from the changelog, currently nil,
-  and the package rule already distinguishes welcome, notice and nothing for the day one exists.
+  current marketing version, so there is no second first-launch key. There is no What's New screen;
+  Settings has one row that shows this greeting again for a reader who wants it or for testing, but
+  only the greeting writes the launch fact. The declared version is a constant copied from the
+  changelog, currently nil, and the package rule already distinguishes welcome, notice and nothing
+  for the day one exists.
 - **Home is a directory, not a dashboard.** Its job is to get a reader to a
   catalogue. It is a platform `List` with two service sections, a count trailing each
   row, and a Sources section. There is **no masthead and no mark**: About already carries

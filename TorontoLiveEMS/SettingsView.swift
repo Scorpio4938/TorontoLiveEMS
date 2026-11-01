@@ -101,6 +101,12 @@ struct SettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    /// Ask RootView to show the welcome greeting after Settings closes.
+    ///
+    /// Nil in a preview. The real Settings sheet is always given this closure, so the row is a
+    /// manual way to see the same greeting without a second copy of its content.
+    var onShowWelcome: (() -> Void)? = nil
+
     var body: some View {
         NavigationStack {
             Form {
@@ -171,6 +177,13 @@ struct SettingsView: View {
                         DataLicencesView()
                     } label: {
                         Text("Data Licences")
+                    }
+
+                    Button {
+                        onShowWelcome?()
+                        dismiss()
+                    } label: {
+                        Label("Show Welcome", systemImage: "hand.wave")
                     }
                 } header: {
                     Text("About")
