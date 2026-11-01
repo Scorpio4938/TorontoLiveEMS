@@ -39,8 +39,6 @@ commit that bumped the number. Where those differ, the tag is what a version mea
 - Changelog entries name the commit that finished each change, and the issue where one exists · `ec88c27`
 - Known: an interactive back-swipe expands the capsule when the pop completes — [#47](https://github.com/Scorpio4938/TorontoLiveEMS/issues/47)
 
-Not built, not run, tests not run: this checkpoint was tagged from a machine with no Xcode or Swift toolchain.
-
 ## v0.0.19
 
 `4980cf0`
