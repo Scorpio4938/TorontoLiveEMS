@@ -6,11 +6,11 @@ import SwiftUI
 /// the medium, text-only sheet the app used before that design: the app name, one sentence, the
 /// three points and Continue, with no mark and no opaque page background.
 ///
-/// **Kept deliberately, not left behind.** Settings → About → *Classic Welcome* opens it, so it can
+/// **Kept deliberately, not left behind.** Settings → About → *Easter Egg* opens it, so it can
 /// be compared with the current greeting, played with, and reused if the fuller page ever stops
 /// being the right shape. It does not write the launch acknowledgement; opening a curiosity must
 /// not make the automatic greeting disappear.
-struct ClassicWelcomeView: View {
+struct EasterEggWelcomeView: View {
 
     @Environment(\.dismiss) private var dismiss
 
@@ -29,17 +29,17 @@ struct ClassicWelcomeView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 20) {
-                        ClassicWelcomePoint(
+                        EasterEggWelcomePoint(
                             symbol: "fire.extinguisher",
                             title: "Fire",
                             detail: "Active incidents, newest first, as a table or as cards."
                         )
-                        ClassicWelcomePoint(
+                        EasterEggWelcomePoint(
                             symbol: "shield",
                             title: "Police",
                             detail: "Recent calls for service, newest first, with the window you choose."
                         )
-                        ClassicWelcomePoint(
+                        EasterEggWelcomePoint(
                             symbol: "map",
                             title: "Map",
                             detail: "Both feeds on one map. A symbol says what kind, a colour how much it matters."
@@ -67,7 +67,7 @@ struct ClassicWelcomeView: View {
 }
 
 /// One live section, said in a line.
-private struct ClassicWelcomePoint: View {
+private struct EasterEggWelcomePoint: View {
 
     let symbol: String
     let title: String
@@ -93,5 +93,5 @@ private struct ClassicWelcomePoint: View {
 }
 
 #Preview {
-    ClassicWelcomeView()
+    EasterEggWelcomeView()
 }

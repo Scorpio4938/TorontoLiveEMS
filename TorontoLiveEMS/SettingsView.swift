@@ -107,11 +107,11 @@ struct SettingsView: View {
     /// manual way to see the same greeting without a second copy of its content.
     var onShowWelcome: (() -> Void)? = nil
 
-    /// Ask RootView to show the earlier, medium text-only greeting.
+    /// Ask RootView to show the Easter Egg: the earlier, medium text-only greeting.
     ///
-    /// That design is kept as an Easter egg rather than replaced: it can be compared with the
-    /// current welcome, played with, and reused later. It does not write the launch fact.
-    var onShowClassicWelcome: (() -> Void)? = nil
+    /// That design is kept rather than replaced: it can be compared with the current welcome,
+    /// played with, and reused later. It does not write the launch fact.
+    var onShowEasterEgg: (() -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -193,10 +193,10 @@ struct SettingsView: View {
                     }
 
                     Button {
-                        onShowClassicWelcome?()
+                        onShowEasterEgg?()
                         dismiss()
                     } label: {
-                        Label("Classic Welcome", systemImage: "sparkles")
+                        Label("Easter Egg", systemImage: "sparkles")
                     }
                 } header: {
                     Text("About")

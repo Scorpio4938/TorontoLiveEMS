@@ -568,8 +568,8 @@ division — and it is deliberately the quietest part of the app.
   Map. Dismissing it — Continue or a swipe — writes the current marketing version, so there is no
   second first-launch key. It stays a sheet rather than a `fullScreenCover` so the swipe-away
   acknowledgement remains available. There is no What's New screen; Settings has rows for this
-  greeting and for the earlier medium, text-only *Classic Welcome*, which is kept as an Easter egg for
-  comparison and reuse and does not write the launch fact. The declared version is a constant copied
+  greeting and for the earlier medium, text-only *Easter Egg*, which is kept for comparison and reuse
+  and does not write the launch fact. The declared version is a constant copied
   from the changelog, currently nil, and the package rule already distinguishes welcome, notice and
   nothing for the day one exists.
 - **Home is a directory, not a dashboard.** Its job is to get a reader to a

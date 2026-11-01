@@ -136,13 +136,13 @@ struct RootView: View {
     /// up at the same time.
     @State private var showsWelcomeAfterSettings = false
 
-    /// Whether the earlier, medium text-only greeting is up.
+    /// Whether the Easter Egg — the earlier, medium text-only greeting — is up.
     ///
     /// Kept as an Easter egg for comparison and reuse; it never writes the launch acknowledgement.
-    @State private var isShowingClassicWelcome = false
+    @State private var isShowingEasterEgg = false
 
-    /// Set by Settings when the reader asks for the classic greeting.
-    @State private var showsClassicWelcomeAfterSettings = false
+    /// Set by Settings when the reader asks for the Easter Egg.
+    @State private var showsEasterEggAfterSettings = false
 
     /// Whether each tab's root page is the page on screen.
     ///
@@ -296,14 +296,14 @@ struct RootView: View {
                     onShowWelcome: {
                         showsWelcomeAfterSettings = true
                     },
-                    onShowClassicWelcome: {
-                        showsClassicWelcomeAfterSettings = true
+                    onShowEasterEgg: {
+                        showsEasterEggAfterSettings = true
                     }
                 )
             }
-            // The earlier greeting, kept behind a Settings row rather than thrown away.
-            .sheet(isPresented: $isShowingClassicWelcome) {
-                ClassicWelcomeView()
+            // The Easter Egg: the earlier greeting, kept behind a Settings row rather than thrown away.
+            .sheet(isPresented: $isShowingEasterEgg) {
+                EasterEggWelcomeView()
             }
             // The index without a tab. The sheet is the price of hiding the tab, and it is
             // deliberately a sheet rather than a fifth tab that comes back while it is open:
@@ -560,9 +560,9 @@ struct RootView: View {
             showsWelcomeAfterSettings = false
             isShowingWelcome = true
         }
-        if showsClassicWelcomeAfterSettings {
-            showsClassicWelcomeAfterSettings = false
-            isShowingClassicWelcome = true
+        if showsEasterEggAfterSettings {
+            showsEasterEggAfterSettings = false
+            isShowingEasterEgg = true
         }
     }
 
