@@ -75,7 +75,7 @@ struct DivisionAreaMap: View {
         ) {
             ForEach(division.areas.indices, id: \.self) { index in
                 division.areas[index].mapShape
-                    .foregroundStyle(Color.secondary.opacity(0.15))
+                    .foregroundStyle(Color.secondary.opacity(0.20))
                     .stroke(Color.secondary, lineWidth: 1)
             }
         }
@@ -115,7 +115,7 @@ struct DivisionCatalogueMap: View {
                 ForEach(divisions) { division in
                     ForEach(division.areas.indices, id: \.self) { index in
                         division.areas[index].mapShape
-                            .foregroundStyle(Color.secondary.opacity(0.12))
+                            .foregroundStyle(Color.secondary.opacity(0.20))
                             .stroke(Color.secondary, lineWidth: 1)
                     }
                 }
