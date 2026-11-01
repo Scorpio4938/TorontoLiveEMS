@@ -18,6 +18,18 @@ tag or build carries that, so it is written here.
 **The commit is the one the tag points at** — `git rev-parse <tag>^{commit}` — not necessarily the
 commit that bumped the number. Where those differ, the tag is what a version means.
 
+## v0.0.19
+
+`4980cf0` — not built · not run · tests never run
+
+The information work. Settings is grouped by what a setting affects: Display, Police and About.
+About is rebuilt for both sources, with the version in a row, the two source pages, the repository
+and an App Licence placeholder. Data Licences is an index with a page for Fire data, Postal areas
+and Police data; each page links its actual source and carries the publisher's full licence text,
+and the one-sentence notice on a data screen now opens that index itself. The map's legend prose is
+shorter and no longer counts the symbols. Package tests now pin the three licence texts and the
+postal boundary file's source.
+
 ## v0.0.18
 
 `35921d2` — built · ran · tests never run
