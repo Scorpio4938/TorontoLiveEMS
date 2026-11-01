@@ -101,11 +101,14 @@ struct RootView: View {
 
     /// Whether the app draws itself light, dark, or however the device is set.
     ///
-    /// **Read here and applied once, above everything.** The setting is chosen in Settings, which is
-    /// a sheet, so this value has to be in the app's own body rather than in a page's: choosing Light
+    /// **Read here and applied above everything.** The setting is chosen in Settings, which is a
+    /// sheet, so this value has to be in the app's own body rather than in a page's: choosing Light
     /// in the sheet must change the app behind it as it is chosen, and every tab, both halves of the
     /// map and every detail pushed from them must agree. `Appearance.colorScheme` is the app-side
     /// mapping, where System becomes `nil` — the value that means "ask the window".
+    ///
+    /// The Settings sheet and this view's other sheets read the same preference and apply it again at
+    /// their own roots, because a sheet is its own presentation; see `SettingsView`.
     @AppStorage(SettingsKey.appearance) private var appearance: Appearance = .standard
 
     /// The version this device last acknowledged.
@@ -279,29 +282,37 @@ struct RootView: View {
                         }
                 }
                 .presentationDragIndicator(.visible)
+                // A sheet is its own presentation, so it states the appearance for itself rather than
+                // relying on the window's choice reaching it. See `SettingsView`, where the same line
+                // is what makes the picker change this sheet while it is still open.
+                .preferredColorScheme(appearance.colorScheme)
             }
             // Which screen the info button opens is decided here rather than in the toolbar, because
             // there is one button and the answer is the data in front of the reader: the tab's, or
             // the source of the detail at the bottom of the map's navigation path. A sheet covers
             // the tab bar, so neither `screen` nor the path can move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                switch screen {
-                case .police:
-                    PoliceCallsInformationView()
-                case .map:
-                    if let source = mapPath.first?.source {
-                        switch source {
-                        case .fire:
-                            AboutThisDataView()
-                        case .police:
-                            PoliceCallsInformationView()
+                Group {
+                    switch screen {
+                    case .police:
+                        PoliceCallsInformationView()
+                    case .map:
+                        if let source = mapPath.first?.source {
+                            switch source {
+                            case .fire:
+                                AboutThisDataView()
+                            case .police:
+                                PoliceCallsInformationView()
+                            }
+                        } else {
+                            MapInformationView()
                         }
-                    } else {
-                        MapInformationView()
+                    default:
+                        AboutThisDataView()
                     }
-                default:
-                    AboutThisDataView()
                 }
+                // A sheet is its own presentation, so it states the appearance for itself.
+                .preferredColorScheme(appearance.colorScheme)
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
@@ -335,12 +346,15 @@ struct RootView: View {
                     await feed.load()
                 }
             }
-            // **One appearance for the whole app.** It is set here rather than on each screen because
-            // it is not a page's choice: the tabs, a detail pushed from the map, the sheets above them
-            // and both halves of the map all read the same colour scheme, and the Settings sheet can
-            // only change the app behind it while it is still up if the value it writes is read above
-            // the sheet as well as inside it. System passes `nil`, which leaves the window to answer
-            // exactly as it did before this preference existed.
+            // **One appearance for the window.** It is set here rather than on each screen because
+            // it is not a page's choice: the tabs, a detail pushed from the map and both halves of the
+            // map all read the same colour scheme, and the Settings sheet can only change the app
+            // behind it while it is still up if the value it writes is read above the sheet as well
+            // as inside it. System passes `nil`, which leaves the window to answer exactly as it did
+            // before this preference existed.
+            //
+            // A sheet is its own presentation, so this does not reach one already on screen. Each
+            // sheet applies the same value at its own root for that reason.
             .preferredColorScheme(appearance.colorScheme)
     }
 

@@ -399,8 +399,12 @@ is being described. "Fire division" remains a phrase this project does not use.
   it to `ColorScheme?`, where `nil` is the value that means "ask the window". It is applied **once,
   above the tabs**, so every page, every sheet and both halves of the map agree — and a choice made
   in the Settings sheet changes the app behind it while that sheet is still up, not after it is
-  dismissed. The map's standard style and its pin discs both read the resolved scheme, so choosing
-  Light over a dark device is what makes the map legible in sunlight.
+  dismissed. **Each sheet states the same preference at its own root as well**, because SwiftUI
+  applies `preferredColorScheme` to the nearest enclosing presentation: the root's choice changes the
+  window behind the sheet, and the sheet's own copy is what changes the sheet itself — observed on
+  device as the sheet staying on the previous appearance until it was closed and reopened. The map's
+  standard style and its pin discs both read the resolved scheme, so choosing Light over a dark device
+  is what makes the map legible in sunlight.
 - **Three reference screens, because they answer different questions.** *About* is about the app:
   its icon, its name, which version is in the reader's hand, what it is for, both publishers'
   pages, the repository and the app's own licence. *About this Data* is about the fire feed's
