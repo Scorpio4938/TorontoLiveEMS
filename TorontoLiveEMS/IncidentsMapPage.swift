@@ -777,7 +777,7 @@ struct MapInformationContent: View {
             } header: {
                 Text("Symbols")
             } footer: {
-                Text("The symbol says the incident's kind. Both feeds share the set, so a fire alarm and a police fire call wear the same bell; an unknown kind is a question mark.")
+                Text("Both feeds share the symbols: a fire alarm and a police fire call wear the same bell. Unknown kinds get a question mark.")
             }
 
             Section {
@@ -806,7 +806,7 @@ struct MapInformationContent: View {
             } header: {
                 Text("Colours")
             } footer: {
-                Text("The colour says how much an incident matters, never what kind it is. Grey is most of the map on purpose: marking exceptions means leaving the majority quiet.\n\nThe fire severities are the City's own. The police severities are this app's inference from the call type, because the Service publishes none and a call says nothing.")
+                Text("Colour says how much an incident matters, never what kind. Grey is most of the map on purpose: exceptions need a quiet majority. Fire severities are the City's own; police severities are this app's inference from the call type, because the Service publishes none.")
             }
         }
         .navigationTitle("About the Map")
