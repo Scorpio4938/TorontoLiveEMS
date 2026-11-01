@@ -13,13 +13,18 @@ import TorontoLiveEMSKit
 ///
 /// **The live section reads the calls already in memory.** It makes no request of its own and adds no
 /// refresh rule. A cold start says it is checking; a loaded feed with no matching calls says none are
-/// filed there at the moment.
+/// filed there at the moment. Each live row carries the call's occurrence time on the same clock, and
+/// from the same setting, as the Police table.
 struct DivisionPage: View {
 
     let division: PoliceDivision
 
     /// The shared police feed, read for the live section and handed on to a call's detail view.
     let policeFeed: PoliceCallFeed
+
+    /// The reader's chosen clock, the same setting the Police table reads.
+    @AppStorage(SettingsKey.dispatchTimeFormat)
+    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
     private var facility: PoliceFacility? {
         PoliceFacilities.bundled.facility(forPublished: division.number)
@@ -76,10 +81,22 @@ struct DivisionPage: View {
                     NavigationLink {
                         PoliceCallDetailView(call: call, policeFeed: policeFeed)
                     } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(call.callType)
-                            Text(call.crossStreets ?? NotProvided.mark)
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(call.callType)
+                                Text(call.crossStreets ?? NotProvided.mark)
+                                    .font(.caption)
+                                    .foregroundStyle(Color.secondary)
+                            }
+
+                            Spacer(minLength: 8)
+
+                            // The same clock the Police table reads, from the same setting. The live
+                            // section is a list of calls, and a list without a time makes the
+                            // reader open each one to find out when it happened.
+                            Text(DispatchTimestamp.clockTime(call.occurrenceTime, format: dispatchTimeFormat))
                                 .font(.caption)
+                                .monospacedDigit()
                                 .foregroundStyle(Color.secondary)
                         }
                     }

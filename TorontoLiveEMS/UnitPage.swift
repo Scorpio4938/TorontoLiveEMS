@@ -12,7 +12,8 @@ import TorontoLiveEMSKit
 /// **The live section reads the feed already in memory.** It makes no request of its own and adds no
 /// refresh rule: the same `IncidentFeed` the Fire page and the map use is asked which incidents name
 /// this code. A feed with no snapshot is a cold start, not idleness, so it says it is checking rather
-/// than claiming the unit is not dispatched.
+/// than claiming the unit is not dispatched. Each live row carries the dispatch time on the same
+/// clock, and from the same setting, as the Fire table.
 struct UnitPage: View {
 
     let unit: FireUnit
@@ -20,6 +21,10 @@ struct UnitPage: View {
     /// The shared fire feed, read for the live section and passed on so every page behind this one
     /// reads the same snapshot.
     let feed: IncidentFeed
+
+    /// The reader's chosen clock, the same setting the Fire table reads.
+    @AppStorage(SettingsKey.dispatchTimeFormat)
+    private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
     private var station: FireStation? {
         guard let number = unit.station else { return nil }
@@ -72,10 +77,22 @@ struct UnitPage: View {
                     NavigationLink {
                         IncidentDetailView(incident: incident, feed: feed)
                     } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(incident.incidentNumber)
-                            Text(incident.primeStreet ?? incident.crossStreets ?? NotProvided.mark)
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(incident.incidentNumber)
+                                Text(incident.primeStreet ?? incident.crossStreets ?? NotProvided.mark)
+                                    .font(.caption)
+                                    .foregroundStyle(Color.secondary)
+                            }
+
+                            Spacer(minLength: 8)
+
+                            // The same clock the Fire table reads, from the same setting. The live
+                            // section is a list of incidents, and a list without a time makes the
+                            // reader open each one to find out when it started.
+                            Text(DispatchTimestamp.clockTime(incident.dispatchTime, format: dispatchTimeFormat))
                                 .font(.caption)
+                                .monospacedDigit()
                                 .foregroundStyle(Color.secondary)
                         }
                     }
