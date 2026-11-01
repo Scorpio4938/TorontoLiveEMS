@@ -172,7 +172,7 @@ struct CataloguePin: View {
 
     var body: some View {
         Circle()
-            .fill(Color.primary)
+            .fill(MarkColour.routine)
             .frame(width: 13, height: 13)
             .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
             .shadow(radius: 1)
