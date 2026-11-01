@@ -677,6 +677,19 @@ say which of them mattered.
 - **Info and Settings sit on both tabs**, declared once and applied by each. They are about
   the app and the data, not about the list, and a button that exists on one tab and vanishes
   on the other reads as a bug.
+- **Home can be hidden from the tab bar, on iOS only.** The setting is a tab-bar preference,
+  not a preference about the reference pages: Home is a directory, and its tab competes with
+  Fire, Police and Map for the bar's width. Hiding it removes the tab and gives that width to
+  the three content pages. The index is still one tap away from a house control in the leading
+  navigation bar, which opens the same `HomePage` in a sheet; the sheet is deliberate, so the
+  tab bar keeps the width the reader chose instead of growing a fifth item whenever Home is
+  open. The house is leading rather than in the trailing capsule: a fifth capsule icon would
+  take back the top width the setting just gave away, and would push the capsule into the
+  centred title on Fire and Police. The map has no bar, so it draws the same control floating
+  at the top-leading edge.
+  Hiding the selected tab moves to Fire, the launch fallback; a first launch with the tab
+  already hidden also opens Fire, because a `TabView` cannot select a tab it does not contain.
+  The setting is absent on the platforms with no bottom tab bar, where Home stays a tab.
 - **The feed state moves into the package** as an `@Observable` type, passed explicitly and
   never through `@Environment`. In the package because `swift test` cannot reach the app
   target, and the refresh flow is logic that deserves tests. `IncidentGeocoder` is the

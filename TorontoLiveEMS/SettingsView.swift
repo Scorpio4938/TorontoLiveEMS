@@ -35,6 +35,13 @@ enum SettingsKey {
     static let mapKind = "mapKind"
     /// Which feeds the map draws, on the same terms: written by the chrome, read by the page.
     static let mapFilter = "mapFilter"
+
+    /// Whether Home appears as a tab on iPhone and iPad.
+    ///
+    /// Hiding it leaves the tab bar's width to Fire, Police and Map. Home is still reachable
+    /// from the house control in the top bar, so the station, unit and division pages are
+    /// never lost.
+    static let showsHomeTab = "showsHomeTab"
 }
 
 /// The app's preferences, and one row to everything that is not one.
@@ -65,7 +72,10 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.policeCallWindow)
     private var policeCallWindow: PoliceCallWindow = PoliceCallWindow.policePageDefault
 
-
+    #if os(iOS)
+    @AppStorage(SettingsKey.showsHomeTab)
+    private var showsHomeTab = true
+    #endif
 
     @Environment(\.dismiss) private var dismiss
 
@@ -116,6 +126,16 @@ struct SettingsView: View {
 
                     Text("Recent Calls is how far back the police page looks, and that page shows exactly that — a call outside it is folded into Earlier Calls however serious it is. The map's window is its own, in the map's filter.")
                 }
+
+                #if os(iOS)
+                Section {
+                    Toggle("Show Home Tab", isOn: $showsHomeTab)
+                } header: {
+                    Text("Tab Bar")
+                } footer: {
+                    Text("Home is the directory of stations, units and divisions. Turning its tab off gives Fire, Police and Map more room; the house button at the top still opens Home.")
+                }
+                #endif
 
                 Section {
                     NavigationLink {

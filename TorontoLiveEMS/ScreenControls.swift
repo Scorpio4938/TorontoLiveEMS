@@ -33,6 +33,27 @@ struct InfoControl: View {
     }
 }
 
+/// The Home control, shown only when Home is not a tab.
+///
+/// **The tab's trade, made visible.** Hiding Home gives its width to the other tabs; this is
+/// the way back to the index. It sits in the leading navigation bar on the pages that have one,
+/// and floats at the map's leading edge because the map has no bar — not in the trailing capsule,
+/// which the setting exists to keep narrow. It opens the same `HomePage` in a sheet, so a
+/// station, unit or division page is never unreachable just because the reader preferred a
+/// shorter tab bar.
+struct HomeControl: View {
+
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "house")
+                .foregroundStyle(Color.primary)
+        }
+        .accessibilityLabel("Home")
+    }
+}
+
 /// The Settings control, drawn once and used wherever it appears. See `InfoControl`.
 struct SettingsControl: View {
 

@@ -111,9 +111,14 @@ struct RootView: View {
     /// `LaunchBehaviour`, which never restores Home.
     @AppStorage(SettingsKey.lastSection) private var lastSection: AppSection = .fire
 
+    /// Whether Home is one of the tab bar's tabs. iOS only: the other platforms have no bottom
+    /// tab bar, and their Home tab stays put.
+    @AppStorage(SettingsKey.showsHomeTab) private var showsHomeTab = true
+
     @State private var isShowingSettings = false
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
+    @State private var isShowingHome = false
 
     /// The sentence the alert shows.
     ///
@@ -164,7 +169,23 @@ struct RootView: View {
                 acknowledgedVersion: storedVersion,
                 lastUsed: storedSection
             )
-        _screen = State(initialValue: Screen(section: section))
+
+        // A launch cannot select a tab that is not in the bar. If the reader has hidden Home and
+        // this is a first launch, open Fire instead; every other launch is already non-Home.
+        let initialSection: AppSection
+        #if os(iOS)
+        let storedShowsHomeTab = UserDefaults.standard
+            .object(forKey: SettingsKey.showsHomeTab) as? Bool ?? true
+        if launchSection == nil, !storedShowsHomeTab, section == .home {
+            initialSection = .fire
+        } else {
+            initialSection = section
+        }
+        #else
+        initialSection = section
+        #endif
+
+        _screen = State(initialValue: Screen(section: initialSection))
         recordsLaunch = launchSection == nil
     }
 
@@ -200,6 +221,23 @@ struct RootView: View {
             )
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
+            }
+            // The index without a tab. The sheet is the price of hiding the tab, and it is
+            // deliberately a sheet rather than a fifth tab that comes back while it is open:
+            // the bar keeps the width the reader chose, and the house control is still the
+            // way in.
+            .sheet(isPresented: $isShowingHome) {
+                NavigationStack {
+                    HomePage(feed: feed, policeFeed: policeFeed)
+                        .navigationTitle("Home")
+                        .inlineNavigationTitle()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { isShowingHome = false }
+                            }
+                        }
+                }
+                .presentationDragIndicator(.visible)
             }
             // Which screen the info button opens is decided here rather than in the toolbar, because
             // there is one button and two answers: the reader is looking at a tab, and the
@@ -242,12 +280,14 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: $screen) {
-            Tab("Home", systemImage: "house", value: Screen.home) {
-                NavigationStack {
-                    HomePage(feed: feed, policeFeed: policeFeed)
-                        .navigationTitle("Home")
-                        .inlineNavigationTitle()
-                        .barControls { toolbar }
+            if homeTabIsShown {
+                Tab("Home", systemImage: "house", value: Screen.home) {
+                    NavigationStack {
+                        HomePage(feed: feed, policeFeed: policeFeed)
+                            .navigationTitle("Home")
+                            .inlineNavigationTitle()
+                            .barControls { toolbar }
+                    }
                 }
             }
 
@@ -260,6 +300,7 @@ struct RootView: View {
                         .navigationTitle("Active Fire Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
+                        .toolbar { homeToolbarItem }
                 }
             }
 
@@ -269,6 +310,7 @@ struct RootView: View {
                         .navigationTitle("Recent Police Incidents")
                         .inlineNavigationTitle()
                         .barControls { toolbar }
+                        .toolbar { homeToolbarItem }
                 }
             }
 
@@ -293,6 +335,7 @@ struct RootView: View {
                         .toolbar(.hidden, for: .navigationBar)
                         .barControls { toolbar }
                         .overlay(alignment: .top) { mapTitle }
+                        .overlay(alignment: .topLeading) { homeMapControl }
                 }
             }
 
@@ -311,6 +354,13 @@ struct RootView: View {
             }
             #endif
         }
+        .onChange(of: homeTabIsShown) { _, shown in
+            // Removing the tab while it is selected would leave the tab view pointing at
+            // nothing. Fire is the launch fallback and the first page with content.
+            if !shown, screen == .home {
+                screen = .fire
+            }
+        }
         .onChange(of: screen) { previous, selected in
             if selected == .refresh {
                 // Back to the tab they were on, **not** to Incidents. This read `.incidents` until
@@ -328,6 +378,50 @@ struct RootView: View {
             if recordsLaunch, let section = selected.section, section.isRestorable {
                 lastSection = section
             }
+        }
+    }
+
+    /// Whether the Home tab is in the bar.
+    ///
+    /// The setting is iOS-only because the bottom tab bar is; the other platforms keep their
+    /// Home tab regardless of a preference they cannot set.
+    private var homeTabIsShown: Bool {
+        #if os(iOS)
+        showsHomeTab
+        #else
+        true
+        #endif
+    }
+
+    /// The way to the index when Home is not a tab.
+    ///
+    /// **Leading, not another button in the trailing capsule.** The setting exists to give the
+    /// tab bar's width back to the content pages; a fifth icon in the capsule would take that
+    /// width back at the top of the screen, and on Fire and Police it would push the capsule
+    /// into the centred title. The leading bar item is the platform's own place for a
+    /// navigation control, and it leaves Info and Settings exactly where they were.
+    @ToolbarContentBuilder
+    private var homeToolbarItem: some ToolbarContent {
+        if !homeTabIsShown {
+            ToolbarItem(placement: .topBarLeading) {
+                HomeControl(action: { isShowingHome = true })
+            }
+        }
+    }
+
+    /// The same control where the map has no bar to hold it.
+    ///
+    /// The map hides its navigation bar, so the leading item above has nowhere to draw. This is
+    /// the one floating version, at the leading edge opposite the controls capsule, on the one
+    /// page whose title is already floating.
+    @ViewBuilder
+    private var homeMapControl: some View {
+        if !homeTabIsShown {
+            HomeControl(action: { isShowingHome = true })
+                .frame(width: 44, height: 44)
+                .glassSurface(cornerRadius: 22)
+                .padding(.top, 12)
+                .padding(.leading, 12)
         }
     }
 
