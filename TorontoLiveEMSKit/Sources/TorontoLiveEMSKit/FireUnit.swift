@@ -2,10 +2,12 @@ import Foundation
 
 /// One apparatus code, and what the app can say about it.
 ///
-/// **The name comes from the City's legend, and from its longest matching entry.** `CMD` is a
-/// Command Vehicle rather than a Chief, and `PL231` is a Platform rather than a Pumper, because
-/// the legend's longest code that prefixes the token is the one that names it. `DispatchedUnit`
-/// already owns that rule, so this type asks it rather than keeping a second copy.
+/// **The name comes from the legend, and from its longest matching entry.** `CMD` is a Command
+/// Vehicle rather than a Chief, `PL231` a Platform rather than a Pumper, and `L331` a Ladder; the
+/// legend's longest code that prefixes the token is the one that names it. `L` is the one local
+/// supplement to the City's online legend — the City omits it, the roster's L codes are ladders,
+/// and *About this Data* says so. `DispatchedUnit` already owns the rule, so this type asks it
+/// rather than keeping a second copy.
 ///
 /// **A station number is not merely digits.** `C23` is a Chief's car and its `23` is not a
 /// published station number, so it belongs to no station; `P244` has digits that are Station 244's,
@@ -19,10 +21,10 @@ public struct FireUnit: Sendable, Equatable, Identifiable, Decodable {
     /// The token exactly as the feed publishes it, e.g. `P244`.
     public let code: String
 
-    /// The City's name for the apparatus, or `nil` when the legend does not name this code.
+    /// The apparatus name from the legend, or `nil` when the legend does not name this code.
     ///
-    /// Nil is a real case. The legend is not provably exhaustive — `L` is dispatched but not named
-    /// on the City's page — and an unnamed code is shown as its code rather than guessed at.
+    /// Nil is a real case. The legend is not provably exhaustive, and an unnamed code is shown as
+    /// its code rather than guessed at.
     public let name: String?
 
     /// The station the unit belongs to, or `nil` when its digits are not a station number.
@@ -68,7 +70,7 @@ extension FireUnit {
 ///
 /// **Grouped by what the code means, not by its first letter.** `C23` is a Chief and `CMD10` a
 /// Command Vehicle, so they are separate groups; `R346` is in Rescue, not R. The title is the
-/// City's legend name when the legend names the code, and the code's leading letter only as the
+/// apparatus name when the legend names the code, and the code's leading letter only as the
 /// fallback for a code the legend does not name.
 public struct FireUnitGroup: Sendable, Equatable, Identifiable {
 
@@ -85,7 +87,8 @@ public struct FireUnitGroup: Sendable, Equatable, Identifiable {
 ///
 /// **The City publishes no apparatus roster, and the live feed publishes only what was dispatched.**
 /// This file is the community-maintained Firefighting Wiki's active roster, mapped to feed-style
-/// codes, named from the City's legend, and placed at a station when the code's digits are one of
+/// codes, named from the legend (including the local L/Ladder supplement), and placed at a station
+/// when the code's digits are one of
 /// the 84 published station numbers. It records the wiki page, its licence, the date it was read and
 /// the retrieval time.
 ///
@@ -136,10 +139,10 @@ public struct FireUnits: Sendable {
 
     /// The catalogue grouped by apparatus type, in title order.
     ///
-    /// The group is the City's legend name for the code's longest matching prefix; the first
-    /// letter is only the fallback for a code the legend does not name. `C23` is Chief,
-    /// `CMD10` is Command Vehicle, and `R346` is Rescue, so none of those share a group by
-    /// accident of spelling.
+    /// The group is the apparatus name for the code's longest matching prefix; the first letter is
+    /// only the fallback for a code the legend does not name. `C23` is Chief, `CMD10` is Command
+    /// Vehicle, `R346` is Rescue, and `L331` is Ladder, so none of those share a group by accident
+    /// of spelling.
     public var groups: [FireUnitGroup] {
         Self.groups(of: units)
     }

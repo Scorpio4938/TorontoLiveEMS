@@ -35,15 +35,18 @@ struct FireUnitCatalogueTests {
             FireUnit(code: "CMD1", stations: stations),
             FireUnit(code: "HR332", stations: stations),
             FireUnit(code: "HZ323", stations: stations),
+            FireUnit(code: "L331", stations: stations),
         ]
 
         let groups = FireUnits.groups(of: units)
 
         #expect(groups.map(\.title) == [
-            "Aerial", "Chief", "Command Vehicle", "HazMat", "Highrise", "Pumper", "Rescue",
+            "Aerial", "Chief", "Command Vehicle", "HazMat", "Highrise", "Ladder", "Pumper",
+            "Rescue",
         ])
         #expect(groups.first { $0.title == "HazMat" }?.units.map(\.code) == ["HZ323"])
         #expect(groups.first { $0.title == "Highrise" }?.units.map(\.code) == ["HR332"])
+        #expect(groups.first { $0.title == "Ladder" }?.units.map(\.code) == ["L331"])
         #expect(groups.first { $0.title == "Pumper" }?.units.map(\.code) == ["P244"])
         #expect(groups.first { $0.title == "Rescue" }?.units.map(\.code) == ["R346"])
     }
@@ -67,11 +70,11 @@ struct FireUnitCatalogueTests {
 
     @Test("a type the legend does not name falls back to the code prefix")
     func unnamedTypeFallsBackToPrefix() throws {
-        let ladder = FireUnit(code: "L331", stations: stations)
-        let group = try #require(FireUnits.groups(of: [ladder]).first)
+        let unknown = FireUnit(code: "X331", stations: stations)
+        let group = try #require(FireUnits.groups(of: [unknown]).first)
 
-        #expect(ladder.name == nil)
-        #expect(group.title == "L")
+        #expect(unknown.name == nil)
+        #expect(group.title == "X")
     }
 
     @Test("a unit with no station is still catalogued, and shows no station")

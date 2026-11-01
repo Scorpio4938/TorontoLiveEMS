@@ -4,7 +4,7 @@ import TorontoLiveEMSKit
 @Suite("Dispatched units")
 struct DispatchedUnitTests {
 
-    @Test("names apparatus using the City's own legend")
+    @Test("names apparatus using the City's legend and the L supplement")
     func decodesTheLegend() {
         #expect(DispatchedUnit(code: "P231").display == "Pumper 231")
         #expect(DispatchedUnit(code: "R346").display == "Rescue 346")
@@ -16,6 +16,7 @@ struct DispatchedUnitTests {
         #expect(DispatchedUnit(code: "HZ1").display == "HazMat 1")
         #expect(DispatchedUnit(code: "HR12").display == "Highrise 12")
         #expect(DispatchedUnit(code: "WT9").display == "Water Tanker 9")
+        #expect(DispatchedUnit(code: "L331").display == "Ladder 331")
     }
 
     @Test("prefers the longest matching code")
@@ -97,28 +98,28 @@ struct DispatchedUnitTests {
 
     @Test("keeps an undecodable repeated code once, exactly as published")
     func undecodableRepeatStaysRawOnce() {
-        let published = "L325, R325, l325"
+        let published = "X325, R325, x325"
 
         let units = DispatchedUnit.roster(from: published)
-        #expect(units.map(\.display) == ["L325", "Rescue 325"])
-        #expect(DispatchedUnit.displayRoster(from: published) == "L325, R325")
+        #expect(units.map(\.display) == ["X325", "Rescue 325"])
+        #expect(DispatchedUnit.displayRoster(from: published) == "X325, R325")
     }
 
     @Test("leaves a code it cannot decode exactly as published")
     func unknownCodeStaysRaw() {
-        // The City's legend is not provably exhaustive; `L` is undefined in it.
-        let unit = DispatchedUnit(code: "L325")
+        // The legend is not provably exhaustive; `X` is undefined in it.
+        let unit = DispatchedUnit(code: "X325")
 
         #expect(unit.apparatus == nil)
         #expect(unit.station == "325")
-        #expect(unit.display == "L325")
+        #expect(unit.display == "X325")
     }
 
     @Test("keeps an undecodable code inside an otherwise readable roster")
     func keepsUnknownCodeInARoster() {
-        let units = DispatchedUnit.roster(from: "L325, R325")
+        let units = DispatchedUnit.roster(from: "X325, R325")
 
-        #expect(units.map(\.display) == ["L325", "Rescue 325"])
+        #expect(units.map(\.display) == ["X325", "Rescue 325"])
     }
 
     @Test("offers the legend in the order a reader looks something up")
@@ -129,8 +130,8 @@ struct DispatchedUnitTests {
         #expect(!names.isEmpty)
         #expect(names == names.sorted())
 
-        // And every entry really is the City's legend, not a second copy of it. Two codes
-        // share a name — `Box12` and `Sup7` are both Canteen vehicles — so the code is what
+        // Every entry really is the legend the app parses; all but L are the City's names. Two
+        // codes share a name — `Box12` and `Sup7` are both Canteen vehicles — so the code is what
         // identifies an entry, and it has to be unique for a list to render from it.
         let codes = DispatchedUnit.documentedApparatus.map(\.code)
         #expect(Set(codes).count == codes.count)

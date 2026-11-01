@@ -3,10 +3,10 @@ import TorontoLiveEMSKit
 
 /// Every unit code the catalogue knows, grouped by apparatus type.
 ///
-/// **The group heading is the City's name for the code, not its first letter.** `C23` is a Chief
-/// and `CMD10` a Command Vehicle, so they are separate sections; `R346` is Rescue, not R. The same
-/// longest matching legend entry that names the row decides the group. A code the legend does not
-/// name falls back to its first letter.
+/// **The group heading is the apparatus name for the code, not its first letter.** `C23` is a
+/// Chief and `CMD10` a Command Vehicle, so they are separate sections; `R346` is Rescue, and
+/// `L331` is Ladder, not their initials. The same longest matching legend entry that names the row
+/// decides the group. A code the legend does not name falls back to its first letter.
 ///
 /// The catalogue is the roster, not a census of the fleet. A unit absent from the roster is absent,
 /// and that absence is not a claim that it does not exist.

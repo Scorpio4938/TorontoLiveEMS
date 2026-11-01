@@ -63,14 +63,23 @@ struct FireUnitsTests {
         #expect(FireUnit(code: "PL231", stations: stations).name == "Platform")
     }
 
+    @Test("L is Ladder, including every L-starting unit")
+    func lIsLadder() {
+        // The City's online legend omits L; the app keeps it as a named local supplement.
+        for code in units.units.map(\.code) where code.hasPrefix("L") {
+            #expect(units.unit(code: code)?.name == "Ladder", "\(code) is not named Ladder")
+        }
+        #expect(FireUnit(code: "L331", stations: stations).name == "Ladder")
+        #expect(FireUnit(code: "LA231", stations: stations).name == "Air Light")
+    }
+
     @Test("a code the legend does not name keeps its code and no name")
     func unnamedCodeStaysUnnamed() {
-        // `L` is dispatched by the City but is not in the legend on the City's own page. An
-        // unnamed code is shown as its code rather than guessed at.
-        let ladder = FireUnit(code: "L312", stations: stations)
+        // `X` is not in the legend. An unnamed code is shown as its code rather than guessed at.
+        let unknown = FireUnit(code: "X312", stations: stations)
 
-        #expect(ladder.name == nil)
-        #expect(ladder.station == 312)
+        #expect(unknown.name == nil)
+        #expect(unknown.station == 312)
     }
 
     @Test("every station in the file is a published station number")

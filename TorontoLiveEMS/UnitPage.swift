@@ -4,7 +4,7 @@ import TorontoLiveEMSKit
 /// One unit code, and the two facts the catalogue can state about it.
 ///
 /// **Apparatus and station, or nothing.** The code is the City's; the apparatus name is the longest
-/// matching entry in the City's legend; the station is the published station number the code's digits
+/// matching entry in the legend (with L read as Ladder); the station is the published station number the code's digits
 /// happen to be. A code with no station shows no station rather than a labelled blank. There is no
 /// photograph, no roster of what is parked where, and no apology for the catalogue being one capture
 /// rather than a census.

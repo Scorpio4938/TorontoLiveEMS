@@ -3,15 +3,18 @@ import Foundation
 /// One piece of apparatus sent to an incident.
 ///
 /// The City publishes a roster of coded tokens — `P231, P234` — and names the codes in
-/// a footnote legend on its own incidents page. The names here are that legend,
-/// verbatim; we did not invent them.
+/// a footnote legend on its own incidents page. The names here are that legend, verbatim, plus one
+/// local supplement: `L` is read as Ladder. The City's online legend omits `L`, but the units roster
+/// uses it for ladders, and the app says so in *About this Data* rather than presenting the addition
+/// as a City name.
 public struct DispatchedUnit: Equatable, Sendable {
 
     /// The token exactly as published, e.g. `LA231`.
     public let code: String
 
-    /// The City's name for the apparatus type, or `nil` when the token's code is not
-    /// in the City's legend.
+    /// The apparatus name from the legend, or `nil` when the token's code is not named.
+    ///
+    /// `L` is the one entry that is not from the City's online legend; see the note on `legend`.
     public let apparatus: String?
 
     /// The station number carried by the token, e.g. `231`.
@@ -105,17 +108,20 @@ public struct DispatchedUnit: Equatable, Sendable {
         return String(token[start...])
     }
 
-    /// One entry from the City's legend.
+    /// One entry in the apparatus legend.
+    ///
+    /// Every entry but `L` is the City's published name; `L` is the local supplement described at
+    /// the top of this type.
     public struct Legend: Equatable, Sendable {
 
         /// The code as published at the start of a token, e.g. `HZ`.
         public let code: String
 
-        /// The City's name for that apparatus.
+        /// The apparatus name. Every entry but `L` is the City's; `L` is the local supplement.
         public let name: String
     }
 
-    /// The City's legend in the order a reader looks something up.
+    /// The apparatus legend in the order a reader looks something up.
     ///
     /// Sorted by name, where the list it comes from is ordered longest-code-first for prefix
     /// matching. One list, two readings: a parser needs the codes in one order and a person
@@ -124,7 +130,10 @@ public struct DispatchedUnit: Equatable, Sendable {
         legend.sorted { $0.name < $1.name }
     }
 
-    /// The City's legend, ordered longest code first so prefix matching is correct.
+    /// The legend, ordered longest code first so prefix matching is correct.
+    ///
+    /// `L` sits after `LA`, so `LA231` still reads Air Light rather than Ladder. The City's online
+    /// legend does not list `L`; it is the one local supplement, and *About this Data* says so.
     static let legend: [Legend] = [
         Legend(code: "Box12", name: "Canteen vehicle"),
         Legend(code: "Sup7", name: "Canteen vehicle"),
@@ -135,6 +144,7 @@ public struct DispatchedUnit: Equatable, Sendable {
         Legend(code: "HZ", name: "HazMat"),
         Legend(code: "FB", name: "Fireboat"),
         Legend(code: "LA", name: "Air Light"),
+        Legend(code: "L", name: "Ladder"),
         Legend(code: "WT", name: "Water Tanker"),
         Legend(code: "HS", name: "Haz Support"),
         Legend(code: "DE", name: "Decon"),

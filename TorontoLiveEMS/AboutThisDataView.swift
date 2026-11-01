@@ -55,7 +55,7 @@ struct AboutThisDataContent: View {
             } header: {
                 Text("Dispatched Unit Codes")
             } footer: {
-                Text("Toronto Fire Services' apparatus codes, as the City publishes them. A code not listed here is unnamed, and is shown as published.")
+                Text("Toronto Fire Services' apparatus codes. Every entry but L is the City's published name; the City's online legend omits L, which this app reads as Ladder. A code not listed here is unnamed, and is shown as published.")
             }
 
             SourcesSection()
