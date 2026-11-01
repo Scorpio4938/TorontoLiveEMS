@@ -102,8 +102,8 @@ struct RootView: View {
     /// The version this device last acknowledged.
     ///
     /// **Empty means this app has never been launched**, and that is the same emptiness the welcome
-    /// greeting will read (#33). The first launch opens Home and writes the bundle's version so the
-    /// fact cannot be true twice.
+    /// greeting reads. Dismissing that greeting writes the bundle's version, which is what stops it
+    /// appearing again.
     @AppStorage(SettingsKey.acknowledgedVersion) private var acknowledgedVersion = ""
 
     /// The last section the reader used, including Home.
@@ -123,6 +123,12 @@ struct RootView: View {
     @State private var isShowingAboutData = false
     @State private var isShowingNothingToUpdate = false
     @State private var isShowingHome = false
+
+    /// Whether the first-launch greeting is up.
+    ///
+    /// Decided once, at launch, from the stored version. It is false in a preview that supplies its
+    /// own launch section.
+    @State private var isShowingWelcome: Bool
 
     /// Whether each tab's root page is the page on screen.
     ///
@@ -155,6 +161,13 @@ struct RootView: View {
     /// writes the real preference store would mark the developer's simulator as launched and make
     /// the next real launch skip Home.
     private let recordsLaunch: Bool
+
+    /// The version whose release notes are being announced, or nil when nothing is declared.
+    ///
+    /// Copied from the newest CHANGELOG entry only when there is an announcement to make. Today
+    /// nothing is declared: the first-launch greeting is the only content, and there is no What's
+    /// New screen.
+    private static let declaredWelcomeVersion: String? = nil
 
     /// The feed is taken rather than made, so a preview can hand the app a fixed snapshot and
     /// never touch the City's server.
@@ -208,6 +221,14 @@ struct RootView: View {
         #endif
 
         _screen = State(initialValue: Screen(section: initialSection))
+
+        let showsWelcome =
+            launchSection == nil
+            && WelcomeBehaviour.decision(
+                storedVersion: storedVersion,
+                declaredVersion: Self.declaredWelcomeVersion
+            ) == .welcome
+        _isShowingWelcome = State(initialValue: showsWelcome)
         recordsLaunch = launchSection == nil
     }
 
@@ -251,6 +272,11 @@ struct RootView: View {
                 mapFilter: showsMapControls ? $mapFilter : nil,
                 mapPoliceWindow: showsMapControls ? $mapPoliceWindow : nil
             )
+            // The one greeting a fresh install gets. `onDismiss` is the acknowledgement: a swipe
+            // and the Continue button land in the same place, so neither can leave it returning.
+            .sheet(isPresented: $isShowingWelcome, onDismiss: acknowledgeWelcome) {
+                WelcomeView()
+            }
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
@@ -305,22 +331,12 @@ struct RootView: View {
             // undocumented path on the City's server, so the app asks for it only when it has
             // nothing to show, or when someone taps refresh.
             //
-            // The first launch also becomes the launch this device has acknowledged. The key is a
-            // version string rather than a boolean because the welcome greeting (#33) compares
-            // versions against it; recording the current version is what makes the first launch
-            // happen once. The section just opened is stored at the same time so a reader who
-            // stays on Home, including on the first launch, comes back to Home.
+            // The launch leaves its opening section behind as the one to restore, and the welcome
+            // sheet is what acknowledges the version. The version is deliberately not written here:
+            // a greeting that was never dismissed must still be a first launch next time.
             .task {
-                if recordsLaunch {
-                    // The section first: if the app is killed between these two writes, the next
-                    // launch is still a first launch and opens Home anyway. The reverse order could
-                    // acknowledge the launch while losing Home as the thing to restore.
-                    if let section = screen.section {
-                        lastSection = section
-                    }
-                    if acknowledgedVersion.isEmpty {
-                        acknowledgedVersion = AppIdentity.marketingVersion
-                    }
+                if recordsLaunch, let section = screen.section {
+                    lastSection = section
                 }
                 if feed.snapshot == nil {
                     await feed.load()
@@ -504,6 +520,12 @@ struct RootView: View {
     /// The button knows nothing about tasks; this is the one place that does.
     private func refreshTapped() {
         Task { await refresh() }
+    }
+
+    /// The greeting is the acknowledgement, whether it was dismissed by Continue or by a swipe.
+    private func acknowledgeWelcome() {
+        guard recordsLaunch else { return }
+        acknowledgedVersion = AppIdentity.marketingVersion
     }
 
     /// Refreshes the feed of the tab the reader is on, and says so when there is provably nothing

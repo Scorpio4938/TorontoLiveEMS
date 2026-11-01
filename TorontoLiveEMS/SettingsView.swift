@@ -10,9 +10,9 @@ enum SettingsKey {
     /// The version this device last acknowledged.
     ///
     /// **A version string, not a boolean.** Empty means this app has never been launched, and that
-    /// is the one fact both the launch rule and the welcome greeting read (#33). Anything else is a
-    /// version this device has seen, which a later "what's new" notice can compare against without a
-    /// migration.
+    /// is the one fact both the launch rule and the welcome greeting read (#33); the greeting writes
+    /// the current version when it is dismissed. Anything else is a version this device has seen,
+    /// which a later "what's new" notice can compare against without a migration.
     static let acknowledgedVersion = "acknowledgedVersion"
 
     /// The last section the reader used, including Home.

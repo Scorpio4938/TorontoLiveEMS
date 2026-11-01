@@ -561,6 +561,13 @@ division — and it is deliberately the quietest part of the app.
   because restoring it was confused with defaulting to it; that made a reader who was
   browsing the directory reopen on Fire. If the Home tab is hidden, a stored Home cannot
   be selected and Fire opens instead; the house control still reaches the index.
+- **The first launch is greeted once, and the greeting is the acknowledgement.** The same
+  `acknowledgedVersion` emptiness that makes Home the first-launch screen shows one welcome sheet:
+  the app's name through `AppIdentity` (the source About reads), one sentence on what the app shows,
+  and three points for Fire, Police and Map. Dismissing it — Continue or a swipe — writes the
+  current marketing version, so there is no second first-launch key. There is no What's New screen
+  and no settings row; the declared version is a constant copied from the changelog, currently nil,
+  and the package rule already distinguishes welcome, notice and nothing for the day one exists.
 - **Home is a directory, not a dashboard.** Its job is to get a reader to a
   catalogue. It is a platform `List` with two service sections, a count trailing each
   row, and a Sources section. There is **no masthead and no mark**: About already carries

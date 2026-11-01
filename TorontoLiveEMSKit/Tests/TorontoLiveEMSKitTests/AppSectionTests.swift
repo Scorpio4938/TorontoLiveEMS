@@ -4,7 +4,7 @@ import TorontoLiveEMSKit
 /// The rule that decides what a launch opens on.
 ///
 /// The app target has no tests, so the rule lives in the package and is answered here. The stored
-/// fact is the version string the welcome greeting will also read and write (#33): empty means this
+/// fact is the version string the welcome greeting also reads and writes (#33): empty means this
 /// app has never been launched.
 @Suite("Launch section")
 struct AppSectionTests {
@@ -26,7 +26,7 @@ struct AppSectionTests {
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.18", lastUsed: .map) == .map)
 
         // Any non-empty version means the app has launched. An older one still restores, which is
-        // what lets the welcome greeting later compare versions without changing this rule.
+        // what lets the welcome greeting compare versions without changing this rule.
         #expect(LaunchBehaviour.section(acknowledgedVersion: "0.0.1", lastUsed: .map) == .map)
     }
 

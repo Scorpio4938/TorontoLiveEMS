@@ -3,9 +3,9 @@ import Foundation
 /// The app's identity, read from the bundle in one place.
 ///
 /// **Read rather than typed.** A string in a screen is one that will one day disagree with the
-/// bundle it was built from. *About* shows the name and the version, and the launch rule stores
-/// the marketing version as the fact that this device has launched — so there is one reader of the
-/// bundle, not two that can drift.
+/// bundle it was built from. *About* takes the name and version from here, and the welcome takes the
+/// same name; the welcome stores the marketing version as the fact that this device has launched —
+/// so there is one reader of the bundle, not two that can drift.
 ///
 /// The version is `MARKETING_VERSION` in the project, and the build is the number Xcode increments
 /// for an upload. See `docs/releasing.md` for the scheme.
