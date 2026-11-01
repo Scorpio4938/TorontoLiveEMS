@@ -182,21 +182,16 @@ struct MapTabReselectionInterop: UIViewControllerRepresentable {
     }
 }
 
-/// Tells the coordinator when the interop is actually in a window.
+/// Tells the coordinator when the interop is actually on screen.
 ///
 /// The representable may be created while its tab is not selected, so `makeUIViewController` cannot
-/// assume a window. These callbacks are the reliable moment when the map tab becomes visible.
+/// assume a window. `viewDidAppear` is the reliable moment when the map tab becomes visible.
 private final class InteropViewController: UIViewController {
 
     weak var coordinator: MapTabReselectionInterop.Coordinator?
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        coordinator?.connect(from: self)
-    }
-
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
         coordinator?.connect(from: self)
     }
 }
