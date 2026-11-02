@@ -46,6 +46,32 @@ struct IncidentDetailView: View {
         FireStations.bundled.station(forArea: incident.area)
     }
 
+    /// What the City published about where the incident is.
+    ///
+    /// One derivation for the geocoder lookup, the placement check and the Location footer.
+    private var location: IncidentLocation {
+        IncidentLocation.from(incident)
+    }
+
+    /// Whether the point the app resolved is impossibly far from the station the Area names.
+    ///
+    /// A postal area is not a point, an unknown Area names no station, and a pending or failed
+    /// geocode has no point. The package decides all of those; this view only supplies the point
+    /// and the station it already has.
+    private var placementMayBeOff: Bool {
+        let resolved = geocoder.known(location)
+        return IncidentPlacementCheck.shouldWarn(
+            location: location,
+            resolvedPoint: resolved.map {
+                IncidentPlacementCheck.Coordinate(
+                    latitude: $0.latitude,
+                    longitude: $0.longitude
+                )
+            },
+            station: stationForArea
+        )
+    }
+
     var body: some View {
         List {
             Section {
@@ -84,9 +110,11 @@ struct IncidentDetailView: View {
             } header: {
                 Text("Location")
             } footer: {
-                if incident.isLocationPostalArea {
+                if placementMayBeOff {
+                    Text("The placement may be off.")
+                } else if incident.isLocationPostalArea {
                     Text("A medical incident's location is published as a postal area rather than an address, to preserve privacy. It is shown as an area, because that is what the City published — an address would be a guess.")
-                } else if IncidentLocation.from(incident) != .unpublished {
+                } else if location != .unpublished {
                     Text("Placement is approximate. The City publishes a street or an intersection rather than a street number, so this is somewhere along it rather than a doorstep.")
                 }
             }

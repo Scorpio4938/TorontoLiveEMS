@@ -527,6 +527,14 @@ is being described. "Fire division" remains a phrase this project does not use.
   costs no width and adds nothing to the layout, so the table stays a table.
 - **The detail view does not tint.** Colour there would mark nothing: a single incident
   has nothing to stand out from.
+- **An impossible placement is a note in the Location footer, not a colour.** A fire
+  incident's resolved point is compared with the station its Area names; beyond 10 km the
+  footer says *The placement may be off.* The check is pure arithmetic in the package, and
+  the run-area measurement behind the threshold sits beside the constant. It never moves the
+  pin, and it stays silent when there is no point, no Area, or an Area the station file does
+  not know: a postal area is not a point, and a missing fact is not a disagreement. The
+  warning takes the place of the approximate-placement sentence when it fires, because the
+  stronger claim is the one to read.
 - **The street suffix is kept verbatim.** Real-street values carry a two-letter
   municipality code, never present on FSAs, and it is displayed as published. Every
   observation so far matches the street's geography:
