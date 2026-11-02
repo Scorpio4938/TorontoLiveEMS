@@ -384,13 +384,30 @@ is being described. "Fire division" remains a phrase this project does not use.
   Ours is typographically right and theirs is what they published; the difference is a
   deliberate one, not a transcription slip.
 - **Settings is grouped by what a setting affects, not by which feed its name mentions.** Three
-  sections: *Display* holds Layout and Time Format, *Police* holds Call Type and Recent Calls, and
-  *About* holds the rows to *About* and *Data Licences*. Layout used to sit under *Incidents* and
-  the time format in a section of its own, so a footer had to say that a display choice applied to
-  the fire and police pages alike; the header says it now. Footers survive only where they add what
-  the picker's options do not — the table-and-cards trade, the detail view showing both type styles,
-  the map's separate window — and the time format's went because *12-Hour* and *24-Hour* already say
-  it.
+  sections: *Display* holds Layout, Time Format and Appearance, *Police* holds Call Type and Recent
+  Calls, and *About* holds the rows to *About* and *Data Licences*. Layout used to sit under
+  *Incidents* and the time format in a section of its own, so a footer had to say that a display
+  choice applied to the fire and police pages alike; the header says it now. Footers survive only
+  where they add what the picker's options do not — the table-and-cards trade, the detail view
+  showing both type styles, the map's separate window — and the time format's went because *12-Hour*
+  and *24-Hour* already say it.
+- **Appearance is three choices, and System is one of them.** A light/dark switch cannot express
+  "follow the device", and a reader who once flipped it could never get back to it, so *System* is a
+  value rather than the absence of a choice — and the default, so an install that never opens
+  Settings looks exactly as it did before the setting existed. The type lives in the package, like
+  `IncidentPresentation` and `MapFilter`, carries its own label, and holds no SwiftUI; the app maps
+  it to `ColorScheme?`, where `nil` is the value that means "ask the window". It is applied **once,
+  above the tabs**, so every page, every sheet and both halves of the map agree — and a choice made
+  in the Settings sheet changes the app behind it while that sheet is still up, not after it is
+  dismissed. **Each sheet is given a concrete scheme at its own root as well**, because SwiftUI
+  applies `preferredColorScheme` to the nearest enclosing presentation: the root's choice changes the
+  window behind the sheet, and the sheet's own value is what changes the sheet itself — observed on
+  device as the sheet staying on the previous appearance until it was closed and reopened. For System
+  the sheet is given the device's own scheme rather than `nil`, because removing an override does not
+  clear one the sheet already has: returning from Light to System otherwise left the sheet light. The
+  root still passes `nil` for System, which is what lets the window follow the device when the device
+  changes. The map's standard style and its pin discs both read the resolved scheme, so choosing Light
+  over a dark device is what makes the map legible in sunlight.
 - **Three reference screens, because they answer different questions.** *About* is about the app:
   its icon, its name, which version is in the reader's hand, what it is for, both publishers'
   pages, the repository and the app's own licence. *About this Data* is about the fire feed's

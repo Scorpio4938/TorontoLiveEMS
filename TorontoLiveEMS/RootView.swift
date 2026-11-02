@@ -99,6 +99,31 @@ struct RootView: View {
     @AppStorage(SettingsKey.mapFilter) private var mapFilter: MapFilter = .all
     @AppStorage(SettingsKey.mapPoliceWindow) private var mapPoliceWindow: PoliceCallWindow = .oneHour
 
+    /// Whether the app draws itself light, dark, or however the device is set.
+    ///
+    /// **Read here and applied to the window.** The setting is chosen in Settings, which is a sheet,
+    /// so this value has to be in the app's own body rather than in a page's: choosing Light in the
+    /// sheet must change the app behind it as it is chosen, and every tab, both halves of the map and
+    /// every detail pushed from them must agree. `Appearance.colorScheme` is the app-side mapping,
+    /// where System becomes `nil` — the value that means "ask the window".
+    @AppStorage(SettingsKey.appearance) private var appearance: Appearance = .standard
+
+    /// The device's own scheme, used only to resolve System for a sheet.
+    ///
+    /// **A sheet cannot be sent `nil` once it has been sent a scheme.** Removing a preference is not
+    /// the same as replacing it: a presented sheet given `.light` keeps its light override when the
+    /// preference is later removed, so returning to System left the sheet on the appearance it had
+    /// before, until it was closed and reopened. A sheet therefore always gets a concrete value, and
+    /// for System that value is whatever the window — with no override of ours — is showing. The root
+    /// below still passes `nil` for System, because there "ask the window" is exactly right and is
+    /// what makes the app follow the device when the device changes.
+    @Environment(\.colorScheme) private var deviceColorScheme
+
+    /// The appearance every sheet is given: the reader's choice, or the device's own scheme for System.
+    private var sheetColorScheme: ColorScheme {
+        appearance.colorScheme ?? deviceColorScheme
+    }
+
     /// The version this device last acknowledged.
     ///
     /// **Empty means this app has never been launched**, and that is the same emptiness the welcome
@@ -290,6 +315,7 @@ struct RootView: View {
             // and the Continue button land in the same place, so neither can leave it returning.
             .sheet(isPresented: $isShowingWelcome, onDismiss: acknowledgeWelcome) {
                 WelcomeView()
+                    .preferredColorScheme(sheetColorScheme)
             }
             .sheet(isPresented: $isShowingSettings, onDismiss: presentWelcomeIfRequested) {
                 SettingsView(
@@ -300,10 +326,15 @@ struct RootView: View {
                         showsEasterEggAfterSettings = true
                     }
                 )
+                // A sheet is its own presentation, so it states the appearance for itself; the value
+                // is concrete even for System, because a sheet cannot be returned to `nil` once it
+                // has been given a scheme.
+                .preferredColorScheme(sheetColorScheme)
             }
             // The Easter Egg: the earlier greeting, kept behind a Settings row rather than thrown away.
             .sheet(isPresented: $isShowingEasterEgg) {
                 EasterEggWelcomeView()
+                    .preferredColorScheme(sheetColorScheme)
             }
             // The index without a tab. The sheet is the price of hiding the tab, and it is
             // deliberately a sheet rather than a fifth tab that comes back while it is open:
@@ -321,29 +352,38 @@ struct RootView: View {
                         }
                 }
                 .presentationDragIndicator(.visible)
+                // A sheet is its own presentation, so it states the appearance for itself; the value
+                // is concrete even for System, because a sheet cannot be returned to `nil` once it
+                // has been given a scheme.
+                .preferredColorScheme(sheetColorScheme)
             }
             // Which screen the info button opens is decided here rather than in the toolbar, because
             // there is one button and the answer is the data in front of the reader: the tab's, or
             // the source of the detail at the bottom of the map's navigation path. A sheet covers
             // the tab bar, so neither `screen` nor the path can move while this is up.
             .sheet(isPresented: $isShowingAboutData) {
-                switch screen {
-                case .police:
-                    PoliceCallsInformationView()
-                case .map:
-                    if let source = mapPath.first?.source {
-                        switch source {
-                        case .fire:
-                            AboutThisDataView()
-                        case .police:
-                            PoliceCallsInformationView()
+                Group {
+                    switch screen {
+                    case .police:
+                        PoliceCallsInformationView()
+                    case .map:
+                        if let source = mapPath.first?.source {
+                            switch source {
+                            case .fire:
+                                AboutThisDataView()
+                            case .police:
+                                PoliceCallsInformationView()
+                            }
+                        } else {
+                            MapInformationView()
                         }
-                    } else {
-                        MapInformationView()
+                    default:
+                        AboutThisDataView()
                     }
-                default:
-                    AboutThisDataView()
                 }
+                // A sheet is its own presentation, so it states the appearance for itself, with
+                // System resolved to the device's scheme.
+                .preferredColorScheme(sheetColorScheme)
             }
             .alert("Up to Date", isPresented: $isShowingNothingToUpdate) {
                 Button("OK", role: .cancel) { }
@@ -367,6 +407,16 @@ struct RootView: View {
                     await feed.load()
                 }
             }
+            // **One appearance for the window.** It is set here rather than on each screen because
+            // it is not a page's choice: the tabs, a detail pushed from the map and both halves of the
+            // map all read the same colour scheme, and the Settings sheet can only change the app
+            // behind it while it is still up if the value it writes is read above the sheet as well
+            // as inside it. System passes `nil`, which leaves the window to answer exactly as it did
+            // before this preference existed.
+            //
+            // A sheet is its own presentation, so this does not reach one already on screen; each
+            // sheet is given `sheetColorScheme` above for that reason.
+            .preferredColorScheme(appearance.colorScheme)
     }
 
     private var tabs: some View {
