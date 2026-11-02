@@ -42,6 +42,13 @@ struct CatalogueModeMenu: View {
 
     @Binding var mode: CatalogueMode
 
+    /// Whether the label is floating over a map rather than sitting in a bar.
+    ///
+    /// A floating label has no capsule behind it — the reader is meant to read the catalogue's name,
+    /// and a box around a name reads as a button before it reads as a title. The padding is the tap
+    /// target the surface no longer provides, and the whole padded area is the hit shape.
+    var floats = false
+
     var body: some View {
         Menu {
             Picker("View", selection: $mode) {
@@ -59,6 +66,14 @@ struct CatalogueModeMenu: View {
                 Image(systemName: "chevron.down")
                     .font(.caption2)
             }
+            // **Primary, never the accent.** Outside a toolbar a `Menu`'s label takes the app's tint,
+            // which made this header fire red — and red is the app's most urgent colour, not a page's
+            // name. A toolbar's principal item is already the label colour, so this changes nothing
+            // in list mode.
+            .foregroundStyle(Color.primary)
+            .padding(.horizontal, floats ? 12 : 0)
+            .padding(.vertical, floats ? ScreenControls.verticalPadding : 0)
+            .contentShape(Rectangle())
         }
         .accessibilityLabel("\(title), view, \(mode.label)")
     }

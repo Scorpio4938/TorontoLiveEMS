@@ -7,11 +7,12 @@ import SwiftUI
 /// a map has none. The live map's answer is to hide the bar and float its name and controls over the
 /// map, so the catalogue does the same: nothing above the map but the map.
 ///
-/// **The menu is the one control that has to travel.** In list mode it is the bar's principal item,
-/// where its label reads as the catalogue's title. In map mode it floats at the top centre, in the
-/// same glass capsule the app's other controls wear (`HomeCapsule`, `ScreenControls`). It is a
-/// control, so it takes a control's surface; the live map's floating title is plain text precisely
-/// because a name is not one.
+/// **The menu is the one control that has to travel — and it travels as a title.** In list mode it is
+/// the bar's principal item, where its label reads as the catalogue's title. In map mode it floats at
+/// the top centre in the same idiom the live map uses for its floating title: plain text in the
+/// primary label colour, with no capsule behind it. A capsule was tried and is wrong here: it puts a
+/// box around the page's name and, outside a toolbar, the menu's label takes the app's accent, so the
+/// header read as a red button. The mode glyph and chevron say it opens; the colour says it is a name.
 ///
 /// **The back control is the guarantee, not a decoration.** Hiding a navigation bar can take the
 /// interactive swipe-back with it, and a pushed catalogue must not become a map with no way home.
@@ -30,10 +31,8 @@ struct CatalogueMapChrome: View {
 
     var body: some View {
         ZStack {
-            CatalogueModeMenu(title: title, mode: $mode)
-                .padding(.horizontal, 12)
-                .padding(.vertical, ScreenControls.verticalPadding)
-                .glassSurface(cornerRadius: ScreenControls.cornerRadius)
+            // Plain, with its own padded tap target: see `CatalogueModeMenu.floats`.
+            CatalogueModeMenu(title: title, mode: $mode, floats: true)
 
             HStack {
                 CatalogueBackControl(action: onBack)
