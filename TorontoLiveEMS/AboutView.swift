@@ -16,32 +16,18 @@ import TorontoLiveEMSKit
 /// the repository row is labelled as this app's own source.
 ///
 /// **Everything here is read rather than typed**: the name and version through `AppIdentity`, the
-/// artwork from the asset catalogue, both publishers' pages from the package. The repository address
-/// is a constant because no publisher carries it.
+/// icon mark from the asset catalogue, both publishers' pages from the package. The repository
+/// address and the icon's original artwork are constants because no publisher carries them.
 struct AboutView: View {
-
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         List {
             Section {
                 VStack(spacing: 10) {
-                    // The same artwork and the same corner as the Home screen, from the imagesets
-                    // the icon previews already use: iOS rounds an icon on a continuous arc at about
-                    // 22.4% of the edge, and a raw square beside the app's own name would not look
-                    // like the icon at all.
-                    //
-                    // The dark variant in dark mode, because that is the one the Home screen is
-                    // showing at the time.
-                    //
-                    // **Hand-maintained rather than generated.** A new icon changes six files
-                    // together: the three in the app icon set — `icon-light`, `icon-dark` and
-                    // `icon-tinted` — and the three About imagesets — `IconAppearanceLight`,
-                    // `IconAppearanceDark` and `IconAppearanceTinted`.
-                    Image(colorScheme == .dark ? "IconAppearanceDark" : "IconAppearanceLight")
-                        .resizable()
-                        .frame(width: 88, height: 88)
-                        .clipShape(RoundedRectangle(cornerRadius: 88 * 0.2237, style: .continuous))
+                    // The app icon itself, from the one Icon Composer document the app ships.
+                    // The same view is on the Welcome screen, so neither keeps a copy of the
+                    // artwork and the two cannot drift from what the device is showing.
+                    AppIconView(size: 88)
 
                     Text(AppIdentity.name)
                         .font(.title3.weight(.semibold))
@@ -95,6 +81,15 @@ struct AboutView: View {
                 if let url = Self.repositoryURL {
                     Link("Repository", destination: url)
                         .tint(.blue)
+                }
+
+                NavigationLink {
+                    AppIconLicenceView()
+                } label: {
+                    LabeledContent(
+                        "App Icon",
+                        value: "\(Attribution.iconTitle) · \(Attribution.iconProvider)"
+                    )
                 }
 
                 LabeledContent("App Licence", value: "All rights reserved")

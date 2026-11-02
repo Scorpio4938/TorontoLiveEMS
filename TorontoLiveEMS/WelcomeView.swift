@@ -1,9 +1,4 @@
 import SwiftUI
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 /// The one greeting a fresh install gets.
 ///
@@ -20,23 +15,13 @@ import AppKit
 struct WelcomeView: View {
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 32) {
                     VStack(spacing: 16) {
-                        Image(colorScheme == .dark ? "IconAppearanceDark" : "IconAppearanceLight")
-                            .resizable()
-                            .frame(width: 96, height: 96)
-                            .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: 96 * 0.2237,
-                                    style: .continuous
-                                )
-                            )
-                            .accessibilityHidden(true)
+                        AppIconView(size: 96)
 
                         Text("Welcome to \(AppIdentity.name)")
                             .font(.largeTitle.weight(.semibold))
