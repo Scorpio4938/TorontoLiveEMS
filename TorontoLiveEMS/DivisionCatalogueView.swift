@@ -16,9 +16,14 @@ import TorontoLiveEMSKit
 /// the Stations catalogue's, so each returns to the shape it was left in.
 struct DivisionCatalogueView: View {
 
+    private static let title = "Divisions"
+
     let policeFeed: PoliceCallFeed
 
     private var divisions: [PoliceDivision] { PoliceDivisions.bundled.divisions }
+
+    /// The way back while the map wears no bar. The swipe may work as well; this is the guarantee.
+    @Environment(\.dismiss) private var dismiss
 
     /// The last shape this catalogue was left in, from Settings' own store.
     @AppStorage(SettingsKey.divisionsCatalogueMode) private var mode: CatalogueMode = .list
@@ -41,12 +46,7 @@ struct DivisionCatalogueView: View {
                 map
             }
         }
-        .navigationTitle("Divisions")
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                CatalogueModeMenu(title: "Divisions", mode: $mode)
-            }
-        }
+        .catalogueChrome(title: Self.title, mode: $mode, onBack: { dismiss() })
         .onChange(of: mode) { _, newMode in
             if newMode == .list, let selected = selected {
                 scrollTarget = selected

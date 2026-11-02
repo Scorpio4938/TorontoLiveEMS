@@ -641,6 +641,14 @@ division — and it is deliberately the quietest part of the app.
   not a control in the shared trailing chrome: the Info/Settings capsule already
   occupies that corner on every page. Units have no map: a unit has no location of its
   own, and its station's coordinate is not the unit's.
+- **A catalogue's map wears the live map's chrome.** In list mode the catalogue keeps its bar and
+  the soft scroll edge under it, and its List/Map menu stays the bar's principal item. In map mode
+  the bar is hidden, because the tinted band above a map is the bar's own glass and no scroll-edge
+  setting removes it — those configure scroll views, and a map has none. The List/Map menu floats at
+  the top centre in the app's control capsule, and a floating back capsule takes the leading slot,
+  because hiding the bar can take the interactive swipe-back with it. Both use the height, radius
+  and material the live map's controls already use, so the map gains the app's existing floating
+  chrome rather than a third kind of it. The list branch is otherwise untouched.
 - **The marks are the live map's.** A station is a thirteen-point ring dot — the same
   neutral dot the live map uses, not a teardrop pin. A division is the area itself, and
   a tap inside it selects it. Nothing is tagged and the map's own selection is not used;

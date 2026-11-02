@@ -18,10 +18,15 @@ import TorontoLiveEMSKit
 /// catalogue returns to the map if that is where the reader left it; Divisions has its own choice.
 struct StationCatalogueView: View {
 
+    private static let title = "Stations"
+
     /// The shared fire feed, handed on to each station page so its unit rows can open unit pages.
     let feed: IncidentFeed
 
     private var stations: [FireStation] { FireStations.bundled.stations }
+
+    /// The way back while the map wears no bar. The swipe may work as well; this is the guarantee.
+    @Environment(\.dismiss) private var dismiss
 
     /// The last shape this catalogue was left in, from Settings' own store.
     @AppStorage(SettingsKey.stationsCatalogueMode) private var mode: CatalogueMode = .list
@@ -44,12 +49,7 @@ struct StationCatalogueView: View {
                 map
             }
         }
-        .navigationTitle("Stations")
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                CatalogueModeMenu(title: "Stations", mode: $mode)
-            }
-        }
+        .catalogueChrome(title: Self.title, mode: $mode, onBack: { dismiss() })
         .onChange(of: mode) { _, newMode in
             if newMode == .list, let selected = selected {
                 scrollTarget = selected

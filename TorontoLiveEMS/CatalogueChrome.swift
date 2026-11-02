@@ -1,0 +1,104 @@
+import SwiftUI
+
+/// The chrome a catalogue wears while its map is showing.
+///
+/// **The live map's arrangement, applied here.** A map under a navigation bar gets the bar's own
+/// glass as a tinted band, and no scroll-edge setting removes it — those configure scroll views, and
+/// a map has none. The live map's answer is to hide the bar and float its name and controls over the
+/// map, so the catalogue does the same: nothing above the map but the map.
+///
+/// **The menu is the one control that has to travel.** In list mode it is the bar's principal item,
+/// where its label reads as the catalogue's title. In map mode it floats at the top centre, in the
+/// same glass capsule the app's other controls wear (`HomeCapsule`, `ScreenControls`). It is a
+/// control, so it takes a control's surface; the live map's floating title is plain text precisely
+/// because a name is not one.
+///
+/// **The back control is the guarantee, not a decoration.** Hiding a navigation bar can take the
+/// interactive swipe-back with it, and a pushed catalogue must not become a map with no way home.
+/// The swipe may still work; this control is what makes the acceptance criterion true without
+/// depending on that. It shares the capsule's height and radius with everything else here.
+///
+/// **One rule for both catalogues.** `catalogueChrome` below is where the bar-versus-floating decision
+/// lives, so Stations and Divisions cannot come to wear their maps differently.
+struct CatalogueMapChrome: View {
+
+    let title: String
+
+    @Binding var mode: CatalogueMode
+
+    let onBack: () -> Void
+
+    var body: some View {
+        ZStack {
+            CatalogueModeMenu(title: title, mode: $mode)
+                .padding(.horizontal, 12)
+                .padding(.vertical, ScreenControls.verticalPadding)
+                .glassSurface(cornerRadius: ScreenControls.cornerRadius)
+
+            HStack {
+                CatalogueBackControl(action: onBack)
+                Spacer()
+            }
+        }
+        // The same band the shared controls are centred in, so the three floating pieces sit on one
+        // line rather than each finding its own height.
+        .frame(height: ScreenControls.bandHeight, alignment: .center)
+        .padding(.horizontal, 12)
+    }
+}
+
+/// The way back while the bar is hidden.
+///
+/// A capsule of its own rather than a bare chevron: it is a control over a map, and the app's other
+/// controls over a map are capsules. Its width is the smallest that gives the chevron a comfortable
+/// target without reading as a circle.
+private struct CatalogueBackControl: View {
+
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "chevron.left")
+                .font(.body)
+                .foregroundStyle(Color.primary)
+                .frame(width: 44)
+                .padding(.vertical, ScreenControls.verticalPadding)
+        }
+        // Plain: the glass capsule is the surface, so no second platform-drawn background appears
+        // behind it.
+        .buttonStyle(.plain)
+        .glassSurface(cornerRadius: ScreenControls.cornerRadius)
+        .accessibilityLabel("Back")
+    }
+}
+
+extension View {
+
+    /// A catalogue's chrome: its bar in list mode, its floating controls in map mode.
+    ///
+    /// **The map keeps the bar's furniture and loses the bar.** The title, the List/Map menu and the
+    /// way back are the bar's contents; hiding the bar is what removes the tinted band, so those
+    /// contents float instead of disappearing. The list branch is left exactly as it was, edge and
+    /// all — only its mode matters here, not its layout.
+    func catalogueChrome(
+        title: String,
+        mode: Binding<CatalogueMode>,
+        onBack: @escaping () -> Void
+    ) -> some View {
+        self
+            .navigationTitle(title)
+            // A map has no scroll view for the soft edge to treat, and the bar's own glass is the
+            // band. Hiding it is the only thing that removes the band, which the live map found.
+            .toolbar(mode.wrappedValue == .map ? .hidden : .visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    CatalogueModeMenu(title: title, mode: mode)
+                }
+            }
+            .overlay(alignment: .top) {
+                if mode.wrappedValue == .map {
+                    CatalogueMapChrome(title: title, mode: mode, onBack: onBack)
+                }
+            }
+    }
+}
