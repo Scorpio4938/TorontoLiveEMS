@@ -17,28 +17,22 @@ struct AppIconView: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    /// The icon's ground: the teal SVG Repo artwork sits on in the default appearance, and the navy
-    /// Icon Composer uses for dark. A slight gradient keeps it from reading as a flat swatch.
-    private var ground: LinearGradient {
-        if colorScheme == .dark {
-            let navy = Color(.sRGB, red: 0.036, green: 0.107, blue: 0.222, opacity: 1)
-            return LinearGradient(colors: [navy, navy], startPoint: .top, endPoint: .bottom)
-        }
-        return LinearGradient(
-            colors: [
-                Color(.sRGB, red: 0.36, green: 0.72, blue: 0.68, opacity: 1),
-                Color(.sRGB, red: 0.28, green: 0.64, blue: 0.60, opacity: 1),
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+    /// The icon's ground: the **solid red** the appearance declares, and the navy it uses for dark.
+    ///
+    /// Both are the document's own values rather than approximations of it, and it is a flat fill
+    /// here because it is one in the document — the earlier automatic gradient is gone, so a
+    /// gradient drawn here would be a second, different icon.
+    private var ground: Color {
+        colorScheme == .dark
+            ? Color(.sRGB, red: 0.03607, green: 0.10680, blue: 0.22221, opacity: 1)
+            : Color(.sRGB, red: 0.48901, green: 0.09399, blue: 0.13403, opacity: 1)
     }
 
-    /// The light mark is white; dark uses the teal the icon declares for its own dark appearance.
+    /// The light mark is the near-white the icon declares; dark is its red, which reads against navy.
     private var mark: Color {
         colorScheme == .dark
-            ? Color(.sRGB, red: 0.315, green: 0.687, blue: 0.643, opacity: 1)
-            : .white
+            ? Color(.sRGB, red: 0.49622, green: 0.09080, blue: 0.12942, opacity: 1)
+            : Color(.sRGB, red: 0.95000, green: 0.95000, blue: 0.95000, opacity: 1)
     }
 
     var body: some View {
