@@ -298,3 +298,26 @@ struct ScreenControls: View {
             .combined(with: .opacity)
     }
 }
+
+extension View {
+
+    /// Adds the app's control band to a map's safe area, on the platform that has one.
+    ///
+    /// **Not `safeAreaInset`.** That inserts a view and resizes the map, which shifted the frame
+    /// between a `MapReader` and its tap gesture and made pins hard to tap. This pads the safe area
+    /// the platform lays its own controls inside, leaving the frame and the tap space alone. The
+    /// padded origin still differs from the reader's, which is why every tap path converts in
+    /// `.global`.
+    ///
+    /// Shared because two maps now sit under the floating chrome: the live map, and a catalogue's
+    /// map. iOS only — elsewhere the controls live in the window toolbar and no capsule floats over
+    /// the map.
+    @ViewBuilder
+    func mapCompassPadding() -> some View {
+        #if os(iOS)
+        safeAreaPadding(.top, ScreenControls.bandHeight)
+        #else
+        self
+        #endif
+    }
+}

@@ -812,23 +812,6 @@ struct MapInformationContent: View {
     }
 }
 
-private extension View {
-    /// Adds the app's control band to the map's safe area, on the platform that has one.
-    ///
-    /// Unlike `safeAreaInset`, this does not insert a view or resize the map: it pads the safe area
-    /// the platform lays its controls inside, which is the part the compass is placed by. The padded
-    /// origin still differs from the reader's, so the tap path converts in `.global`. iOS only —
-    /// elsewhere the controls live in the window toolbar and no capsule floats over the map.
-    @ViewBuilder
-    func mapCompassPadding() -> some View {
-        #if os(iOS)
-        safeAreaPadding(.top, ScreenControls.bandHeight)
-        #else
-        self
-        #endif
-    }
-}
-
 /// The same screen, presented rather than pushed, for the reason the fire one is: a sheet needs a way
 /// out of its own, and a pushed screen takes it from the navigation bar.
 struct MapInformationView: View {

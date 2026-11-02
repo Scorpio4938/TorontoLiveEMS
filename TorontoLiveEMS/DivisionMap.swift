@@ -142,6 +142,9 @@ struct DivisionCatalogueMap: View {
                 }
             }
             .mapStyle(mapKind.style)
+            // The bar is gone in map mode, so the map runs to the top edge; keep the platform's
+            // compass out of the floating chrome's band. Same rule as the live map.
+            .mapCompassPadding()
             .onTapGesture(coordinateSpace: .global) { point in
                 selected = division(at: point, in: proxy)?.number
             }

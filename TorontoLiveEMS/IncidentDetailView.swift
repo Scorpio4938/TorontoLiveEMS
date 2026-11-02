@@ -96,12 +96,17 @@ struct IncidentDetailView: View {
                     LabeledContent("Dispatched Units", value: NotProvided.mark)
                 } else {
                     // Each unit already carries its published code as the label, so the
-                    // raw roster needs no section of its own.
+                    // raw roster needs no section of its own. The row is now the way into the
+                    // unit page, with the published code still the label.
                     ForEach(units, id: \.code) { unit in
-                        LabeledContent {
-                            Text(unit.display)
+                        NavigationLink {
+                            unitDestination(for: unit)
                         } label: {
-                            Text(unit.code)
+                            LabeledContent {
+                                Text(unit.display)
+                            } label: {
+                                Text(unit.code)
+                            }
                         }
                     }
                 }
@@ -119,5 +124,22 @@ struct IncidentDetailView: View {
         }
         .navigationTitle(incident.incidentNumber)
         .softScrollEdge()
+    }
+
+    /// The page a roster row opens.
+    ///
+    /// **The published code is the link, and the catalogue decides where it leads.** The feed names a
+    /// code; `FireUnits` is the app's roster and knows whether that code has a unit page. A known code
+    /// opens the same `UnitPage` a station page's rows open — including a station-less code such as
+    /// `C23`, whose page shows no station. A code the catalogue does not hold opens a page that says
+    /// so, because a row that silently did nothing would look broken and a disabled row would hide
+    /// the fact the feed published.
+    @ViewBuilder
+    private func unitDestination(for unit: DispatchedUnit) -> some View {
+        if let catalogued = FireUnits.bundled.unit(code: unit.code) {
+            UnitPage(unit: catalogued, feed: feed)
+        } else {
+            UncataloguedUnitPage(unit: unit)
+        }
     }
 }
