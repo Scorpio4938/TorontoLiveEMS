@@ -276,8 +276,8 @@ build configurations name it `TLEIcon`.
 which draws the icon's single display mark from the asset catalogue over the ground and glyph colour
 its Icon Composer appearances declare. The old app icon set and three `IconAppearance*` imagesets are
 gone; the screens read one shared mark, which is what made "which one is the real one" a question
-when the generated PNGs and the About copies could drift. The source is credited on *Data Licences*
-and linked from *About*, although SVG Repo's default licence asks for no attribution.
+when the generated PNGs and the About copies could drift. The source is credited on *Data Licences*,
+which *About* opens, although SVG Repo's default licence asks for no attribution.
 
 **Why the screens do not ask for the app icon itself.** On iOS an Icon Composer app icon resolves to
 a special rendition rather than a general-purpose image: `UIImage(named:)` for it raises *"Need an
@@ -404,7 +404,7 @@ is being described. "Fire division" remains a phrase this project does not use.
   declares. It is clipped on the same continuous corner the system uses — about 22.4% of the edge.
   The compiled app icon cannot be read as an image on iOS (`UIImage(named:)` raises *"Need an
   imageRef"*), so the mark is exported once rather than asked for twice. The original artwork is
-  credited on *Data Licences* and linked from *About*.
+  credited on *Data Licences*, and *About*'s App Icon row opens that page.
 - **The source repository is linked, and the row marks the day it became public.**
   `github.com/Scorpio4938/TorontoLiveEMS` used to answer **404** to anyone not signed in as its
   owner, so it was left out rather than offered as a dead link. It now answers **200**, and

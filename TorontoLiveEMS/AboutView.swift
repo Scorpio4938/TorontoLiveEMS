@@ -83,14 +83,13 @@ struct AboutView: View {
                         .tint(.blue)
                 }
 
-                if let url = Attribution.iconSourceURL {
-                    Link(destination: url) {
-                        LabeledContent(
-                            "App Icon",
-                            value: "\(Attribution.iconTitle) · \(Attribution.iconProvider)"
-                        )
-                    }
-                    .tint(.blue)
+                NavigationLink {
+                    AppIconLicenceView()
+                } label: {
+                    LabeledContent(
+                        "App Icon",
+                        value: "\(Attribution.iconTitle) · \(Attribution.iconProvider)"
+                    )
                 }
 
                 LabeledContent("App Licence", value: "All rights reserved")
