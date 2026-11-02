@@ -134,10 +134,6 @@ struct IncidentDetailView: View {
                 // from whichever of them the feed did publish — see `IncidentLocation`.
                 IncidentLocationMap(incident: incident, geocoder: geocoder)
 
-                if let destination = appleMapsDestination {
-                    OpenInAppleMapsRow(destination: destination)
-                }
-
                 if canShowOnMapPage {
                     ShowOnMapPageRow {
                         showOnMapPage(MapFocusRequest(
@@ -145,6 +141,10 @@ struct IncidentDetailView: View {
                             resolvedPoint: resolvedPoint
                         ))
                     }
+                }
+
+                if let destination = appleMapsDestination {
+                    OpenInAppleMapsRow(destination: destination)
                 }
             } header: {
                 Text("Location")

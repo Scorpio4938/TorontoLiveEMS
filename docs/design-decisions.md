@@ -573,17 +573,18 @@ is being described. "Fire division" remains a phrase this project does not use.
 - **Unknown incident types and undecodable unit codes surface here** as raw
   strings, so nothing is silently relabelled.
 - **A place can be handed to Apple Maps, and only a place.** The fire incident and police call
-  details put a plain *Open in Apple Maps* row under the map. It uses `MKMapItem` with the
-  modern location initializer and sets the map item's `name` to the address the screen shows;
-  `MKPlacemark` is deprecated at iOS 26, and the replacement's postal-address field is the wrong
-  shape for the City's intersections and street names. So Maps arrives at a named place rather
-  than an anonymous coordinate; a bare `maps.apple.com` link would not carry the name. The fire
-  row is absent when there is no point: a postal area, an unpublished location, or a geocode that
-  did not resolve. The police row always has a point, because the Service publishes one; when it
-  publishes no intersection, the pin is named with the call type. Both rows appear only on those
-  two details: a station, a division and a catalogue have no single place to hand over.
-- **A record can also stay inside the app on the map page.** The same two details put a second
-  plain row, *Show on the Map Page*, under the Apple Maps row. The jump resets the map filter to
+  details put a plain *Open in Apple Maps* row below the map, under the Show on the Map Page
+  row. It uses `MKMapItem` with the modern location initializer and sets the map item's `name`
+  to the address the screen shows; `MKPlacemark` is deprecated at iOS 26, and the replacement's
+  postal-address field is the wrong shape for the City's intersections and street names. So Maps
+  arrives at a named place rather than an anonymous coordinate; a bare `maps.apple.com` link would
+  not carry the name. The fire row is absent when there is no point: a postal area, an
+  unpublished location, or a geocode that did not resolve. The police row always has a
+  point, because the Service publishes one; when it publishes no intersection, the pin is
+  named with the call type. Both rows appear only on those two details: a station, a
+  division and a catalogue have no single place to hand over.
+- **A record can also stay inside the app on the map page.** The same two details put a plain
+  row, *Show on the Map Page*, above the Apple Maps row. The jump resets the map filter to
   both feeds, clears any map detail, and hands the map a request with a fresh id. A fire detail
   carries the point it has already resolved, so the target can be drawn and framed without
   waiting for a second geocode; a postal area carries no point and uses its published shape. The

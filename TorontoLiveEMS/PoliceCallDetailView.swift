@@ -84,11 +84,11 @@ struct PoliceCallDetailView: View {
                 // does it. The map is a place, not a field.
                 LocationMap(coordinate: coordinate)
 
-                OpenInAppleMapsRow(destination: call.appleMapsDestination)
-
                 ShowOnMapPageRow {
                     showOnMapPage(MapFocusRequest(route: .police(call)))
                 }
+
+                OpenInAppleMapsRow(destination: call.appleMapsDestination)
             } header: {
                 Text("Location")
             } footer: {
