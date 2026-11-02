@@ -29,6 +29,18 @@ exists to prevent.
 **The commit is the one the tag points at** — `git rev-parse <tag>^{commit}` — not necessarily the
 commit that bumped the number. Where those differ, the tag is what a version means.
 
+## v0.0.22
+
+`9036957`
+
+- The first launch is greeted once by a full-height welcome; dismissing it with Continue or a swipe writes the marketing version · `5a8ed3e` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- WelcomeBehaviour decides welcome, notice or nothing, with package tests for all four cases · `5a8ed3e` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- About takes its name and version from AppIdentity, the source the welcome uses · `5a8ed3e` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- Settings → About can show the welcome again · `632bf20` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- The welcome fills the sheet at the large detent on an opaque page background · `907869d` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- The earlier medium welcome is kept as the Easter Egg from Settings → About · `01bcc46` · [#33](https://github.com/Scorpio4938/TorontoLiveEMS/issues/33)
+- Appearance is a choice of System, Light or Dark, and every sheet follows it · `f675528`
+
 ## v0.0.21
 
 `6f8b643`
