@@ -71,7 +71,7 @@ build does not rescan; only reopening does.
 ```
 TorontoLiveEMS/       the app — views, and the table's measurements
 TorontoLiveEMSKit/    the data logic, as a local package, and the tests
-scripts/              the checks, the icon, the postal shapes, the version rule
+scripts/              the checks, the reference data, the postal shapes, the version rule
 docs/                 the decisions
 ```
 
