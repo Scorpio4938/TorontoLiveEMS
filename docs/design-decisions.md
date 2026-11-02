@@ -242,28 +242,8 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
   the accessibility layout turns the table into, so at those sizes cards simply get
   bigger. The layout in #9 governs the table only.
 
-## The app icon
+## Colour
 
-- **An emergency light bar, not a flame.** Two marks were tried and rejected first. A small
-  table with one cell marked was the product and its colour rule, and it had too many parts. A
-  flame said *fire*, and the app reports the *response* to a fire rather than fire itself. A
-  light bar is the thing arriving, which is what the feed actually carries, and it is what a
-  fire truck shows: red, white, red.
-- **Nothing smaller than it looks.** At 29pt — Settings, Spotlight — the whole mark is twenty
-  points tall. Three large lenses survive that; the beacon alternative's rays come out under a
-  point thick and do not.
-- **Each appearance gets a housing that reads against its own ground.** A dark bar on a dark
-  ground measured 1.2:1 in the tinted appearance — present in the geometry, invisible in the
-  picture. The tinted housing is *lighter* than its ground, the opposite of the other two,
-  because in tinted the lenses are the brightest thing in the frame either way.
-- **Red, because the app is about fire response.** The lens is a brighter red than the ground,
-  because on a red icon a red light has to be the brighter red or it is not a light.
-- **Generated, not drawn.** `scripts/make_app_icon.py` writes the three appearance files, and
-  `--compare` writes every candidate. There is no image editor here, so the mark is a number
-  rather than an export from a tool nobody else has.
-- **Flat, opaque, square, and nothing else.** No transparency, no rounded corners, no shadow,
-  no attempt at glass. The platform applies the mask, the shadow and the Liquid Glass
-  treatment — rule 17 of `docs/design-grammar.md` applied to the icon.
 - **Links are blue, wherever they appear.** Links take the accent, which is correct — it is what
   an accent is for, and Apple Music does exactly the same with its red one. But red also means
   error and destructive, so a licence notice or the City's page drawn in it reads as a warning
@@ -284,26 +264,20 @@ lasting architectural consequences live in `docs/adr/`. Vocabulary lives in
 - **One consequence, decided rather than overlooked:** the table's marked cells are red now instead
   of orange. Orange means ordinary on a map, and the same orange meaning "urgent" on one screen
   and "ordinary" on another is the drift this whole change exists to end.
-- **The installed icon is flat, and that is a limit of the format, not of the artwork.** A PNG
-  is one layer, so there is nothing for a glass treatment to refract between. A glassy icon is
-  not a PNG we can draw: it is an assembly, and Apple's tool for it is **Icon Composer**, which
-  ships with Xcode, takes the artwork as *separate layers*, applies the glass, and generates the
-  appearance variants from them.
-- **The layers are in `design/icon-layers/`**, written by `scripts/make_app_icon.py --layers`
-  as SVG, bottom to top: ground, housing, dome, rays. The dome and the rays are the ones to
-  give a glass material. The ground and the housing stay flat, and the contrast between a flat
-  ground and a raised light is the whole effect — which is what Apple's own icons do with a map
-  and a pin. The dome is drawn translucent and pale for that reason: opaque red is paint, and
-  paint gives a glass material nothing to do.
-- **The flat PNGs stay in the asset catalogue regardless.** They are what the app ships with
-  today, they get the platform's own treatment, and the app is never without an icon while the
-  Icon Composer assembly is somebody's afternoon rather than a build step.
 
-- **The shape is verified by measuring it.** Nothing in this repository can look at it, so the
-  numbers are the check: partly-counted shapes, contrast between each part and the thing it
-  sits on, and the size of every part at the sizes iOS draws. Two of the three revisions here
-  came from a measurement rather than from a decision — the invisible housing, and the rays
-  that would not survive 29pt.
+## The app icon
+
+**Replaced pending.** The icon is being drawn by hand in Icon Composer, so the old one has been
+removed rather than left beside it as a second candidate. The `AppIcon` set with its three appearance
+images, the three `IconAppearance*` imagesets, `scripts/make_app_icon.py`, and the
+`design/icon-layers/` sources it wrote are all gone. Nothing in the repository is the app's icon
+until the new one is added by hand.
+
+About and Welcome still name the deleted imagesets in this phase, so they render no artwork; phase
+two points both at the new icon. The new icon is the single source: neither screen keeps a second
+copy of the artwork, which is what made "which one is the real one" a question. The previous icon's
+rationale — the light bar, the generated PNGs, the six hand-maintained files — went with those files
+and is not a description of what will replace them.
 
 ## Where an incident is
 
@@ -419,18 +393,17 @@ is being described. "Fire division" remains a phrase this project does not use.
   *Sources*, each row labelled with its publisher; the repository row says it is this app's source.
   An About screen is about *this* app, so a row that opened somebody else's page without saying so
   would be a mistake the reader has no way to avoid making.
-- **The icon is the artwork the Home screen uses**, from the imagesets the icon previews already
-  load, clipped on the same continuous corner the system uses — about 22.4% of the edge — and the
-  dark variant in dark mode, because that is the one the Home screen is showing at the time. No
-  `UIImage(named: "AppIcon")`, which is a trick the documentation does not promise.
+- **The icon is being replaced, and *About* will show the new one.** Until phase two it still reads
+  the deleted `IconAppearance*` imagesets and draws nothing. The new icon will be clipped on the same
+  continuous corner the system uses — about 22.4% of the edge — and shown in the appearance the
+  screen is in. No `UIImage(named: "AppIcon")`, which is a trick the documentation does not promise.
 - **The source repository is linked, and the row marks the day it became public.**
   `github.com/Scorpio4938/TorontoLiveEMS` used to answer **404** to anyone not signed in as its
   owner, so it was left out rather than offered as a dead link. It now answers **200**, and
   *About* carries it under *This app*.
-- **The icon artwork is hand-maintained rather than generated.** A new icon changes six files
-  together: `icon-light`, `icon-dark` and `icon-tinted` in the app icon set, and
-  `IconAppearanceLight`, `IconAppearanceDark` and `IconAppearanceTinted` in the imagesets *About*
-  uses.
+- **One icon, not six files.** The old arrangement — three images in the app icon set and three
+  `IconAppearance*` imagesets — is gone with those files. Phase two has *About* and *Welcome* read
+  the app icon itself, so there is no second copy to drift from it.
 - **Everything on *About* is read rather than typed**: the name and version from the bundle, the
   artwork from the asset catalogue, both publishers' pages from the package. The app sets no
   `CFBundleDisplayName`, so its name there is the target's — `TorontoLiveEMS`, without the spaces
