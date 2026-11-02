@@ -179,21 +179,22 @@ struct UnitPage: View {
 /// no station, no live section that would imply the code is understood.
 struct UncataloguedUnitPage: View {
 
-    /// The code exactly as the feed published it for the incident.
-    let code: String
+    /// The unit as the incident published it, so the page names the code the feed sent rather than a
+    /// reconstruction of it.
+    let unit: DispatchedUnit
 
     var body: some View {
         ContentUnavailableView(
-            "\(code) is not in the catalogue",
+            "\(unit.code) is not in the catalogue",
             systemImage: "questionmark.circle",
-            description: Text("The City published this code as a dispatched unit, but this app's unit catalogue has no entry for it. The catalogue may be out of date; nothing here is guessed.")
+            description: Text("The City published the code \(unit.code) as a dispatched unit, but this app's unit catalogue has no entry for it. Every unit in service should be in the catalogue, so this page means the catalogue is out of date.")
         )
-        .navigationTitle(code)
+        .navigationTitle(unit.code)
     }
 }
 
 #Preview("Unit — not in the catalogue") {
     NavigationStack {
-        UncataloguedUnitPage(code: "X999")
+        UncataloguedUnitPage(unit: DispatchedUnit(code: "X999"))
     }
 }

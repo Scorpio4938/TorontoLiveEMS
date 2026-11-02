@@ -139,7 +139,7 @@ struct IncidentDetailView: View {
         if let catalogued = FireUnits.bundled.unit(code: unit.code) {
             UnitPage(unit: catalogued, feed: feed)
         } else {
-            UncataloguedUnitPage(code: unit.code)
+            UncataloguedUnitPage(unit: unit)
         }
     }
 }
