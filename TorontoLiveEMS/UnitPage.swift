@@ -170,3 +170,30 @@ struct UnitPage: View {
         )
     }
 }
+
+/// The safety net for a code the catalogue does not hold.
+///
+/// **A state, not a crash and not a dead row.** Every unit in service should be in the app's roster,
+/// so meeting this page means the roster is out of date rather than that the feed is wrong. It says
+/// what the City published and what the app does not know, and it guesses nothing: no apparatus name,
+/// no station, no live section that would imply the code is understood.
+struct UncataloguedUnitPage: View {
+
+    /// The code exactly as the feed published it for the incident.
+    let code: String
+
+    var body: some View {
+        ContentUnavailableView(
+            "\(code) is not in the catalogue",
+            systemImage: "questionmark.circle",
+            description: Text("The City published this code as a dispatched unit, but this app's unit catalogue has no entry for it. The catalogue may be out of date; nothing here is guessed.")
+        )
+        .navigationTitle(code)
+    }
+}
+
+#Preview("Unit — not in the catalogue") {
+    NavigationStack {
+        UncataloguedUnitPage(code: "X999")
+    }
+}

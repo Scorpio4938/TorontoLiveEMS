@@ -675,6 +675,12 @@ division — and it is deliberately the quietest part of the app.
   content: Wikipedia has no individual division pages. Text is CC BY-SA 4.0; every image
   keeps its own author and licence, shown under the image and linked to the Commons file.
   The citation names the page, licence and retrieval date.
+- **An incident's roster opens unit pages.** Each dispatched unit is a link, resolved by the
+  published code through `FireUnits`; a station-less code such as `C23` behaves like any other and
+  opens its page with no station row. A code the catalogue does not hold opens a page saying so and
+  showing the code as published, rather than a dead row or a guessed page: every unit in service
+  should be in the roster, so that page means the roster is out of date. The row keeps the published
+  code as its label and the decoded apparatus as its value; the link is the only change.
 - **The live lists are the main pages' cards, with the fields they have.** A
   division's *Calls Now* row and a unit's *Dispatched Now* row use `CompactCardRow`:
   the location is the main line, the incident or call type sits opposite it, and the
