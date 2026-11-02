@@ -20,17 +20,6 @@ public enum IncidentPlacementCheck {
     /// why the measurement is written down rather than the number alone.
     public static let thresholdMetres: Double = 10_000
 
-    /// One coordinate, in degrees.
-    public struct Coordinate {
-        public let latitude: Double
-        public let longitude: Double
-
-        public init(latitude: Double, longitude: Double) {
-            self.latitude = latitude
-            self.longitude = longitude
-        }
-    }
-
     /// Whether the incident's point and its Area's station are far enough apart to warn.
     ///
     /// **Silence is the default.** A postal area is an extent, never a point. A street-name

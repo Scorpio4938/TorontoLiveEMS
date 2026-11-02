@@ -81,6 +81,8 @@ struct PoliceCallDetailView: View {
                 // A row of its own rather than inside the rows above, the way the fire detail view
                 // does it. The map is a place, not a field.
                 LocationMap(coordinate: coordinate)
+
+                OpenInAppleMapsRow(destination: call.appleMapsDestination)
             } header: {
                 Text("Location")
             } footer: {

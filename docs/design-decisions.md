@@ -572,6 +572,16 @@ is being described. "Fire division" remains a phrase this project does not use.
   values from the section footers rather than as footnotes under a table.
 - **Unknown incident types and undecodable unit codes surface here** as raw
   strings, so nothing is silently relabelled.
+- **A place can be handed to Apple Maps, and only a place.** The fire incident and police call
+  details put a plain *Open in Apple Maps* row under the map. It uses `MKMapItem` with the
+  modern location initializer and sets the map item's `name` to the address the screen shows;
+  `MKPlacemark` is deprecated at iOS 26, and the replacement's postal-address field is the wrong
+  shape for the City's intersections and street names. So Maps arrives at a named place rather
+  than an anonymous coordinate; a bare `maps.apple.com` link would not carry the name. The fire
+  row is absent when there is no point: a postal area, an unpublished location, or a geocode that
+  did not resolve. The police row always has a point, because the Service publishes one; when it
+  publishes no intersection, the pin is named with the call type. Both rows appear only on those
+  two details: a station, a division and a catalogue have no single place to hand over.
 
 ## The reference section
 

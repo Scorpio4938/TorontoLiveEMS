@@ -53,23 +53,35 @@ struct IncidentDetailView: View {
         IncidentLocation.from(incident)
     }
 
+    /// The point the geocoder has placed, in the package's coordinate type.
+    ///
+    /// `nil` while the lookup is pending, when it failed, and when the City published an area
+    /// rather than a place. The Apple Maps row below the map reads the same point the map draws.
+    private var resolvedPoint: Coordinate? {
+        geocoder.known(location).map {
+            Coordinate(
+                latitude: $0.latitude,
+                longitude: $0.longitude
+            )
+        }
+    }
+
     /// Whether the point the app resolved is impossibly far from the station the Area names.
     ///
     /// A postal area is not a point, an unknown Area names no station, and a pending or failed
     /// geocode has no point. The package decides all of those; this view only supplies the point
     /// and the station it already has.
     private var placementMayBeOff: Bool {
-        let resolved = geocoder.known(location)
-        return IncidentPlacementCheck.shouldWarn(
+        IncidentPlacementCheck.shouldWarn(
             location: location,
-            resolvedPoint: resolved.map {
-                IncidentPlacementCheck.Coordinate(
-                    latitude: $0.latitude,
-                    longitude: $0.longitude
-                )
-            },
+            resolvedPoint: resolvedPoint,
             station: stationForArea
         )
+    }
+
+    /// The place the Apple Maps row hands over, or `nil` when there is nothing to open.
+    private var appleMapsDestination: AppleMapsDestination? {
+        incident.appleMapsDestination(location: location, resolvedPoint: resolvedPoint)
     }
 
     var body: some View {
@@ -107,6 +119,10 @@ struct IncidentDetailView: View {
                 // A row of its own rather than inside one of the two above, because it is drawn
                 // from whichever of them the feed did publish — see `IncidentLocation`.
                 IncidentLocationMap(incident: incident, geocoder: geocoder)
+
+                if let destination = appleMapsDestination {
+                    OpenInAppleMapsRow(destination: destination)
+                }
             } header: {
                 Text("Location")
             } footer: {

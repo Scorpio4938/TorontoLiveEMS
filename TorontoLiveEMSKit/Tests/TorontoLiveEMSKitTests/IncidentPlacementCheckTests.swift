@@ -15,8 +15,8 @@ struct IncidentPlacementCheckTests {
     private func point(
         northOf station: FireStation,
         metres: Double
-    ) -> IncidentPlacementCheck.Coordinate {
-        IncidentPlacementCheck.Coordinate(
+    ) -> Coordinate {
+        Coordinate(
             latitude: station.coordinate.latitude + metres / metresPerDegreeLatitude,
             longitude: station.coordinate.longitude
         )
@@ -28,11 +28,11 @@ struct IncidentPlacementCheckTests {
     private func point(
         eastOf station: FireStation,
         metres: Double
-    ) -> IncidentPlacementCheck.Coordinate {
+    ) -> Coordinate {
         let latitude = station.coordinate.latitude
         let degrees = metres
             / (metresPerDegreeLatitude * cos(latitude * .pi / 180))
-        return IncidentPlacementCheck.Coordinate(
+        return Coordinate(
             latitude: latitude,
             longitude: station.coordinate.longitude + degrees
         )
