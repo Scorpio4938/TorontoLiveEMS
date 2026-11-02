@@ -29,23 +29,6 @@ enum AppIdentity {
             ?? "unknown"
     }
 
-    /// The name Xcode gives the app icon in the bundle.
-    ///
-    /// **Read rather than typed.** The Icon Composer document is called `TLEIcon.icon`, and Xcode
-    /// records the primary icon's name in `CFBundleIconName`; reading it means the view that shows
-    /// the icon and the build setting that names it cannot disagree. The literal is only a fallback
-    /// for a bundle whose Info.plist carries neither entry.
-    static var iconName: String {
-        if let icons = Bundle.main.object(forInfoDictionaryKey: "CFBundleIcons") as? [String: Any],
-            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
-            let name = primary["CFBundleIconName"] as? String
-        {
-            return name
-        }
-        return Bundle.main.object(forInfoDictionaryKey: "CFBundleIconName") as? String
-            ?? "TLEIcon"
-    }
-
     /// The build number, which stays at 1 until the app is distributed.
     static var build: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String

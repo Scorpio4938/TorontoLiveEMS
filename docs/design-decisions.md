@@ -272,17 +272,18 @@ Repo's *Light Emergency* (Dazzle Line Icons), recoloured, and composed with its 
 light, dark and tinted appearances there. Xcode builds that one document as the app icon, and both
 build configurations name it `TLEIcon`.
 
-**Nothing keeps a second copy.** *About* and *Welcome* show the app icon through one shared
-`AppIconView`: macOS reads `applicationIconImage`, iOS reads the icon by the name the bundle records
-in `CFBundleIconName` (falling back to the document's name only if the bundle is silent). Neither
-screen has an artwork asset of its own — the old app icon set and
-three `IconAppearance*` imagesets are gone — which is what made "which one is the real one" a
-question when the generated PNGs and the About copies could drift. The source is credited on *Data
-Licences* and linked from *About*, although SVG Repo's default licence asks for no attribution.
+**Nothing keeps a second copy per screen.** *About* and *Welcome* both show one shared `AppIconView`,
+which draws the icon's single display mark from the asset catalogue over the ground and glyph colour
+its Icon Composer appearances declare. The old app icon set and three `IconAppearance*` imagesets are
+gone; the screens read one shared mark, which is what made "which one is the real one" a question
+when the generated PNGs and the About copies could drift. The source is credited on *Data Licences*
+and linked from *About*, although SVG Repo's default licence asks for no attribution.
 
-**Why not a catalog copy.** App-icon and Icon Composer names can resolve to special renditions on
-iOS rather than general-purpose images, so a display copy would be a second thing to keep true. The
-one document is the one source.
+**Why the screens do not ask for the app icon itself.** On iOS an Icon Composer app icon resolves to
+a special rendition rather than a general-purpose image: `UIImage(named:)` for it raises *"Need an
+imageRef"* before returning. The app icon is still the one Icon Composer document; the display mark
+is that document's own layer exported once, so the screens can show it without a second kind of
+artwork being drawn.
 
 ## Where an incident is
 
@@ -398,18 +399,19 @@ is being described. "Fire division" remains a phrase this project does not use.
   *Sources*, each row labelled with its publisher; the repository row says it is this app's source.
   An About screen is about *this* app, so a row that opened somebody else's page without saying so
   would be a mistake the reader has no way to avoid making.
-- **The icon is the app icon itself, not a copy.** *About* and *Welcome* both show the shared
-  `AppIconView`, which reads the icon the bundle ships: `applicationIconImage` on macOS, the
-  `CFBundleIconName` entry on iOS. It is clipped on the same continuous corner the system uses —
-  about 22.4% of the edge. The original artwork is credited on *Data Licences* and linked from
-  *About*.
+- **The icon is one mark, shared by both screens.** *About* and *Welcome* show the same
+  `AppIconView`, which draws the Icon Composer layer over the ground and glyph colours the document
+  declares. It is clipped on the same continuous corner the system uses — about 22.4% of the edge.
+  The compiled app icon cannot be read as an image on iOS (`UIImage(named:)` raises *"Need an
+  imageRef"*), so the mark is exported once rather than asked for twice. The original artwork is
+  credited on *Data Licences* and linked from *About*.
 - **The source repository is linked, and the row marks the day it became public.**
   `github.com/Scorpio4938/TorontoLiveEMS` used to answer **404** to anyone not signed in as its
   owner, so it was left out rather than offered as a dead link. It now answers **200**, and
   *About* carries it under *This app*.
 - **One icon, not six files.** The old app icon set and the three `IconAppearance*` imagesets are
-  gone. The Icon Composer document is the only artwork the app ships, and no screen keeps a copy of
-  it.
+  gone. The Icon Composer document is the app icon, and its layer is the one display mark both
+  screens share.
 - **Everything on *About* is read rather than typed**: the name, version and icon from the bundle,
   both publishers' pages from the package. The repository address and the icon's source are the typed
   constants, because no publisher carries either. The app sets no

@@ -15,9 +15,9 @@ import TorontoLiveEMSKit
 /// The City's page and the Service's page sit under *Sources*, each row labelled with its publisher;
 /// the repository row is labelled as this app's own source.
 ///
-/// **Everything here is read rather than typed**: the name, version and icon through `AppIdentity`
-/// and the bundle, both publishers' pages from the package. The repository address and the icon's
-/// original artwork are constants because no publisher carries them.
+/// **Everything here is read rather than typed**: the name and version through `AppIdentity`, the
+/// icon mark from the asset catalogue, both publishers' pages from the package. The repository
+/// address and the icon's original artwork are constants because no publisher carries them.
 struct AboutView: View {
 
     var body: some View {
