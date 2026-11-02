@@ -648,7 +648,10 @@ division — and it is deliberately the quietest part of the app.
   the top centre in the app's control capsule, and a floating back capsule takes the leading slot,
   because hiding the bar can take the interactive swipe-back with it. Both use the height, radius
   and material the live map's controls already use, so the map gains the app's existing floating
-  chrome rather than a third kind of it. The list branch is otherwise untouched.
+  chrome rather than a third kind of it. The map's safe area gains the same control band the live
+  map's does, so the platform's compass lands below the floating chrome. iOS only: on the other
+  platforms the window toolbar stays, because hiding it there would take the app's controls away
+  rather than a tinted band. The list branch is otherwise untouched.
 - **The marks are the live map's.** A station is a thirteen-point ring dot — the same
   neutral dot the live map uses, not a teardrop pin. A division is the area itself, and
   a tap inside it selects it. Nothing is tagged and the map's own selection is not used;

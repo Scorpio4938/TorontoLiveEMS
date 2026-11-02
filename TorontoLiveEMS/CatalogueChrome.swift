@@ -87,18 +87,41 @@ extension View {
     ) -> some View {
         self
             .navigationTitle(title)
-            // A map has no scroll view for the soft edge to treat, and the bar's own glass is the
-            // band. Hiding it is the only thing that removes the band, which the live map found.
-            .toolbar(mode.wrappedValue == .map ? .hidden : .visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     CatalogueModeMenu(title: title, mode: mode)
                 }
             }
+            .catalogueMapBar(title: title, mode: mode, onBack: onBack)
+    }
+}
+
+private extension View {
+
+    /// Hides the bar over a catalogue's map and floats its furniture instead.
+    ///
+    /// iOS only. Elsewhere the controls live in the window toolbar: hiding the bar there would take
+    /// the app's own controls away rather than a tinted band, and no capsule floats over the map to
+    /// replace them. The live map keeps its `barControls` for the same reason.
+    @ViewBuilder
+    func catalogueMapBar(
+        title: String,
+        mode: Binding<CatalogueMode>,
+        onBack: @escaping () -> Void
+    ) -> some View {
+        #if os(iOS)
+        // A map has no scroll view for the soft edge to treat, and the bar's own glass is the band.
+        // Hiding it is the only thing that removes the band, which the live map found.
+        let isMap = mode.wrappedValue == .map
+        self
+            .toolbar(isMap ? .hidden : .visible, for: .navigationBar)
             .overlay(alignment: .top) {
-                if mode.wrappedValue == .map {
+                if isMap {
                     CatalogueMapChrome(title: title, mode: mode, onBack: onBack)
                 }
             }
+        #else
+        self
+        #endif
     }
 }
