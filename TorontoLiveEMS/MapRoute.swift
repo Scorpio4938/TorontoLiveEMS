@@ -1,3 +1,4 @@
+import Foundation
 import TorontoLiveEMSKit
 
 /// Which feed a presented map detail explains.
@@ -21,5 +22,27 @@ enum MapRoute: Hashable {
         case .fire: return .fire
         case .police: return .police
         }
+    }
+}
+
+/// A request to show one record on the map page.
+///
+/// **The id is the point.** The same incident or call can be asked for twice, and a value that
+/// compares equal to the last request would not change anything. A fresh id makes every tap a new
+/// request while the map keeps the route it is showing.
+struct MapFocusRequest: Equatable {
+    let id: UUID
+    let route: MapRoute
+
+    /// The point the detail already resolved, when it has one.
+    ///
+    /// A fire incident's place is often a street the detail has just geocoded. Carrying that point
+    /// lets the map draw and frame the target immediately instead of waiting for its own geocode.
+    let resolvedPoint: Coordinate?
+
+    init(route: MapRoute, resolvedPoint: Coordinate? = nil) {
+        self.id = UUID()
+        self.route = route
+        self.resolvedPoint = resolvedPoint
     }
 }

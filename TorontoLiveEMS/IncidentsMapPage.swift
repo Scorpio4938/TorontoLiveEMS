@@ -1,3 +1,4 @@
+import Foundation
 import MapKit
 import SwiftUI
 import TorontoLiveEMSKit
@@ -38,7 +39,36 @@ struct IncidentsMapPage: View {
     /// been caught by once. The previews and `RootView` pass it in like everything else.
     let policeFeed: PoliceCallFeed
 
+    /// A detail's request to show one record.
+    ///
+    /// A value rather than a binding: the request carries an id, so a second tap for the same
+    /// record is a new request rather than a value that did not change.
+    let focus: MapFocusRequest?
+
+    /// Tells the root the request has been answered, so it is not applied again after a rebuild.
+    let onFocusHandled: () -> Void
+
     @State private var geocoder = IncidentGeocoder()
+
+    /// The record the last jump asked for, kept so it stays drawn even when it falls outside the
+    /// map's police window or the feed no longer holds it.
+    @State private var pinnedTarget: MapRoute?
+
+    /// The point the jumped-to detail had already resolved, kept with the target after the request
+    /// is cleared so the map does not have to ask the geocoder the same question again.
+    @State private var pinnedPoint: Coordinate?
+
+    init(
+        feed: IncidentFeed,
+        policeFeed: PoliceCallFeed,
+        focus: MapFocusRequest? = nil,
+        onFocusHandled: @escaping () -> Void = {}
+    ) {
+        self.feed = feed
+        self.policeFeed = policeFeed
+        self.focus = focus
+        self.onFocusHandled = onFocusHandled
+    }
     @State private var position: MapCameraPosition = .region(IncidentMapScale.city)
 
     /// The place whose card is showing, by `Place.id` rather than by location: a police place is a
@@ -47,6 +77,8 @@ struct IncidentsMapPage: View {
 
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Which kind of map to draw.
     ///
@@ -96,6 +128,20 @@ struct IncidentsMapPage: View {
         case circle(centre: CLLocationCoordinate2D)
         /// A place the feed named precisely.
         case pin(CLLocationCoordinate2D)
+    }
+
+    /// The fire incidents on the map, with a jumped-to record present even if the feed no longer
+    /// carries it.
+    ///
+    /// The focus is the only reason this differs from `feed.incidents`: a reader who arrived from
+    /// a detail should still see that detail's place after a refresh removes the record.
+    private var fireIncidents: [Incident] {
+        var incidents = feed.incidents ?? []
+        if case .fire(let target)? = pinnedTarget,
+           !incidents.contains(where: { $0.id == target.id }) {
+            incidents.append(target)
+        }
+        return incidents
     }
 
     /// A place the feed named, once, with however many records are there.
@@ -236,6 +282,18 @@ struct IncidentsMapPage: View {
                     await policeFeed.load()
                 }
             }
+            // **The jump arrives as a request, and waits for its place to exist.** A fire
+            // incident's address may still be with the geocoder, so the request is applied again
+            // when the set of places changes.
+            .onAppear { handleFocusRequest() }
+            .onChange(of: focus) { _, _ in handleFocusRequest() }
+            .onChange(of: placeIds) { _, _ in applyFocusIfPossible() }
+            // The pinning exists for arrival, not as a standing exemption from the map's own
+            // window. Leaving the map lets the ordinary rules apply again.
+            .onDisappear {
+                pinnedTarget = nil
+                pinnedPoint = nil
+            }
         }
     }
 
@@ -248,7 +306,7 @@ struct IncidentsMapPage: View {
     /// needs asking at all.
     private var namedPlaces: [IncidentLocation] {
         var seen: [IncidentLocation] = []
-        for incident in feed.incidents ?? [] {
+        for incident in fireIncidents {
             let location = IncidentLocation.from(incident)
             guard location != .unpublished, !seen.contains(location) else { continue }
             seen.append(location)
@@ -291,7 +349,7 @@ struct IncidentsMapPage: View {
 
     /// The fire places that can be drawn: a location, something to draw for it, and its mark.
     private var firePlaces: [Place] {
-        let incidents = feed.incidents ?? []
+        let incidents = fireIncidents
         return namedPlaces.compactMap { location in
             let here = incidents.filter { IncidentLocation.from($0) == location }
             // The mark first, because a place with no incidents at it is not a place. It cannot happen
@@ -308,7 +366,8 @@ struct IncidentsMapPage: View {
                     contents: contents
                 )
             }
-            guard let resolved = geocoder.known(location) else { return nil }
+            let resolved = geocoder.known(location) ?? focusedPoint(for: location)
+            guard let resolved else { return nil }
             return Place(
                 id: Self.fireId(location),
                 geometry: resolved.isArea
@@ -349,9 +408,17 @@ struct IncidentsMapPage: View {
     /// that is this screen's fixed behaviour rather than a preference, because a map that could be
     /// switched into hiding serious calls would be a map with a bad setting in it.
     private var policeCallsToDraw: [PoliceCall] {
-        guard let calls = policeFeed.calls else { return [] }
+        var shown = policeFeed.calls.map {
+            mapPoliceWindow.split($0, keepingCritical: true, now: Date()).shown
+        } ?? []
 
-        return mapPoliceWindow.split(calls, keepingCritical: true, now: Date()).shown
+        // The jump must arrive at a call even when its age puts it outside the map's window. The
+        // target is what the reader asked for, not a setting the map is applying to everything.
+        if case .police(let target)? = pinnedTarget,
+           !shown.contains(where: { $0.id == target.id }) {
+            shown.append(target)
+        }
+        return shown
     }
 
     private var policePlaces: [Place] {
@@ -404,6 +471,95 @@ struct IncidentsMapPage: View {
     private var selectedPlace: Place? {
         guard let selected else { return nil }
         return places.first { $0.id == selected }
+    }
+
+    /// The ids of the places on the map, which change when a geocoder answers or a feed arrives.
+    ///
+    /// A small Equatable value for `onChange`, because `Place` itself is not Equatable.
+    private var placeIds: [String] {
+        places.map(\.id)
+    }
+
+    /// The point a jumped-to fire detail already resolved, if this is its location.
+    ///
+    /// The map page has a geocoder of its own, but the detail has just answered the same question.
+    /// Using its answer for the target means the jump frames the place on the first frame instead
+    /// of waiting for a second round trip.
+    private func focusedPoint(for location: IncidentLocation) -> IncidentGeocoder.Resolved? {
+        guard
+            case .fire(let target)? = pinnedTarget,
+            IncidentLocation.from(target) == location,
+            let pinnedPoint
+        else {
+            return nil
+        }
+        // A fire detail's resolved point is never an area centre: that view returns `nil` for
+        // an extent before it ever builds a request.
+        return IncidentGeocoder.Resolved(
+            latitude: pinnedPoint.latitude,
+            longitude: pinnedPoint.longitude,
+            isArea: false
+        )
+    }
+
+    /// The place holding the record a jump asked for, once it exists.
+    private func place(for route: MapRoute) -> Place? {
+        switch route {
+        case .fire(let incident):
+            return places.first { place in
+                guard case .fire(let incidents) = place.contents else { return false }
+                return incidents.contains { $0.id == incident.id }
+            }
+        case .police(let call):
+            return places.first { place in
+                guard case .police(let calls) = place.contents else { return false }
+                return calls.contains { $0.id == call.id }
+            }
+        }
+    }
+
+    /// Where the camera goes for a place: the area for an extent, the point for a pin.
+    private func region(for place: Place) -> MKCoordinateRegion {
+        switch place.geometry {
+        case .area(_, let bounds):
+            return IncidentMapScale.region(for: bounds)
+        case .circle(let centre):
+            return IncidentMapScale.region(around: centre, isArea: true)
+        case .pin(let coordinate):
+            return IncidentMapScale.region(around: coordinate, isArea: false)
+        }
+    }
+
+    /// Takes a new request from a detail.
+    ///
+    /// The filter is put back to both feeds before the target is looked for: a reader who had
+    /// filtered the map to one source should still arrive at the record they tapped. The target
+    /// stays pinned after arrival so it remains among the marks, not just in the camera.
+    private func handleFocusRequest() {
+        guard let focus else { return }
+        pinnedTarget = focus.route
+        pinnedPoint = focus.resolvedPoint
+        mapFilter = .all
+        applyFocusIfPossible()
+    }
+
+    /// Answers the pending request once its place exists.
+    ///
+    /// A street geocode may not have answered when the jump arrives, so this is called again when
+    /// `placeIds` changes. The request is left pending rather than dropped: the first tap should
+    /// still arrive at the target when the geocoder catches up.
+    private func applyFocusIfPossible() {
+        guard let focus, let place = place(for: focus.route) else { return }
+
+        selected = place.id
+        if reduceMotion {
+            position = .region(region(for: place))
+        } else {
+            withAnimation(.easeInOut(duration: 0.35)) {
+                position = .region(region(for: place))
+            }
+        }
+        onFocusHandled()
     }
 
     /// Places still being looked up. Postal areas are not among them any more — they are answered

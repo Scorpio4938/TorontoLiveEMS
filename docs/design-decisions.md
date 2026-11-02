@@ -582,6 +582,19 @@ is being described. "Fire division" remains a phrase this project does not use.
   did not resolve. The police row always has a point, because the Service publishes one; when it
   publishes no intersection, the pin is named with the call type. Both rows appear only on those
   two details: a station, a division and a catalogue have no single place to hand over.
+- **A record can also stay inside the app on the map page.** The same two details put a second
+  plain row, *Show on the Map Page*, under the Apple Maps row. The jump resets the map filter to
+  both feeds, clears any map detail, and hands the map a request with a fresh id. A fire detail
+  carries the point it has already resolved, so the target can be drawn and framed without
+  waiting for a second geocode; a postal area carries no point and uses its published shape. The
+  map puts the camera on that point or shape and selects the target's card, so the
+  record the reader came from is identifiable. The target is pinned for the visit even
+  when it falls outside the map's police window or a refresh drops it, because the
+  reader asked for that record rather than for the window; leaving the map lets the
+  ordinary rules apply again. A fire incident with no drawable place has no row; a
+  postal area does, because the map has its shape. The tab selection is written after
+  any refresh-tab restoration has finished; writing it in the same turn would race the
+  one writer the bar already has.
 
 ## The reference section
 

@@ -28,6 +28,9 @@ struct IncidentDetailView: View {
     /// which is a lesson already paid for.
     @State private var geocoder = IncidentGeocoder()
 
+    /// The app-wide action; unlike a type-keyed environment value, this key defaults to a no-op.
+    @Environment(\.showOnMapPage) private var showOnMapPage
+
     private var units: [DispatchedUnit] {
         DispatchedUnit.roster(from: incident.dispatchedUnits)
     }
@@ -58,12 +61,13 @@ struct IncidentDetailView: View {
     /// `nil` while the lookup is pending, when it failed, and when the City published an area
     /// rather than a place. The Apple Maps row below the map reads the same point the map draws.
     private var resolvedPoint: Coordinate? {
-        geocoder.known(location).map {
-            Coordinate(
-                latitude: $0.latitude,
-                longitude: $0.longitude
-            )
+        guard let resolved = geocoder.known(location), !resolved.isArea else {
+            return nil
         }
+        return Coordinate(
+            latitude: resolved.latitude,
+            longitude: resolved.longitude
+        )
     }
 
     /// Whether the point the app resolved is impossibly far from the station the Area names.
@@ -82,6 +86,16 @@ struct IncidentDetailView: View {
     /// The place the Apple Maps row hands over, or `nil` when there is nothing to open.
     private var appleMapsDestination: AppleMapsDestination? {
         incident.appleMapsDestination(location: location, resolvedPoint: resolvedPoint)
+    }
+
+    /// Whether the map page has a place to show.
+    ///
+    /// A postal area is drawable as the area the City published. A street or intersection needs
+    /// the point the detail already resolved; without it there is no place to arrive at, so the
+    /// row stays away rather than leading to an empty map.
+    private var canShowOnMapPage: Bool {
+        if location.isArea { return true }
+        return resolvedPoint != nil
     }
 
     var body: some View {
@@ -122,6 +136,15 @@ struct IncidentDetailView: View {
 
                 if let destination = appleMapsDestination {
                     OpenInAppleMapsRow(destination: destination)
+                }
+
+                if canShowOnMapPage {
+                    ShowOnMapPageRow {
+                        showOnMapPage(MapFocusRequest(
+                            route: .fire(incident),
+                            resolvedPoint: resolvedPoint
+                        ))
+                    }
                 }
             } header: {
                 Text("Location")

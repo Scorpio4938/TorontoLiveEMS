@@ -22,6 +22,8 @@ struct PoliceCallDetailView: View {
     @AppStorage(SettingsKey.dispatchTimeFormat)
     private var dispatchTimeFormat: DispatchTimeFormat = .twelveHour
 
+    @Environment(\.showOnMapPage) private var showOnMapPage
+
     private var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: call.latitude, longitude: call.longitude)
     }
@@ -83,6 +85,10 @@ struct PoliceCallDetailView: View {
                 LocationMap(coordinate: coordinate)
 
                 OpenInAppleMapsRow(destination: call.appleMapsDestination)
+
+                ShowOnMapPageRow {
+                    showOnMapPage(MapFocusRequest(route: .police(call)))
+                }
             } header: {
                 Text("Location")
             } footer: {

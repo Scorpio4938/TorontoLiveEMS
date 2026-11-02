@@ -12,12 +12,7 @@ struct OpenInAppleMapsRow: View {
     let destination: AppleMapsDestination
 
     var body: some View {
-        Button("Open in Apple Maps") {
-            open()
-        }
-        // **Blue, like every other link in the app.** Fire red is the accent and a handoff drawn
-        // in it reads as a warning rather than as something to tap.
-        .tint(.blue)
+        LocationActionRow(title: "Open in Apple Maps", action: open)
     }
 
     private func open() {

@@ -186,6 +186,12 @@ struct RootView: View {
     /// the navigation rather than waiting for a detail's `onDisappear`.
     @State private var mapPath: [MapRoute] = []
 
+    /// The record a detail asked the map to show, if any.
+    ///
+    /// A request rather than a route alone, so the same record can be asked for twice. The map
+    /// keeps the route it is showing and handles the request when the place exists.
+    @State private var mapFocus: MapFocusRequest?
+
     /// The sentence the alert shows.
     ///
     /// Stored rather than worked out when the alert appears, because **which feed produced it is
@@ -281,6 +287,7 @@ struct RootView: View {
 
     var body: some View {
         tabs
+            .environment(\.showOnMapPage, jumpToMapPage)
             // **The app's controls, drawn once, above both pages.**
             //
             // The tab bar is the model. It is not part of either page — the container draws it —
@@ -459,7 +466,12 @@ struct RootView: View {
 
             Tab("Map", systemImage: "map", value: Screen.map) {
                 NavigationStack(path: $mapPath) {
-                    IncidentsMapPage(feed: feed, policeFeed: policeFeed)
+                    IncidentsMapPage(
+                        feed: feed,
+                        policeFeed: policeFeed,
+                        focus: mapFocus,
+                        onFocusHandled: { mapFocus = nil }
+                    )
                         // **The detail route is a value in this stack's path.** The capsule reads
                         // the path, so a push shrinks it at the tap and a pop expands it as the
                         // detail leaves, rather than after an `onDisappear` callback.
@@ -590,6 +602,30 @@ struct RootView: View {
         Text("Map")
             .font(.headline)
             .padding(.top, 12)
+    }
+
+    /// Carries a detail's record to the map page.
+    ///
+    /// **The map selection is written after the request, and after a refresh restoration if one
+    /// is running.** The only writer that can undo it is the prominent refresh tab, which restores
+    /// the previous selection in the same turn. When that is the screen in force, the jump waits a
+    /// turn; otherwise it writes directly.
+    private func jumpToMapPage(_ request: MapFocusRequest) {
+        // A detail pushed from the map lives in this path; the jump wants the map itself.
+        mapPath = []
+        mapFocus = request
+        // A detail can live inside the Home sheet — a station's or unit's live section — so the
+        // sheet has to go before the tab behind it can be the thing on screen.
+        isShowingHome = false
+
+        if screen == .refresh {
+            // The refresh tab restores the previous selection in this turn; let it finish.
+            Task { @MainActor in
+                screen = .map
+            }
+        } else {
+            screen = .map
+        }
     }
 
     /// The button knows nothing about tasks; this is the one place that does.
