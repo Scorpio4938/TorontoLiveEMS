@@ -49,6 +49,17 @@ enum Attribution {
         )
     }
 
+    /// The original artwork the app icon is composed from.
+    ///
+    /// **Credited although its licence does not require it.** SVG Repo's default licence asks for no
+    /// attribution; naming the source is the honest thing to do, and it costs one row in *About* and
+    /// one page in *Data Licences*.
+    static let iconSourceURLString = "https://www.svgrepo.com/svg/532321/light-emergency"
+
+    static var iconSourceURL: URL? {
+        URL(string: iconSourceURLString)
+    }
+
     /// The police calls' attribution, for *Police Data Licence*.
     ///
     /// The attribution names the Service whose calls these are, and the licence is Ontario's rather

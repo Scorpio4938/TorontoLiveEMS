@@ -54,7 +54,17 @@ struct DataLicencesView: View {
                     LabeledContent("Wikipedia and Commons", value: "CC BY-SA / per file")
                 }
             } footer: {
-                Text("Each page names the publisher, links the data source and states the attribution; the open-government pages also include a copy of the licence.")
+                Text("Each page names the source, links it and states the attribution; the open-government pages also include a copy of the licence.")
+            }
+
+            Section {
+                NavigationLink {
+                    AppIconLicenceView()
+                } label: {
+                    LabeledContent("App icon", value: "SVG Repo")
+                }
+            } header: {
+                Text("Artwork")
             }
         }
         .navigationTitle("Data Licences")
@@ -294,6 +304,50 @@ struct WikipediaLicenceView: View {
             }
         }
         .navigationTitle("Wikipedia Licence")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+}
+
+/// The artwork the app's icon is composed from.
+///
+/// The icon is not data, but it is a third party's work and belongs where every other credit is
+/// kept. SVG Repo's default licence does not require attribution; the app gives it anyway, and names
+/// the collection as well as the file so a reader can find the source.
+struct AppIconLicenceView: View {
+
+    private static let licenceURLString = "https://www.svgrepo.com/page/licensing/"
+
+    var body: some View {
+        List {
+            Section {
+                LabeledContent("Icon", value: "Light Emergency")
+                LabeledContent("Collection", value: "Dazzle Line Icons")
+                LabeledContent("Source", value: "SVG Repo")
+                LabeledContent("Licence", value: "SVG Repo License")
+            } header: {
+                Text("The artwork")
+            } footer: {
+                Text("The app icon is composed from this icon in Icon Composer: recoloured, given its background and appearances, and built by Xcode as the app icon.")
+            }
+
+            Section {
+                Text("The icon comes from the Dazzle Line Icons collection on SVG Repo. SVG Repo's default licence permits use and adaptation without attribution; the app credits the source anyway.")
+
+                if let url = Attribution.iconSourceURL {
+                    Link("Light Emergency on SVG Repo", destination: url)
+                        .tint(.blue)
+                }
+                if let url = URL(string: Self.licenceURLString) {
+                    Link("SVG Repo licensing", destination: url)
+                        .tint(.blue)
+                }
+            } header: {
+                Text("Source")
+            }
+        }
+        .navigationTitle("App Icon Licence")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
