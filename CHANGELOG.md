@@ -29,6 +29,17 @@ exists to prevent.
 **The commit is the one the tag points at** — `git rev-parse <tag>^{commit}` — not necessarily the
 commit that bumped the number. Where those differ, the tag is what a version means.
 
+## v0.0.23
+
+`869af7f`
+
+- A catalogue's map wears the live map's floating chrome: hidden bar, plain floating title, back capsule and List/Map menu · `f089809` · [#49](https://github.com/Scorpio4938/TorontoLiveEMS/issues/49)
+- The catalogue map's compass sits below the floating chrome, and the Mac keeps its toolbar · `2b8ce12` · [#49](https://github.com/Scorpio4938/TorontoLiveEMS/issues/49)
+- A dispatched unit on an incident's detail opens its unit page; a code outside the catalogue opens a page that names the published code and guesses nothing · `fb66b96` · [#50](https://github.com/Scorpio4938/TorontoLiveEMS/issues/50)
+- An incident whose resolved point is more than 10 km from its Area's station says in the Location footer that the placement may be off; the pin never moves · `fdb249d` · [#53](https://github.com/Scorpio4938/TorontoLiveEMS/issues/53)
+- IncidentPlacementCheck holds the 10 km threshold with its run-area derivation, and stays silent for postal areas, missing points, missing stations and unknown Areas · `fdb249d` · [#53](https://github.com/Scorpio4938/TorontoLiveEMS/issues/53)
+- Not built or run; `swift test` not run.
+
 ## v0.0.22
 
 `9036957`
