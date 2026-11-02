@@ -274,7 +274,8 @@ build configurations name it `TLEIcon`.
 
 **Nothing keeps a second copy.** *About* and *Welcome* show the app icon through one shared
 `AppIconView`: macOS reads `applicationIconImage`, iOS reads the icon by the name the bundle records
-in `CFBundleIconName`. Neither screen has an artwork asset of its own — the old app icon set and
+in `CFBundleIconName` (falling back to the document's name only if the bundle is silent). Neither
+screen has an artwork asset of its own — the old app icon set and
 three `IconAppearance*` imagesets are gone — which is what made "which one is the real one" a
 question when the generated PNGs and the About copies could drift. The source is credited on *Data
 Licences* and linked from *About*, although SVG Repo's default licence asks for no attribution.
@@ -410,7 +411,8 @@ is being described. "Fire division" remains a phrase this project does not use.
   gone. The Icon Composer document is the only artwork the app ships, and no screen keeps a copy of
   it.
 - **Everything on *About* is read rather than typed**: the name, version and icon from the bundle,
-  both publishers' pages from the package. The app sets no
+  both publishers' pages from the package. The repository address and the icon's source are the typed
+  constants, because no publisher carries either. The app sets no
   `CFBundleDisplayName`, so its name there is the target's — `TorontoLiveEMS`, without the spaces
   it is called by in prose. Setting `INFOPLIST_KEY_CFBundleDisplayName` to *Toronto Live EMS* is
   the whole of that change, and then the row and the Home screen agree without either being told.

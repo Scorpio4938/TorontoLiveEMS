@@ -61,7 +61,7 @@ struct DataLicencesView: View {
                 NavigationLink {
                     AppIconLicenceView()
                 } label: {
-                    LabeledContent("App icon", value: "SVG Repo")
+                    LabeledContent("App icon", value: Attribution.iconProvider)
                 }
             } header: {
                 Text("Artwork")
@@ -322,10 +322,10 @@ struct AppIconLicenceView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent("Icon", value: "Light Emergency")
-                LabeledContent("Collection", value: "Dazzle Line Icons")
-                LabeledContent("Source", value: "SVG Repo")
-                LabeledContent("Licence", value: "SVG Repo License")
+                LabeledContent("Icon", value: Attribution.iconTitle)
+                LabeledContent("Collection", value: Attribution.iconCollection)
+                LabeledContent("Source", value: Attribution.iconProvider)
+                LabeledContent("Licence", value: Attribution.iconLicence)
             } header: {
                 Text("The artwork")
             } footer: {

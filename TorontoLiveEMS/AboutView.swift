@@ -85,7 +85,10 @@ struct AboutView: View {
 
                 if let url = Attribution.iconSourceURL {
                     Link(destination: url) {
-                        LabeledContent("App Icon", value: "Light Emergency · SVG Repo")
+                        LabeledContent(
+                            "App Icon",
+                            value: "\(Attribution.iconTitle) · \(Attribution.iconProvider)"
+                        )
                     }
                     .tint(.blue)
                 }

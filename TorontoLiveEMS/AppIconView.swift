@@ -34,8 +34,8 @@ struct AppIconView: View {
         guard let image = UIImage(named: AppIdentity.iconName) else { return nil }
         return Image(uiImage: image)
         #elseif os(macOS)
-        let image = NSImage(named: AppIdentity.iconName)
-            ?? NSApplication.shared.applicationIconImage
+        let image = NSApplication.shared.applicationIconImage
+            ?? NSImage(named: AppIdentity.iconName)
         guard let image else { return nil }
         return Image(nsImage: image)
         #else
