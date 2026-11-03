@@ -673,7 +673,7 @@ struct IncidentsMapPage: View {
         }
         .font(.caption2)
         .foregroundStyle(isStale ? Color.orange : Color.secondary)
-        .padding(.trailing, 12)
+        .padding(.trailing, ScreenControls.edgeInset)
         .padding(.bottom, 10)
     }
 

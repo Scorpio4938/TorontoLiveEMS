@@ -239,6 +239,15 @@ struct ScreenControls: View {
     /// leading and trailing ends cannot be different shapes.
     static let cornerRadius: CGFloat = 22
 
+    /// How far the floating chrome sits from the edge of whatever surface it is on — every edge.
+    ///
+    /// **The top is included because the top cannot be assumed.** The sides were always 12; the top
+    /// was whatever the status bar gave, which is nothing when the reader reaches a page inside a
+    /// sheet. There the chrome landed against the sheet's rounded corner, because a sheet has no
+    /// status bar to hold it away. One number for all edges rather than a number for the sides and a
+    /// hope for the top.
+    static let edgeInset: CGFloat = 12
+
     let onInfo: () -> Void
     let onSettings: () -> Void
 

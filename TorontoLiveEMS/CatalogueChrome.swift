@@ -42,7 +42,11 @@ struct CatalogueMapChrome: View {
         // The same band the shared controls are centred in, so the three floating pieces sit on one
         // line rather than each finding its own height.
         .frame(height: ScreenControls.bandHeight, alignment: .center)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ScreenControls.edgeInset)
+        // **A top inset of its own, because a sheet has no status bar.** Inside the Home sheet the
+        // catalogue is a pushed view with nothing above it, so without this the back capsule sat
+        // against the sheet's rounded corner — the same 12 the sides have always used.
+        .padding(.top, ScreenControls.edgeInset)
     }
 }
 

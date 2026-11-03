@@ -741,7 +741,7 @@ private extension View {
                 // items sat before this layer replaced them. The band height and the trailing inset
                 // are the placement, and the only numbers in it.
                 .frame(height: ScreenControls.bandHeight, alignment: .center)
-                .padding(.trailing, 12)
+                .padding(.trailing, ScreenControls.edgeInset)
         }
         .overlay(alignment: .topLeading) {
             if let onHome {
@@ -749,7 +749,7 @@ private extension View {
                     // The same band and leading inset as the trailing capsule, so the two are
                     // centred on the same line and cannot be placed differently per page.
                     .frame(height: ScreenControls.bandHeight, alignment: .center)
-                    .padding(.leading, 12)
+                    .padding(.leading, ScreenControls.edgeInset)
             }
         }
         #else
