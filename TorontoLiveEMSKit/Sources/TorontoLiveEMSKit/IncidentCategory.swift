@@ -97,7 +97,7 @@ public enum IncidentCategory: CaseIterable, Sendable {
         // Medical - 1 published types
         "medical":                                     .medical,   // no CAD code
 
-        // Fire - 16 published types
+        // Fire - 17 published types
         "fire - highrise residential":                 .fire,   // was FIHR
         "fire - commercial/industrial":                .fire,   // was FICI
         "fire - encampment":                           .fire,   // was FIG2
@@ -114,6 +114,7 @@ public enum IncidentCategory: CaseIterable, Sendable {
         "fire - underground":                          .fire,   // was FIU
         "fire waterfront marina/industrial":           .fire,   // was FIWMI
         "lake fire response":                          .fire,   // was LKFI
+        "fire - burning odours":                       .fire,   // code not observed
 
         // Alarm - 11 published types
         "alarm - institution - school":                .alarm,   // was FAIS
@@ -141,7 +142,7 @@ public enum IncidentCategory: CaseIterable, Sendable {
         "vehicle fire":                                .vehicle,   // was VEF
         "vehicle fire - highway":                      .vehicle,   // was VEFH
 
-        // Rescue - 14 published types
+        // Rescue - 15 published types
         "lake rescue response":                        .rescue,   // was LKRE
         "rescue - bluffs":                             .rescue,   // was REB
         "rescue - confined space":                     .rescue,   // was RECS
@@ -156,6 +157,7 @@ public enum IncidentCategory: CaseIterable, Sendable {
         "rescue - water w/fireboat":                   .rescue,   // was REWL
         "rescue - water/ice - no fireboat":            .rescue,   // was REWR
         "rescue major transportation":                 .rescue,   // was REMT
+        "rescue - ring removal":                       .rescue,   // code not observed
 
         // Carbon Monoxide - 2 published types
         "carbon monoxide - non medical":               .carbonMonoxide,   // was CONM

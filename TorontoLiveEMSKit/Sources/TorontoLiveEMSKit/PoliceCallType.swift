@@ -100,6 +100,7 @@ public struct PoliceCallType: Identifiable, Equatable, Sendable {
         PoliceCallType(code: "FRA", name: "FRAUD"),
         PoliceCallType(code: "FRAPR", name: "FRAUD IN PROGRESS"),
         PoliceCallType(code: "HAZ", name: "HAZARD"),
+        PoliceCallType(code: "HOLTR", name: "HOLDING ONE WITH TROUBLE"),
         PoliceCallType(code: "IMPDR", name: "IMPAIRED DRIVER"),
         PoliceCallType(code: "INDEX", name: "INDECENT EXPOSURE"),
         PoliceCallType(code: "JUVLO", name: "MISSING JUVENILE LOCATED"),

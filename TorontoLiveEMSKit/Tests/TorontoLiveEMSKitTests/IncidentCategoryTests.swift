@@ -10,6 +10,8 @@ struct IncidentCategoryTests {
         #expect(IncidentCategory.from(incidentType: "Alarm Single Source") == .alarm)
         #expect(IncidentCategory.from(incidentType: "Vehicle - Personal Injury") == .vehicle)
         #expect(IncidentCategory.from(incidentType: "Rescue - Elevator") == .rescue)
+        #expect(IncidentCategory.from(incidentType: "Rescue - Ring Removal") == .rescue)
+        #expect(IncidentCategory.from(incidentType: "Fire - Burning Odours") == .fire)
         #expect(IncidentCategory.from(incidentType: "Medical") == .medical)
         #expect(IncidentCategory.from(incidentType: "Carbon Monoxide - Non Medical") == .carbonMonoxide)
         #expect(IncidentCategory.from(incidentType: "Hazmat Level 1") == .hazmat)
