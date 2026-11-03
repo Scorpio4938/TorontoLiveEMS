@@ -86,6 +86,27 @@ public enum IncidentCategory: CaseIterable, Sendable {
     /// Case- and whitespace-insensitive, because the feed is inconsistent with itself:
     /// it sends `MEDICAL` in capitals where the City's vocabulary says `Medical`, and
     /// at least one type carries a doubled space.
+    /// The City's own types that mark a fire as one of the small ones.
+    ///
+    /// **The City publishes the distinction, and the app was flattening it.** A grass or rubbish fire is
+    /// a fire, fire is a dangerous category, and so every one of them was drawn in the same red as a
+    /// working apartment fire — the colour that is meant to mark exceptions marking every grass fire all
+    /// summer. This reads the City's own two-word type rather than judging grass fires: nothing here
+    /// decides a grass fire is unimportant, only that it is not the same event as a building on fire.
+    ///
+    /// A set of one, because this is where a second such type would go, and because a rule this app
+    /// invented about which fires are small is exactly what it should not have.
+    private static let lesserFireTypes: Set<String> = [
+        "fire - grass/rubbish",
+    ]
+
+    /// Whether the City's type for this incident marks it as a fire of little consequence.
+    ///
+    /// Used by `IncidentMark.Urgency` to hold such a fire at `elevated` rather than `critical`.
+    public static func isLesserFire(_ incidentType: String) -> Bool {
+        lesserFireTypes.contains(normalize(incidentType))
+    }
+
     private static func normalize(_ incidentType: String) -> String {
         return incidentType
             .split(whereSeparator: { $0.isWhitespace })

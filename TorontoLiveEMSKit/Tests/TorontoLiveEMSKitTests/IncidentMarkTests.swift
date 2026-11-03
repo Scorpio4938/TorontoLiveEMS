@@ -101,6 +101,20 @@ struct IncidentMarkTests {
         #expect(IncidentMark(incident: fire).urgency == .critical)
     }
 
+    @Test("a grass fire is elevated, never critical")
+    func lesserFiresNeverReachCritical() {
+        // The City's own type says it: a grass or rubbish fire is a fire with nothing to evacuate.
+        // Drawn in the critical red it was indistinguishable from a working building fire, and a colour
+        // that marks everything marks nothing.
+        let grass = Self.incident(type: "Fire - Grass/Rubbish", alarmLevel: "1")
+        #expect(IncidentMark(incident: grass).urgency == .elevated)
+
+        // A major response does not raise it. The ceiling is the point: what makes it lesser is what
+        // is burning, not how many vehicles went.
+        let escalating = Self.incident(type: "Fire - Grass/Rubbish", alarmLevel: "3")
+        #expect(IncidentMark(incident: escalating).urgency == .elevated)
+    }
+
     @Test("the severities are ordered, and unknown is not the least serious")
     func severitiesHaveAnOrder() {
         // The order exists to choose between two records at one place. `unknown` sits last without

@@ -23,6 +23,16 @@ struct IncidentCategoryTests {
         #expect(IncidentCategory.from(incidentType: "Public Hazard") == .other)
     }
 
+    @Test("reads the City's own small-fire type, and only that one")
+    func lesserFiresAreTheCitysOwnTypes() {
+        // Names the published type rather than describing grass fires, and matches it however the City
+        // spaces or cases it.
+        #expect(IncidentCategory.isLesserFire("Fire - Grass/Rubbish"))
+        #expect(IncidentCategory.isLesserFire("FIRE - GRASS/RUBBISH"))
+        #expect(!IncidentCategory.isLesserFire("Fire - Residential"))
+        #expect(!IncidentCategory.isLesserFire("Fire - Commercial/Industrial"))
+    }
+
     @Test("keeps Alarm separate from Fire")
     func alarmIsNotFire() {
         // The City's codes separate FA* from FI*. Folding them together would label

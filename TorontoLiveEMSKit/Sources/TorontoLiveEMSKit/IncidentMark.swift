@@ -291,14 +291,22 @@ public struct IncidentMark: Equatable, Hashable, Sendable, Identifiable {
             }
         }
 
-        /// The severity of a fire incident, from the two halves of the rule the app already had.
+        /// The severity of a fire incident, from the parts of the rule the app already had.
         ///
         /// **Nothing new is judged here.** `Incident.warrantsAttention` is a dangerous *category* or a
         /// *major response*, and those are two different amounts of attention — which is exactly what
         /// collapsing them into one yes-or-no hid. A fire is critical; ten vehicles sent to a medical
         /// call is elevated; the rest is routine.
+        ///
+        /// **One exception, read from the City's own words.** `Fire - Grass/Rubbish` is a dangerous
+        /// category by that rule, so every grass fire was drawn in the same red as a working apartment
+        /// fire. The City publishes the difference in the incident's type already, so nothing is
+        /// inferred: a grass or rubbish fire is at most elevated, whether or not a major response was
+        /// sent to it.
         public init(incident: Incident) {
-            if IncidentCategory.from(incidentType: incident.incidentType)?.warrantsAttention == true {
+            if IncidentCategory.isLesserFire(incident.incidentType) {
+                self = .elevated
+            } else if IncidentCategory.from(incidentType: incident.incidentType)?.warrantsAttention == true {
                 self = .critical
             } else if AlarmLevel.isMajorResponse(incident.alarmLevel) {
                 self = .elevated
